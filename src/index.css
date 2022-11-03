@@ -1,0 +1,109 @@
+/* @import "./utils/css/beautify.css"; */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: mellyFont;
+  src: url(./client/utils/Wellfleet-Regular.ttf);
+}
+
+@layer base {
+  html {
+    font-family: mellyFont, system-ui, sans-serif;
+  }
+
+  #main {
+    @apply max-w-[1280px] mx-auto h-screen bg-color-def text-color-sec text-sm;
+  }
+
+  h1 {
+    @apply text-3xl sm:text-4xl md:text-5xl text-color-def mt-5 mb-1 !important;
+  }
+
+  h2 {
+    @apply text-2xl sm:text-3xl md:text-4xl text-color-def mt-4 mb-2;
+  }
+
+  h3 {
+    @apply text-2xl md:text-3xl text-color-def mt-3 mb-2;
+  }
+
+  h4 {
+    @apply text-xl md:text-2xl text-color-def mt-2 mb-1;
+  }
+
+  h5 {
+    @apply text-xl text-color-def mt-2 mb-1;
+  }
+
+  h6 {
+    @apply text-lg text-color-def my-1;
+  }
+
+  p {
+    @apply mb-3 last:mb-0 first:mt-0;
+  }
+  p img {
+    @apply my-1;
+  }
+
+  a {
+    @apply text-color-pri;
+  }
+  blockquote {
+    @apply bg-color-pri/20 px-5 py-2 mx-2 my-4;
+  }
+
+  nav a div,
+  nav a {
+    @apply text-color-pri;
+  }
+
+  #mobileSocialLinks a {
+    @apply text-color-sec;
+  }
+
+  article {
+    @apply bg-color-ter rounded-2xl p-5 prose-sm md:prose-base;
+  }
+  article h2 {
+    @apply text-2xl sm:text-3xl md:text-4xl text-color-def mt-4 mb-2;
+  }
+  article h3 {
+    @apply text-2xl md:text-3xl text-color-def mt-3 mb-2;
+  }
+  article h4 {
+    @apply text-xl md:text-2xl text-color-def mt-2 mb-1;
+  }
+  article h5 {
+    @apply text-xl text-color-def mt-2 mb-1;
+  }
+  article h6 {
+    @apply text-lg text-color-def my-1;
+  }
+  article #modalBoxContainer img {
+    @apply my-0;
+  }
+
+  .carousel-indicators [data-bs-target] {
+    @apply bg-color-pri !important;
+  }
+  .carousel-item img {
+    @apply rounded-md;
+  }
+
+  input[type="text"] {
+    @apply text-black;
+  }
+  /* input[type='button'] {
+    @apply bg-color-sec p-2 text-color-def
+  } */
+  textarea {
+    @apply text-black;
+  }
+
+  iframe {
+    @apply max-w-full;
+  }
+}

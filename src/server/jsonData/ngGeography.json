@@ -1,0 +1,575 @@
+[
+  {
+    "name": "Abia",
+    "abbreviation": "AB",
+    "iso_code": "NG-AB",
+    "id": "Abia",
+    "cities": []
+  },
+  {
+    "name": "Adamawa",
+    "abbreviation": "AD",
+    "iso_code": "NG-AD",
+    "id": "Adamawa",
+    "cities": []
+  },
+  {
+    "name": "Akwa Ibom",
+    "abbreviation": "AK",
+    "iso_code": "NG-AK",
+    "id": "Akwa Ibom",
+    "cities": []
+  },
+  {
+    "name": "Anambra",
+    "abbreviation": "AN",
+    "iso_code": "NG-AN",
+    "id": "Anambra",
+    "cities": []
+  },
+  {
+    "name": "Bauchi",
+    "abbreviation": "BA",
+    "iso_code": "NG-BA",
+    "id": "Bauchi",
+    "cities": []
+  },
+  {
+    "name": "Bayelsa",
+    "abbreviation": "BY",
+    "iso_code": "NG-BY",
+    "id": "Bayelsa",
+    "cities": []
+  },
+  {
+    "name": "Benue",
+    "abbreviation": "BE",
+    "iso_code": "NG-BE",
+    "id": "Benue",
+    "cities": []
+  },
+  {
+    "name": "Borno",
+    "abbreviation": "BO",
+    "iso_code": "NG-BO",
+    "id": "Borno",
+    "cities": []
+  },
+  {
+    "name": "Cross River",
+    "abbreviation": "CR",
+    "iso_code": "NG-CR",
+    "id": "Cross River",
+    "cities": []
+  },
+  {
+    "name": "Delta",
+    "abbreviation": "DE",
+    "iso_code": "NG-DE",
+    "id": "Delta",
+    "cities": []
+  },
+  {
+    "name": "Ebonyi",
+    "abbreviation": "EB",
+    "iso_code": "NG-EB",
+    "id": "Ebonyi",
+    "cities": []
+  },
+  {
+    "name": "Edo",
+    "abbreviation": "ED",
+    "iso_code": "NG-ED",
+    "id": "Edo",
+    "cities": []
+  },
+  {
+    "name": "Ekiti",
+    "abbreviation": "EK",
+    "iso_code": "NG-EK",
+    "id": "Ekiti",
+    "cities": []
+  },
+  {
+    "name": "Enugu",
+    "abbreviation": "EN",
+    "iso_code": "NG-EN",
+    "id": "Enugu",
+    "cities": []
+  },
+  {
+    "name": "FCT Abuja",
+    "abbreviation": "FC",
+    "iso_code": "NG-FC",
+    "id": "FCT Abuja",
+    "cities": []
+  },
+  {
+    "name": "Gombe",
+    "abbreviation": "GO",
+    "iso_code": "NG-GO",
+    "id": "Gombe",
+    "cities": []
+  },
+  {
+    "name": "Imo",
+    "abbreviation": "IM",
+    "iso_code": "NG-IM",
+    "id": "Imo",
+    "cities": []
+  },
+  {
+    "name": "Jigawa",
+    "abbreviation": "JI",
+    "iso_code": "NG-JI",
+    "id": "Jigawa",
+    "cities": []
+  },
+  {
+    "name": "Kaduna",
+    "abbreviation": "KD",
+    "iso_code": "NG-KD",
+    "id": "Kaduna",
+    "cities": []
+  },
+  {
+    "name": "Kano",
+    "abbreviation": "KN",
+    "iso_code": "NG-KN",
+    "id": "Kano",
+    "cities": []
+  },
+  {
+    "name": "Katsina",
+    "abbreviation": "KT",
+    "iso_code": "NG-KT",
+    "id": "Katsina",
+    "cities": []
+  },
+  {
+    "name": "Kebbi",
+    "abbreviation": "KE",
+    "iso_code": "NG-KE",
+    "id": "Kebbi",
+    "cities": []
+  },
+  {
+    "name": "Kogi",
+    "abbreviation": "KO",
+    "iso_code": "NG-KO",
+    "id": "Kogi",
+    "cities": []
+  },
+  {
+    "name": "Kwara",
+    "abbreviation": "KW",
+    "iso_code": "NG-KW",
+    "id": "Kwara",
+    "cities": []
+  },
+  {
+    "name": "Lagos",
+    "id": "Lagos",
+    "abbreviation": "LA",
+    "iso_code": "NG-LA",
+    "cities": [
+      {
+        "name": "Abule Egba",
+        "id": "Abule Egba"
+      },
+      {
+        "name": "Agbara",
+        "id": "Agbara"
+      },
+      {
+        "name": "Agege",
+        "id": "Agege"
+      },
+      {
+        "name": "Agiliti",
+        "id": "Agiliti"
+      },
+      {
+        "name": "Agungi (Lekki)",
+        "id": "Agungi"
+      },
+      {
+        "name": "Ajah",
+        "id": "Ajah"
+      },
+      {
+        "name": "Ajao Estate",
+        "id": "Ajao Estate"
+      },
+      {
+        "name": "Alfa Beach",
+        "id": "Alfa Beach"
+      },
+      {
+        "name": "Amuwo",
+        "id": "Amuwo"
+      },
+      {
+        "name": "Anthony Village",
+        "id": "Anthony Village"
+      },
+      {
+        "name": "Apapa",
+        "id": "Apapa"
+      },
+      {
+        "name": "Awoyaya",
+        "id": "Awoyaya"
+      },
+      {
+        "name": "Badagry",
+        "id": "Badagry"
+      },
+      {
+        "name": "Badore",
+        "id": "Badore"
+      },
+      {
+        "name": "Berger",
+        "id": "Berger"
+      },
+      {
+        "name": "Bogije",
+        "id": "Bogije"
+      },
+      {
+        "name": "Coker",
+        "id": "Coker"
+      },
+      {
+        "name": "Doyin",
+        "id": "Doyin"
+      },
+      {
+        "name": "Ejigbo",
+        "id": "Ejigbo"
+      },
+      {
+        "name": "Epe",
+        "id": "Epe"
+      },
+      {
+        "name": "Fagba",
+        "id": "Fagba"
+      },
+      {
+        "name": "Festac",
+        "id": "Festac"
+      },
+      {
+        "name": "Gbagada",
+        "id": "Gbagada"
+      },
+      {
+        "name": "Ibeju Lekki",
+        "id": "Ibeju Lekki"
+      },
+      {
+        "name": "Idimu",
+        "id": "Idimu"
+      },
+      {
+        "name": "Igando",
+        "id": "Igando"
+      },
+      {
+        "name": "Ijanikin",
+        "id": "Ijanikin"
+      },
+      {
+        "name": "Ijegun-Ikotun",
+        "id": "Ijegun-Ikotun"
+      },
+      {
+        "name": "Ijora",
+        "id": "Ijora"
+      },
+      {
+        "name": "Ikeja",
+        "id": "Ikeja"
+      },
+      {
+        "name": "Ikorodu",
+        "id": "Ikorodu"
+      },
+      {
+        "name": "Ikota",
+        "id": "Ikota"
+      },
+      {
+        "name": "Ikotun",
+        "id": "Ikotun"
+      },
+      {
+        "name": "Ikoyi",
+        "id": "Ikoyi"
+      },
+      {
+        "name": "Ilaje (Bariga)",
+        "id": "Ilaje-Bariga"
+      },
+      {
+        "name": "Ilupeju",
+        "id": "Ilupeju"
+      },
+      {
+        "name": "Isheri Ikotun",
+        "id": "Isheri-Ikotun"
+      },
+      {
+        "name": "Isheri Magodo",
+        "id": "Isheri-Magodo"
+      },
+      {
+        "name": "Isolo",
+        "id": "Isolo"
+      },
+      {
+        "name": "Iyana Ejigbo",
+        "id": "Iyana-Ejigbo"
+      },
+      {
+        "name": "Iyana Iba",
+        "id": "Iyana-Iba"
+      },
+      {
+        "name": "Iyana Ipaja",
+        "id": "Iyana-Ipaja"
+      },
+      {
+        "name": "Jakande (Lekki)",
+        "id": "Jakande-Lekki"
+      },
+      {
+        "name": "Jankande (Isolo)",
+        "id": "Jankande-Isolo"
+      },
+      {
+        "name": "Ketu",
+        "id": "Ketu"
+      },
+      {
+        "name": "Lagos Island",
+        "id": "Lagos-Island"
+      },
+      {
+        "name": "Lakowe",
+        "id": "Lakowe"
+      },
+      {
+        "name": "Lekki Phase 1",
+        "id": "Lekki Phase 1"
+      },
+      {
+        "name": "Lekki-Ajah",
+        "id": "Lekki-Ajah axis"
+      },
+      {
+        "name": "Magboro",
+        "id": "Magboro"
+      },
+      {
+        "name": "Magodo",
+        "id": "Magodo"
+      },
+      {
+        "name": "Maryland",
+        "id": "Maryland"
+      },
+      {
+        "name": "Mile 12",
+        "id": "Mile 12"
+      },
+      {
+        "name": "Mile 2",
+        "id": "Mile 2"
+      },
+      {
+        "name": "Mushin",
+        "id": "Mushin"
+      },
+      {
+        "name": "Odongunyan",
+        "id": "Odongunyan"
+      },
+      {
+        "name": "Ogba",
+        "id": "Ogba"
+      },
+      {
+        "name": "Ogudu",
+        "id": "Ogudu"
+      },
+      {
+        "name": "Ojo",
+        "id": "Ojo"
+      },
+      {
+        "name": "Ojodu",
+        "id": "Ojodu"
+      },
+      {
+        "name": "Ojokoro",
+        "id": "Ojokoro"
+      },
+      {
+        "name": "Ojota",
+        "id": "Ojota"
+      },
+      {
+        "name": "Okokomaiko",
+        "id": "Okokomaiko"
+      },
+      {
+        "name": "Okota",
+        "id": "Okota"
+      },
+      {
+        "name": "Ajah",
+        "id": "Ajah"
+      },
+      {
+        "name": "Omole Phase 1",
+        "id": "Omole Phase 1"
+      },
+      {
+        "name": "Omole Phase 2",
+        "id": "Omole Phase 2"
+      },
+      {
+        "name": "Oregun",
+        "id": "Oregun"
+      },
+      {
+        "name": "Orile",
+        "id": "Orile"
+      },
+      {
+        "name": "Osapa (Lekki)",
+        "id": "Osapa-Lekki"
+      },
+      {
+        "name": "Oshodi",
+        "id": "Oshodi"
+      },
+      {
+        "name": "Palmgroove Onipanu",
+        "id": "Palmgroove-Onipanu"
+      },
+      {
+        "name": "Sangotedo",
+        "id": "Sangotedo"
+      },
+      {
+        "name": "Sari-Iganmu",
+        "id": "Sari-Iganmu"
+      },
+      {
+        "name": "Satelite Town",
+        "id": "Satelite Town"
+      },
+      {
+        "name": "Somolu",
+        "id": "Somolu"
+      },
+      {
+        "name": "Surulere",
+        "id": "Surulere"
+      },
+      {
+        "name": "VGC",
+        "id": "VGC"
+      },
+      {
+        "name": "VI",
+        "id": "VI"
+      },
+      {
+        "name": "Yaba",
+        "id": "Yaba"
+      }
+    ]
+  },
+  {
+    "name": "Nasarawa",
+    "abbreviation": "NA",
+    "iso_code": "NG-NA",
+    "id": "Nasarawa",
+    "cities": []
+  },
+  {
+    "name": "Niger",
+    "abbreviation": "NI",
+    "iso_code": "NG-NI",
+    "id": "Niger",
+    "cities": []
+  },
+  {
+    "name": "Ogun",
+    "abbreviation": "OG",
+    "iso_code": "NG-OG",
+    "id": "Ogun",
+    "cities": []
+  },
+  {
+    "name": "Ondo",
+    "abbreviation": "ON",
+    "iso_code": "NG-ON",
+    "id": "Ondo",
+    "cities": []
+  },
+  {
+    "name": "Osun",
+    "abbreviation": "OS",
+    "iso_code": "NG-OS",
+    "id": "Osun",
+    "cities": []
+  },
+  {
+    "name": "Oyo",
+    "abbreviation": "OY",
+    "iso_code": "NG-OY",
+    "id": "Oyo",
+    "cities": []
+  },
+  {
+    "name": "Rivers",
+    "abbreviation": "RI",
+    "iso_code": "NG-RI",
+    "id": "Rivers",
+    "cities": []
+  },
+  {
+    "name": "Sokoto",
+    "abbreviation": "SO",
+    "iso_code": "NG-SO",
+    "id": "Sokoto",
+    "cities": []
+  },
+  {
+    "name": "Taraba",
+    "abbreviation": "TA",
+    "iso_code": "NG-TA",
+    "id": "Taraba",
+    "cities": []
+  },
+  {
+    "name": "Yobe",
+    "abbreviation": "YO",
+    "iso_code": "NG-YO",
+    "id": "Yobe",
+    "cities": []
+  },
+  {
+    "name": "Zamfara",
+    "abbreviation": "ZA",
+    "iso_code": "NG-ZA",
+    "id": "Zamfara",
+    "cities": []
+  }
+]

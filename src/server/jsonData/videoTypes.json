@@ -1,0 +1,14 @@
+[
+    {
+      "key": "hosted",
+      "name": "Upload to Server"
+    }
+    {
+        "key": "youtube",
+        "name": "YouTube Video"
+    },
+    {
+        "key": "vimeo",
+        "name": "Vimeo Video"
+    }
+]

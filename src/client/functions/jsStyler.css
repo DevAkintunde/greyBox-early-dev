@@ -1,0 +1,11 @@
+.jsstyler .show {
+  display: block;
+}
+
+/**** Toggle ***/
+.jsstyler [jsstyler-toggle] {
+  display: none;
+}
+.jsstyler [jsstyler-toggle].show {
+  display: block;
+}
