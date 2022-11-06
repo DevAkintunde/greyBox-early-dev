@@ -1,7 +1,7 @@
-const sequelize = require("../../../config/db.config");
-const { DataTypes, Model, Deferrable } = require("sequelize");
-const Status = require("../../fields/dbFields/EntityStatus.model");
-const Admin = require('../accounts/Admin.model')
+import sequelize from "../../../config/db.config.js";
+import { DataTypes, Model, Deferrable } from "sequelize";
+import Status from "../../fields/dbFields/EntityStatus.model.js";
+import Admin from "../accounts/Admin.model.js";
 
 class Video extends Model {}
 
@@ -12,11 +12,20 @@ Video.init(
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
+    serviceType: {
+      //options available in json data
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     type: {
       type: DataTypes.STRING,
       allowNull: false,
     },
     url: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    thumbnail_url: {
       type: DataTypes.STRING,
       allowNull: false,
     },
@@ -44,4 +53,4 @@ Video.init(
   }
 );
 
-module.exports = Video
+module.exports = Video;

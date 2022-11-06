@@ -1,5 +1,5 @@
-const sequelize = require("../../config/db.config");
-const { DataTypes, Model } = require("sequelize");
+import sequelize from "../../config/db.config.js";
+import { DataTypes, Model } from "sequelize";
 
 // Structure
 // GET: /verify?filter[id=akin@thin.city]&filter[code=gjU866bi35h]
@@ -42,4 +42,4 @@ OTP.init(
   }
 );
 
-module.exports = OTP;
+export default OTP;

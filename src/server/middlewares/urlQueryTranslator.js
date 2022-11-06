@@ -1,28 +1,28 @@
 "use strict";
 // query caller/processors
-const compose = require("koa-compose");
+import compose from "koa-compose";
 // Always remember to map modelToPath each time urlQueryTranslator is added to a new path pattern
-const pathToModel = require("../constants/urlPreQueryPathToModelMapping");
-const filterProcessor = require("./queryProcessor/filterProcessor");
-const includeTranslator = require("./queryProcessor/includeTranslator");
-const paginationProcessor = require("./queryProcessor/paginationProcessor");
-const sortProcessor = require("./queryProcessor/sortProcessor");
-const queryDbCaller = require("./queryProcessor/queryDbCaller");
-const { BAD_REQUEST } = require("../constants/statusCodes");
+import * as pathToModel from "../constants/urlPreQueryPathToModelMapping.js";
+import { filterProcessor } from "./queryProcessor/filterProcessor.js";
+import { includeTranslator } from "./queryProcessor/includeTranslator.js";
+import { paginationProcessor } from "./queryProcessor/paginationProcessor.js";
+import { sortProcessor } from "./queryProcessor/sortProcessor.js";
+import { queryDbCaller } from "./queryProcessor/queryDbCaller.js";
+import { BAD_REQUEST } from "../constants/statusCodes.js";
 
 // Applicable to GET methods.
 const urlQueryTranslator = compose([
-async (ctx, next) => {
-  let entityPath = ctx.originalUrl;
-  if (ctx.isUnauthenticated && !entityPath.includes('state=published')){
-    if (entityPath.includes('?')) {
-        ctx.originalUrl = entityPath+'&filter[state=published]';
-    } else {
-        ctx.originalUrl = entityPath+'?filter[state=published]';
+  async (ctx, next) => {
+    let entityPath = ctx.originalUrl;
+    if (ctx.isUnauthenticated && !entityPath.includes("state=published")) {
+      if (entityPath.includes("?")) {
+        ctx.originalUrl = entityPath + "&filter[state=published]";
+      } else {
+        ctx.originalUrl = entityPath + "?filter[state=published]";
+      }
     }
-  }
-  await next();
-},
+    await next();
+  },
   async (ctx, next) => {
     {
       /*
@@ -69,7 +69,7 @@ structure is contructed as:
       filter[address.state[!END_WITH]="town"]
 */
     }
-/*
+    /*
     console.log("originalUrl: ", ctx.originalUrl);
     console.log("path: ", ctx.path);
     console.log("url:", ctx.url);
@@ -178,4 +178,4 @@ structure is contructed as:
   includeTranslator,
   queryDbCaller,
 ]);
-module.exports = urlQueryTranslator;
+export { urlQueryTranslator };

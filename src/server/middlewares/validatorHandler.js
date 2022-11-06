@@ -11,4 +11,4 @@ const validatorHandler = async (ctx, next, schema) => {
   }
 };
 
-module.exports = validatorHandler;
+export default validatorHandler;

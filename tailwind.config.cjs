@@ -25,7 +25,7 @@ module.exports = {
       addBase({
         ".scrollbar": {
           overflowY: "auto",
-          scrollbarColor: `${theme("colors.color-pri")} ${theme(
+          scrollbarColor: `${theme("colors.color-ter")} ${theme(
             "colors.color-def"
           )}`,
           scrollbarWidth: "thin",
@@ -39,7 +39,7 @@ module.exports = {
           width: "6px",
         },
         ".scrollbar::-webkit-scrollbar-thumb": {
-          backgroundColor: theme("colors.color-pri"),
+          backgroundColor: theme("colors.color-ter"),
         },
         ".scrollbar::-webkit-scrollbar-track-piece": {
           backgroundColor: theme("colors.color-def"),

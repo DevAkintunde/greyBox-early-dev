@@ -1,0 +1,34 @@
+[
+  {
+    "key": "cinematography_lighting",
+    "name": "Cinematography & Lighting"
+  },
+  {
+    "key": "graphics",
+    "name": "Graphics"
+  },
+  {
+    "key": "live_stream",
+    "name": "Live Stream"
+  },
+  {
+    "key": "motion_graphics",
+    "name": "Motion Graphics"
+  },
+  {
+    "key": "photography",
+    "name": "Photography"
+  },
+  {
+    "key": "story_development",
+    "name": "Story Development"
+  },
+  {
+    "key": "videography",
+    "name": "Videography"
+  },
+  {
+    "key": "web_design",
+    "name": "Web Design"
+  }
+]

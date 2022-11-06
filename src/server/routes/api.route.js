@@ -9,6 +9,7 @@ const router = new Router();
 // Check if from registered app && enforced header Content-Type as 'application/json'
 router
   .use(async (ctx, next) => {
+    //alternatively, can redirect unidentifiable apps
     const remoteAppIDs = JSON.parse(process.env.remoteAppIDs);
     //Enable before deploy
     /* if (!remoteAppIDs.includes(ctx.header["x-requestapp"])) {
@@ -22,6 +23,7 @@ router
     ) {
       ctx.throw(406, "Unsupported content-type");
     }
+    //ctx.set({ "Content-Type": "application/json; charset=utf-8" });
     await next();
   })
   .use(koaBody())

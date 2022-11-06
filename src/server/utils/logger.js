@@ -1,7 +1,7 @@
 import winston from "winston";
 import fs from "fs";
 import path from "path";
-//require('dotenv/config');
+import "dotenv/config";
 
 const levels = {
   error: 0,

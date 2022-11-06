@@ -1,7 +1,7 @@
-const sequelize = require("../../../config/db.config");
-const { DataTypes, Model, Deferrable } = require("sequelize");
-const Status = require("../../fields/dbFields/EntityStatus.model");
-const Admin = require('../accounts/Admin.model')
+import sequelize from "../../../config/db.config.js";
+import { DataTypes, Model, Deferrable } from "sequelize";
+import Status from "../../fields/dbFields/EntityStatus.model.js";
+import Admin from "../accounts/Admin.model.js";
 
 class Image extends Model {}
 
@@ -12,7 +12,12 @@ Image.init(
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-    alt: {
+    serviceType: {
+      //options available in json data
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    title: {
       type: DataTypes.STRING,
       allowNull: false,
     },
@@ -44,4 +49,4 @@ Image.init(
   }
 );
 
-module.exports = Image;
+export default Image;

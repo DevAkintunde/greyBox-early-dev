@@ -22,7 +22,19 @@ import passport from "koa-passport";
 // The App
 const app = new Koa();
 // sessions
-app.keys = ["your-session-secret"];
+app.keys = [process.env.COOKIE_KEY];
+const sessionConfig = {
+  key: process.env.COOKIE_IDENTIFIER,
+  maxAge: 86400000,
+  autoCommit: true,
+  overwrite: true,
+  httpOnly: true,
+  signed: true,
+  rolling: false,
+  renew: false,
+  secure: process.env.NODE_ENV === "development" ? false : true, //change to true in production
+  sameSite: null,
+};
 
 //file imports
 import router from "./src/server/routes/api.route.js";
@@ -50,12 +62,12 @@ export async function createThisServer(env = process.env.NODE_ENV) {
           server: {
             //root: resolve("./"),
             middlewareMode: true,
-            /* watch: {
+            watch: {
               // During tests we edit the files too fast and sometimes chokidar
               // misses change events, so enforce polling for consistency
               usePolling: true,
               interval: 100,
-            }, */
+            },
             /* hmr: {
               port: hmrPort,
             }, */
@@ -66,7 +78,7 @@ export async function createThisServer(env = process.env.NODE_ENV) {
 
   app
     .use(logger())
-    .use(session({}, app))
+    .use(session(sessionConfig, app))
     .use(cors(corsOptions))
     .use(passport.initialize())
     .use(passport.session());
@@ -83,7 +95,14 @@ export async function createThisServer(env = process.env.NODE_ENV) {
     const url = ctx.originalUrl;
 
     try {
-      //console.log("url: ", url);
+      console.log("url: ", url);
+      console.log("header: ", ctx.headers["x-requesttoken"]);
+      //ctx.session.loginID = "olowo yin";
+      console.log("session: ", ctx.session);
+      console.log(
+        "session id:",
+        ctx.cookies.get(process.env.COOKIE_IDENTIFIER)
+      );
       //read index.html
       let template = fs.readFileSync(resolve(indexHTML), "utf-8");
       let appHtml;

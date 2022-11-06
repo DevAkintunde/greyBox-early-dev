@@ -1,6 +1,17 @@
-export const SITENAME_FULL = "Mellywood Urban Central";
-export const SITENAME = "Mellywood";
-export const SITEURL = "https://mellywood.com";
+export const SITENAME_FULL = "Studio | Mellywood";
+export const SITENAME = "Studio|M";
+
+const API_ENDPOINT = "/api/v2/";
+export const SITEURL = "https://studio.mellywood.com";
+const LOCAL_URL = "http://localhost:5173";
+
+export const REST_ADDRESS =
+  (process.env.NODE_ENV === "development" ? LOCAL_URL : SITEURL) + API_ENDPOINT;
+
+//access_token is saved by default if authenticationMethod is not set
+export const authenticationMethod = "access_token";
+export const saveTokenToLocalStorage = false;
+
 //social media links
 //export const brandEmail = "urban@mellywood.com";
 export const brandEmail = "";

@@ -1,7 +1,7 @@
-const Joi = require("joi");
-const validatorHandler = require("../middlewares/validatorHandler");
+import Joi from "joi";
+import validatorHandler from "../middlewares/validatorHandler.js";
 
-const create = async (ctx, next) => {
+const createAccount = async (ctx, next) => {
   const schema = Joi.object().keys({
     firstName: Joi.string().trim().min(3).max(50).required(),
     lastName: Joi.string().trim().min(3).max(50),
@@ -25,7 +25,7 @@ const signin = async (ctx, next) => {
   await validatorHandler(ctx, next, schema);
 };
 
-const update = async (ctx, next) => {
+const updateAccount = async (ctx, next) => {
   const schema = Joi.object().keys({
     firstName: Joi.string().trim().min(3).max(50).required(),
     lastName: Joi.string().trim().min(3).max(50),
@@ -54,11 +54,4 @@ const resetPassword = async (ctx, next) => {
   });
   await validatorHandler(ctx, next, schema);
 };
-
-module.exports = {
-  create,
-  signin,
-  update,
-  changePassword,
-  resetPassword
-};
+export { createAccount, signin, updateAccount, changePassword, resetPassword };

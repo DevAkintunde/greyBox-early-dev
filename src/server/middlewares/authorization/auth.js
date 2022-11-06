@@ -1,7 +1,7 @@
-//import passport from "koa-passport";
-//import bcrypt from "bcryptjs";
+import passport from "koa-passport";
+import bcrypt from "bcryptjs";
 import Admin from "../../models/entities/accounts/Admin.model.js";
-//const sequelize = import("../../config/db.config.js");
+import sequelize from "../../config/db.config.js";
 
 import {
   BASE_URL,
@@ -41,7 +41,7 @@ export const passportConfig = (passport) => {
    * @returns
    */
   passport.deserializeUser(async (user, done) => {
-    //console.log('user 2222: ', user)
+    console.log("user 2222: ", user);
     if (user) {
       done(null, user);
     }
@@ -55,16 +55,17 @@ export const passportConfig = (passport) => {
    * @returns
    */
   // user accounts.
-  // defaults to general accounts but when admin specific accounts is imported, specify by passing 'Admin' or any other specific account model type in the passport.userType attribute.
-  /*  passport.use(
+  // defaults to general accounts but when admin specific accounts is imported,
+  // specify by passing 'Admin' or any other specific account model type in the passport.userType attribute.
+  passport.use(
     new LocalStrategy.Strategy(
       {
         usernameField: "email",
         //passwordField: 'password',
         session:
-          passport.useRequestToken && passport.useRequestToken === true
-            ? false
-            : true,
+          passport.requestToken && passport.requestToken === "cookie"
+            ? true
+            : false,
       },
       (email, password, done) => {
         let accountType = passport.userType ? passport.userType : "Admin";
@@ -72,7 +73,7 @@ export const passportConfig = (passport) => {
       }
     )
   );
- */
+
   /**
    * Jwtstrategy of Passport.js
    *
@@ -80,8 +81,9 @@ export const passportConfig = (passport) => {
    * @param function      callback
    * @returns
    */
-  //Jwt is used secondarily for auth, and session preffered.
-  // if token is preferred in case of mobile app, set X-requestToken as '*' in a custom incoming request header. session will be turned off.
+  //Jwt is used secondarily for auth.
+  // if token is preferred in case of mobile app, set X-requestToken as 'bearer' in a custom incoming request header.
+  // session and token generation are turned turned off by default.
   // using header key: X-requestToken: '*'.
 
   let opts = {

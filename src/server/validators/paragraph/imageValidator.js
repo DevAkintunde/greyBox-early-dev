@@ -1,4 +1,5 @@
-const Joi = require("joi");
+import Joi from "joi";
+
 const imageValidator = (ctx, paragraph) => {
   const schema = Joi.object().keys({
     title: Joi.string().trim().min(3).max(250),
@@ -13,7 +14,7 @@ const imageValidator = (ctx, paragraph) => {
       message: error.details[0].message.replace("/[^a-zA-Z0-9 ]/g", ""),
     });
   }
-  return
+  return;
 };
 
-module.exports = imageValidator
+export default imageValidator;

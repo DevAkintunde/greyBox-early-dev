@@ -1,12 +1,11 @@
-const { error } = require("../../utils/response");
-const {
+import { error } from "../../utils/response.js";
+import {
   UNAUTHORIZED,
   BAD_REQUEST,
   NOT_FOUND,
-} = require("../../constants/statusCodes");
-const { verify: verifyToken } = require("../../utils/token");
-const account = require("../../models/Account.model");
-const admin = require("../../models/Admin.model");
+} from "../../constants/statusCodes.js";
+import { verify as verifyToken } from "../../utils/token.js";
+import admin from "../../models/entities/accounts/Admin.model.js";
 
 //Use for account modification operations
 const getCurrentAccount = async (req, res, next) => {
@@ -49,4 +48,4 @@ const getCurrentAccount = async (req, res, next) => {
   }
   next();
 };
-module.exports = getCurrentAccount;
+export default getCurrentAccount;

@@ -1,11 +1,11 @@
-const translatedInclude = require("./translatedIncludeProcessor");
-const sequelize = require("../../config/db.config");
+import { translatedIncludeProcessor as translatedInclude } from "./translatedIncludeProcessor.js";
+import sequelize from "../../config/db.config.js";
 
 // import models
-const Page = require("../../models/entities/nodes/StaticPage.model");
-const Admin = require("../../models/entities/accounts/Admin.model");
+import Page from "../../models/entities/nodes/StaticPage.model.js";
+import Admin from "../../models/entities/accounts/Admin.model.js";
 
-const { OK, SERVER_ERROR } = require("../../constants/statusCodes");
+import { OK, SERVER_ERROR } from "../../constants/statusCodes.js";
 
 const queryDbCaller = async (ctx, next) => {
   // Call the database from processored urlQuery
@@ -104,4 +104,4 @@ const queryDbCaller = async (ctx, next) => {
   }
   await next();
 };
-module.exports = queryDbCaller;
+export { queryDbCaller };

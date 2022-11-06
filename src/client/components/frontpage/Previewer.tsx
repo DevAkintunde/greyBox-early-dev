@@ -1,12 +1,13 @@
 import React from "react";
 
-export const Previewer = () => {
+export const Previewer = ({ content }) => {
+  let defaultPreview = "Welcome";
+
   return (
-    <div className="col-span-2 bg-color-pri p-10">
-      menu button
-      <br />
-      view container
-      <br />
+    <div className="pl-3 py-10">
+      <div className={"p-1" + (!content ? " text-5xl" : "")}>
+        {content ? content : defaultPreview}
+      </div>
       contact button
       <br />
     </div>

@@ -12,14 +12,14 @@ import {
   UNAUTHORIZED,
   NOT_MODIFIED,
 } from "../constants/statusCodes.js";
-import OTPcode from "../functions/OTPcode.js";
-import markForDeletion from "../functions/markForDeletion.js";
+import { OTPcode } from "../functions/OTPcode.js";
+import { markForDeletion } from "../functions/markForDeletion.js";
 // models
 import Admin from "../models/entities/accounts/Admin.model.js";
 // modules
 import bcrypt from "bcryptjs";
 
-exports.update = async (ctx) => {
+export const updateAccount = async (ctx) => {
   try {
     const user = await sequelize.models[ctx.state.user.type].findOne({
       where: { email: ctx.state.user.email },
@@ -42,7 +42,7 @@ exports.update = async (ctx) => {
   }
 };
 
-exports.updatePassword = async (ctx) => {
+export const updatePassword = async (ctx) => {
   const { currentPassword, newPassword } = ctx.request.body;
 
   try {
@@ -81,7 +81,7 @@ exports.updatePassword = async (ctx) => {
 };
 
 // reset account password
-exports.resetPassword = async (ctx) => {
+export const resetPassword = async (ctx) => {
   const { email } = ctx.request.body;
 
   try {
@@ -122,7 +122,7 @@ exports.resetPassword = async (ctx) => {
   }
 };
 
-exports.signInLocal = async (accountType, email, password, done) => {
+export const signInLocal = async (accountType, email, password, done) => {
   try {
     const user = await sequelize.models[accountType]
       .scope("middleware")
@@ -145,7 +145,7 @@ exports.signInLocal = async (accountType, email, password, done) => {
   }
 };
 
-exports.signWithApp = async (
+export const signWithThirdParty = async (
   app,
   accountType,
   request,
@@ -166,14 +166,15 @@ exports.signWithApp = async (
             email: profile.emails[0].value,
           },
         });
-      }
-      if (user && user.email) {
-        done(null, user);
-      } else {
-        done({
-          status: UNAUTHORIZED,
-          message: "Only privileged users are allowed to sign in using " + app,
-        });
+        if (user && user.email) {
+          done(null, user);
+        } else {
+          done({
+            status: UNAUTHORIZED,
+            message:
+              "Only privileged users are allowed to sign in using " + app,
+          });
+        }
       }
     } catch (err) {
       done(err);
@@ -186,7 +187,7 @@ exports.signWithApp = async (
 };
 
 //create new admin account
-exports.create = async (ctx) => {
+export const createAccount = async (ctx) => {
   const { password } = ctx.request.body;
   const hashedPassword = hash(password.trim());
   // set account for deletion if unverified after 1 days (24hrs).

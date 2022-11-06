@@ -1,9 +1,13 @@
-const { logger } = require("../../utils/logger");
-const Admin = require("../../models/entities/accounts/Admin.model");
-const Page = require("../../models/StaticPage.model");
-//const Blog = require("../../models/Blog.model");
-const EntityStatus = require("../../models/fields/dbFields/EntityStatus.model");
-const OTP = require("../../models/OTP.model");
+import { logger } from "../../utils/logger.js";
+import Admin from "../../models/entities/accounts/Admin.model.js";
+import Page from "../../models/entities/nodes/StaticPage.model.js";
+import EntityStatus from "../../models/fields/EntityStatus.model.js";
+import OTP from "../../models/utils/OTP.model.js";
+import Paragraph from "../../models/entities/paragraphs/Paragraph.model.js";
+import Image from "../../models/entities/paragraphs/Image.model.js";
+import pImage from "../../models/entities/paragraphs/Image.model.js";
+import pText from "../../models/entities/paragraphs/Text.model.js";
+import pVideo from "../../models/entities/paragraphs/Video.model.js";
 
 const modelsSync = async () => {
   // if dev mode.
@@ -15,7 +19,13 @@ const modelsSync = async () => {
     await OTP.sync({ force: true });
     await Page.sync({ force: true });
     await Admin.sync({ force: true });
-    //await Blog.sync({ force: true });
+    await Paragraph.sync({ force: true });
+
+    //dependents
+    await Image.sync({ force: true });
+    await pImage.sync({ force: true });
+    await pText.sync({ force: true });
+    await pVideo.sync({ force: true });
 
     logger.info("All tables synced as needed!");
     console.log("All tables synced as needed!");

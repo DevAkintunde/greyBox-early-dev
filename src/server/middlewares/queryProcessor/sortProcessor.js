@@ -1,5 +1,5 @@
-const operator = require("../../constants/urlQueryOperatorsOrmTranslator");
-const pathToModel = require("../../constants/urlPreQueryPathToModelMapping");
+import * as operator from "../../constants/urlQueryOperatorsOrmTranslator.js";
+import * as pathToModel from "../../constants/urlPreQueryPathToModelMapping.js";
 
 const sortProcessor = async (ctx, next) => {
   {
@@ -41,4 +41,4 @@ const sortProcessor = async (ctx, next) => {
   await next();
 };
 
-module.exports = sortProcessor;
+export { sortProcessor };

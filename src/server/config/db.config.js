@@ -6,8 +6,8 @@ import {
   DB_PASS,
   DB_NAME,
 } from "../utils/secrets.js";
-
 import { Sequelize } from "sequelize";
+
 const profile = {
   host: DB_HOST,
   port: DB_PORT,
@@ -16,17 +16,16 @@ const profile = {
   database: DB_NAME,
 };
 
-const prod = new Sequelize(profile.database, profile.user, profile.password, {
-  host: profile.host,
-  dialect: "postgres",
-});
-/*
-const dev = new Sequelize({
-  dialect: "sqlite",
-  storage: "./db.sqlite",
-});*/
-
-const sequelize = process.env.NODE_ENV === "development" ? prod : prod;
+const sequelize = new Sequelize(
+  profile.database,
+  profile.user,
+  profile.password,
+  {
+    host: profile.host,
+    dialect: "postgres",
+  }
+);
+//console.log("profile", profile);
 
 const checkDBconnect = async () => {
   try {
@@ -41,4 +40,3 @@ const checkDBconnect = async () => {
 //checkDBconnect();
 //console.log(checkDBconnect());
 export default sequelize;
-//module.exports = sequelize;

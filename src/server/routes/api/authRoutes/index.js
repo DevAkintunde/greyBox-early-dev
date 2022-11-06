@@ -1,41 +1,55 @@
-const { UNAUTHORIZED } = require("../../../constants/statusCodes");
+import { UNAUTHORIZED, OK } from "../../../constants/statusCodes.js";
+import { bearerTokenJwtAuth } from "../../../middlewares/authorization/bearerTokenJwtAuth.js";
 
-const Router = require("koa-router");
+import Router from "@koa/router";
 const router = new Router({
   prefix: "/auth",
 });
 
-// Signed In landing page
-router.use(async (ctx, next) => {
-  if (ctx.isUnauthenticated()) {
-    ctx.status = UNAUTHORIZED;
-    return (ctx.body = { message: "Unauthorised. Privileged users only" });
+// Check authorisation status
+router.use(
+  async (ctx, next) => {
+    //Check if authenticated by cookie session, else do JWT auth
+    //Cookie based auth is saved in cookie and managed by passportJS
+    if (ctx.isUnauthenticated()) bearerTokenJwtAuth(ctx, next);
+
+    await next();
+  },
+  (ctx, next) => {
+    if (ctx.isUnauthenticated()) {
+      ctx.status = UNAUTHORIZED;
+      return (ctx.body = { message: "Unauthorised. User not Signed In" });
+    }
+    next();
   }
-  await next();
+);
+
+// Signed In landing page
+router.get("/", (ctx) => {
+  return (ctx.body = { status: OK, profile: ctx.state.user });
 });
 
 //list available auth paths
-router.get("/", (ctx) => {
+router.get("/paths", (ctx) => {
   let availableRoutes = {
-    page: '/pages, /page/*',
-    blog: '/blog, /blog/*',
-    createEntity: '/createEndpoints'
-  }
+    page: "/pages, /page/*",
+    account: "/account, /account/*",
+    createEntity: "/createEndpoints",
+  };
   ctx.status = OK;
   return (ctx.body = availableRoutes);
 });
 
 // pages
-const pages = require("./admin.pages.route");
+import { default as pages } from "./pages.js";
 router.use(pages.routes());
-// blog routes
-const blog = require("./admin.blog.route");
-router.use(blog.routes());
-// user accounts routes
-const accounts = require("./admin.accounts.route");
-router.use(accounts.routes());
-// Entity creation endpoints
-const entityCreate = require("./createEndpoints");
-router.use(entityCreate.routes());
 
-module.exports = router;
+// all accounts routes condensed in one router @ /account
+import { default as account } from "./account.js";
+router.use(account.routes());
+
+// Entity creation endpoints for dev purposes
+/* import { default as entityCreate } from "./createEndpoints";
+router.use(entityCreate.routes()); */
+
+export default router;

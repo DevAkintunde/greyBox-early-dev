@@ -25,4 +25,4 @@ const markForDeletion = (interval) => {
   return deletionDate;
 };
 
-module.exports = markForDeletion;
+export { markForDeletion };

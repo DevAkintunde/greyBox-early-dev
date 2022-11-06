@@ -1,5 +1,5 @@
-const operator = require("../../constants/urlQueryOperatorsOrmTranslator");
-const { Op } = require("sequelize");
+import * as operator from "../../constants/urlQueryOperatorsOrmTranslator.js";
+import { Op } from "sequelize";
 
 const includeTranslator = async (ctx, next) => {
   {
@@ -56,4 +56,4 @@ const includeTranslator = async (ctx, next) => {
   await next();
 };
 
-module.exports = includeTranslator;
+export { includeTranslator };

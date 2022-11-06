@@ -1,12 +1,10 @@
-const Customer = require("../../models/accounts/Customer.model");
-const Designer = require("../../models/accounts/Designer.model");
-const Admin = require("../../models/accounts/Admin.model");
-const {
+import admin from "../../models/entities/accounts/Admin.model.js";
+import {
   NOT_FOUND,
   CONFLICT,
   BAD_REQUEST,
   SERVER_ERROR,
-} = require("../../constants/statusCodes");
+} from "../../constants/statusCodes.js";
 
 //Use this to check the status/existence of an account on the server.
 
@@ -21,22 +19,22 @@ const checkAccount = (existStatus) => async (ctx, next) => {
         thisUser = await Admin.scope("middleware").findOne({
           where: {
             email: email,
-          }
+          },
         });
-      } else if (ctx.state.userType === "Designer"){
+      } else if (ctx.state.userType === "Designer") {
         thisUser = await Customer.scope("middleware").findOne({
           where: {
             email: email,
-          }
+          },
         });
-      }else if (ctx.state.userType === "Customer"){
+      } else if (ctx.state.userType === "Customer") {
         thisUser = await Customer.scope("middleware").findOne({
           where: {
             email: email,
-          }
+          },
         });
       } else {
-        ctx.throw(BAD_REQUEST, "Invalid account type")
+        ctx.throw(BAD_REQUEST, "Invalid account type");
       }
       if (existStatus && !thisUser) {
         ctx.state.error = {
@@ -66,4 +64,4 @@ const checkAccount = (existStatus) => async (ctx, next) => {
   }
 };
 
-module.exports = checkAccount;
+export default checkAccount;

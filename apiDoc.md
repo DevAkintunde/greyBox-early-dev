@@ -12,7 +12,7 @@ The backend server api for Studio|Mellywood corporate website server
 - 'x-requestapp' = 'New-Name'
 - when x-requestapp is absent, error response if thrown. App IDs is set im environment variables.
 
-### Admin routes: /api/v2/admin
+### Account routes: /api/v2/accounts
 
 - View account: GET:/
 - Verify new account: GET:/verify
@@ -22,13 +22,22 @@ The backend server api for Studio|Mellywood corporate website server
 - Profile update: PATCH:/update
 - Password update: PATCH:/update-password
 - Reset password: PATCH:/reset-password
+
+### Admin auth operation routes: /api/v2/auth/accounts/
+
+- Dev available paths: POST:/paths
 - Create new account: POST:/create-account
 
 #### Note on authentication
 
-- Default authorisation uses session to keep users signed In.
-- - However when needed, BearerToken can be used with the built-in JWT feature. Simply set a key in request header as X-requestToken: '\*' to use.
-- - If X-requestToken !== '\*' is set, session is auto-disabled.
+- Default authorisation does not keep users signed In.
+  -- However there are 2 options to manage authorisation:
+  --- 1. 'session'. Save the user to browser session
+  --- 2. 'bearer'. Generates JWT bearer token which can be saved in the frontend and used in request to server
+- - To use either of both options, Simply set a key in request header as
+    ---- {X-requestToken: 'option' // 'session'/'bearer'} to use.
+    ---- '\*' can be used in place of 'session'
+- - If X-requestToken is not set, authentication mechanism is discaded/auto-disabled.
 
 ### Admin managerial routes: /api/v1/admin/purview
 

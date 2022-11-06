@@ -1,4 +1,4 @@
-//import ('dotenv/config');
+import "dotenv/config";
 import { logger } from "./logger.js";
 
 const {
@@ -30,7 +30,7 @@ const requiredCredentials = [
   "BASE_URL",
   "API_ENDPOINT",
 ];
-
+//console.log("process.env", process.env.NODE_ENV);
 for (const credential of requiredCredentials) {
   if (process.env[credential] === undefined) {
     logger.error(`Missing required crendential: ${credential}`);

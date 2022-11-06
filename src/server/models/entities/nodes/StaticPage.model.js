@@ -1,7 +1,8 @@
-const sequelize = require("../../../config/db.config");
-const { DataTypes, Model, Deferrable } = require("sequelize");
-const Status = require("../../fields/EntityStatus.model");
-const Admin = require("../accounts/Admin.model");
+import sequelize from "../../../config/db.config.js";
+import { DataTypes, Model, Deferrable } from "sequelize";
+import Status from "../../fields/EntityStatus.model.js";
+import Admin from "../accounts/Admin.model.js";
+import Paragraph from "../paragraphs/Paragraph.model.js";
 
 class Page extends Model {}
 
@@ -16,17 +17,17 @@ Page.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    featuredImageUri: {
+    featuredImageUrl: {
       type: DataTypes.STRING,
-      field: "featured_image_uri",
+      field: "featured_image_url",
     },
     summary: {
       type: DataTypes.TEXT,
     },
-    body: {
+    /* body: {
       type: DataTypes.TEXT,
       allowNull: false,
-    },
+    }, */
     alias: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -79,20 +80,46 @@ Page.init(
 );
 Admin.hasMany(Page, {
   foreignKey: {
-    type: DataTypes.STRING,
+    type: DataTypes.UUID,
     name: "author",
     allowNull: false,
   },
 });
 Page.belongsTo(Admin, {
-  as: "author",
-  as: "revision_by",
-  targetKey: "email",
+  targetKey: "uuid",
   foreignKey: {
-    type: DataTypes.STRING,
+    type: DataTypes.UUID,
     name: "author",
     allowNull: false,
   },
 });
 
-module.exports = Page;
+Admin.hasMany(Page, {
+  foreignKey: {
+    type: DataTypes.UUID,
+    name: "last_revisor",
+  },
+});
+Page.belongsTo(Admin, {
+  targetKey: "uuid",
+  foreignKey: {
+    type: DataTypes.UUID,
+    name: "last_revisor",
+  },
+});
+
+Paragraph.hasOne(Page, {
+  sourceKey: "uuid",
+  foreignKey: {
+    type: DataTypes.UUID,
+    name: "body",
+  },
+});
+Page.belongsTo(Paragraph, {
+  foreignKey: {
+    type: DataTypes.UUID,
+    name: "body",
+  },
+});
+
+export default Page;

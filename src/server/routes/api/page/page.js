@@ -12,12 +12,15 @@ const Page = require("../../../../models/entities/nodes/StaticPage.model"); */
 import Router from "@koa/router";
 const router = new Router();
 
-router.use((ctx, next) => {
+router.use(async (ctx, next) => {
   console.log("page routing: ", ctx.header);
+  console.log("page type: ", ctx.type);
+  //ctx.type = "application/json; charset=utf-8";
   next();
 });
 router.get("/about", async (ctx, next) => {
-  console.log("body 77777777: ", "hgrdytfu");
+  ctx.set({ "content-type": "application/json" });
+  return (ctx.body = { key: "holla at your boy baby" });
 });
 
 router.get("/:alias", async (ctx, next) => {

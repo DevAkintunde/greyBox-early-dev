@@ -1,12 +1,11 @@
-const { logger } = require("../../utils/logger");
-const sequelize = require("../../config/db.config");
-const { hash } = require("../../utils/password");
-const markForDeletion = require("../../functions/markForDeletion");
-const State = require("../../models/fields/dbFields/EntityStatus.model");
-const Admin = require("../../models/entities/accounts/Admin.model");
-const OTP = require("../../models/OTP.model");
-//const Blog = require("../../models/Blog.model");
-const Page = require("../../models/entities/nodes/StaticPage.model");
+import { logger } from "../../utils/logger.js";
+import sequelize from "../../config/db.config.js";
+import { hash } from "../../utils/password.js";
+import { markForDeletion } from "../../functions/markForDeletion.js";
+import State from "../../models/fields/EntityStatus.model.js";
+import Admin from "../../models/entities/accounts/Admin.model.js";
+import OTP from "../../models/utils/OTP.model.js";
+import Page from "../../models/entities/nodes/StaticPage.model.js";
 
 async function defaultTablesUp() {
   // state/status options
@@ -15,6 +14,7 @@ async function defaultTablesUp() {
     { key: "in_review", state: "In Review" },
     { key: "published", state: "Published" },
     { key: "unpublished", state: "Unpublished" },
+    { key: "deleted", state: "Deleted" },
   ];
 
   const defaultAdmin = {
@@ -44,32 +44,20 @@ async function defaultTablesUp() {
     featuredImageUri:
       "https://media-exp1.licdn.com/dms/image/C5103AQFL2vyjJvJWeg/profile-displayphoto-shrink_200_200/0/1516844334563?e=1661385600&v=beta&t=GwWX9ShqF2tqJ8rPS63g3M-pp9zqv3nXZLKKPibRiw4",
     summary: "summary content goes here...",
-    body: "This is the body of this page content. Nice....",
+    //body: "This is the body of this page content. Nice....",
     alias: "about",
     state: "draft",
-    author: "ebakintunde@gmail.com",
+    //author: "ebakintunde@gmail.com",
   };
-  /*
-  const dummyBlog = {
-    title: "Blog page",
-    featuredImageUri:
-      "https://media-exp1.licdn.com/dms/image/C5103AQFL2vyjJvJWeg/profile-displayphoto-shrink_200_200/0/1516844334563?e=1661385600&v=beta&t=GwWX9ShqF2tqJ8rPS63g3M-pp9zqv3nXZLKKPibRiw4",
-    summary: "summary content goes here...",
-    body: "This is the body of this page content. Nice....",
-    alias: "blog",
-    state: "draft",
-    author: "ebakintunde@gmail.com",
-  };*/
-
   const defaultTablesUp = async () => {
     try {
-      doTablesUp = await sequelize.transaction(async (t) => {
+      return sequelize.transaction(async (t) => {
         await State.bulkCreate(stateOptions, { transaction: t });
         await Admin.create(defaultDev, { transaction: t });
         await Admin.create(defaultAdmin, { transaction: t });
         logger.info("Default Tables UP");
       });
-      return doTablesUp;
+      //return doTablesUp;
     } catch (err) {
       logger.error({ on: "Default models", log: err.message });
       console.log("Error, Default models: ", err.message);
@@ -80,10 +68,9 @@ async function defaultTablesUp() {
   setTimeout(async () => {
     if (mainTable) {
       try {
-        await sequelize.transaction(async (t) => {
+        return sequelize.transaction(async (t) => {
           await OTP.create(dummyOTP, { transaction: t });
           await Page.create(dummyPage, { transaction: t });
-          //await Blog.create(guestUser, { transaction: t });
           logger.info("Dependent Tables UP");
         });
         //return dependents;
