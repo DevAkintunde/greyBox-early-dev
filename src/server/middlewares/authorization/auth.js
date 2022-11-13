@@ -16,7 +16,7 @@ import {
   inKEY,
   inSECRET,
 } from "../../utils/secrets.js";
-//import accountController from "../../controllers/account.controller.js";
+import * as accountController from "../../controllers/account.controller.js";
 import LocalStrategy from "passport-local";
 import JwtStrategy from "passport-jwt";
 import ExtractJwt from "passport-jwt";
@@ -24,7 +24,7 @@ import GoogleStrategy from "passport-google-oauth20";
 import FacebookStrategy from "passport-facebook";
 //import LinkedInStrategy from "passport-linkedin";
 
-export const passportConfig = (passport) => {
+export const passportConfig = async (passport) => {
   /**
    * Serialize user
    *
@@ -63,7 +63,7 @@ export const passportConfig = (passport) => {
         usernameField: "email",
         //passwordField: 'password',
         session:
-          passport.requestToken && passport.requestToken === "cookie"
+          passport.requestToken && passport.requestToken === "session"
             ? true
             : false,
       },

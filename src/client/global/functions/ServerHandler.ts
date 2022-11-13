@@ -4,7 +4,7 @@ interface Fetcher {
   endpoint: string;
   headers?: object;
   method?: string;
-  body?: object;
+  body?: FormData;
   id?: string;
   waitFor?: string;
 }
@@ -15,7 +15,7 @@ const ServerHandler = async (data: string | Fetcher | Fetcher[]) => {
     .then((res) => {
       console.log("almost there");
       console.log("res: ", res);
-      return res.text();
+      return res.json();
     })
     .then((resJson: any) => {
       console.log("resJosn: ", resJson);
@@ -67,10 +67,10 @@ const ServerHandler = async (data: string | Fetcher | Fetcher[]) => {
 
     let headers = {
       accept: "application/json",
-      "content-type": "application/json",
+      //"content-type": "application/json",
       ...importedHeaders,
     };
-    let body = data.body ? JSON.stringify(data.body) : null;
+    let body = data.body ? data.body : null;
 
     const getMethod = {
       method: "GET",
@@ -89,7 +89,7 @@ const ServerHandler = async (data: string | Fetcher | Fetcher[]) => {
     const deleteMethod = {
       method: "DELETE",
       headers: headers,
-      body: body,
+      //body: body,
     };
 
     const methodCall =
@@ -106,12 +106,14 @@ const ServerHandler = async (data: string | Fetcher | Fetcher[]) => {
       methodCall
     )
       .then((res: any) => {
-        console.log("res", res);
+        //console.log("res", res);
         if (!data.endpoint) {
           return { log: "No endpoint specified." };
         } else {
           if (res.status === 200) {
-            return res.text();
+            if (res.headers.get("content-type")?.includes("application/json"))
+              return res.json();
+            return null;
           } else {
             return {
               status: res.status,
@@ -121,6 +123,7 @@ const ServerHandler = async (data: string | Fetcher | Fetcher[]) => {
         }
       })
       .then((resjson) => {
+        //console.log("resjson", resjson);
         return resjson;
       });
   }
@@ -147,10 +150,10 @@ const ServerHandler = async (data: string | Fetcher | Fetcher[]) => {
 
       let headers = {
         accept: "application/json",
-        "content-type": "application/json",
+        //"content-type": "application/json",
         ...importedHeaders,
       };
-      let body = thisCall.body ? JSON.stringify(thisCall.body) : null;
+      let body = thisCall.body ? thisCall.body : null;
 
       const getMethod = {
         method: "GET",
@@ -169,7 +172,7 @@ const ServerHandler = async (data: string | Fetcher | Fetcher[]) => {
       const deleteMethod = {
         method: "DELETE",
         headers: headers,
-        body: body,
+        //body: body,
       };
 
       const methodCall =
@@ -189,7 +192,9 @@ const ServerHandler = async (data: string | Fetcher | Fetcher[]) => {
         promiseCall().then((res: any) => {
           if (res && res.status) {
             if (res.status === 200) {
-              return res.text();
+              if (res.headers.get("content-type")?.includes("application/json"))
+                return res.json();
+              return null;
             } else {
               return {
                 status: res.status,
@@ -230,12 +235,14 @@ const ServerHandler = async (data: string | Fetcher | Fetcher[]) => {
       method: "GET",
       headers: {
         accept: "application/json",
-        "content-type": "application/json",
+        //"content-type": "application/json",
       },
     })
       .then((res: any) => {
         if (res.status === 200) {
-          return res.text();
+          if (res.headers.get("content-type")?.includes("application/json"))
+            return res.json();
+          return null;
         } else {
           return {
             status: res.status,
@@ -258,11 +265,13 @@ const ServerHandler = async (data: string | Fetcher | Fetcher[]) => {
       method: "GET",
       headers: {
         accept: "application/json",
-        "content-type": "application/json",
+        //"content-type": "application/json",
       },
     })
       .then((res) => {
-        return res.text();
+        if (res.headers.get("content-type")?.includes("application/json"))
+          return res.json();
+        return null;
       })
       .then((resjson) => {
         return resjson;

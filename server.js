@@ -7,7 +7,6 @@ import "dotenv/config";
 import Koa from "koa";
 import c2k from "koa-connect";
 import serve from "koa-static-server";
-import { koaBody } from "koa-body";
 import session from "koa-session";
 import logger from "koa-logger";
 import cron from "node-cron";
@@ -18,6 +17,12 @@ import passport from "koa-passport";
 
 // scheduler
 //cron.schedule("0 1 * * *", jobScheduler);
+
+//file imports
+import router from "./src/server/routes/api.route.js";
+// authentication
+import { passportConfig } from "./src/server/middlewares/authorization/auth.js";
+passportConfig(passport);
 
 // The App
 const app = new Koa();
@@ -35,12 +40,6 @@ const sessionConfig = {
   secure: process.env.NODE_ENV === "development" ? false : true, //change to true in production
   sameSite: null,
 };
-
-//file imports
-import router from "./src/server/routes/api.route.js";
-// authentication
-import { passportConfig } from "./src/server/middlewares/authorization/auth.js";
-passportConfig(passport);
 
 // corsOptions
 var corsOptions = {

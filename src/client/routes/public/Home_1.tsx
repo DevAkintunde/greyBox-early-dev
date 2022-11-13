@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
-import reactLogo from "../../../assets/react.svg";
 import { Previewer } from "../../components/frontpage/Previewer";
 import temp from "../../../assets/temp.jpg";
 import lens from "../../../assets/lens.png";
-import { promise } from "../../global/functions/ServerHandler";
+import { ServerHandler } from "../../global/functions/ServerHandler";
 import { PhotographyBlock } from "../../components/frontpage/PhotographyBlock";
 import { StoryDevBlock } from "../../components/frontpage/StoryDevBlock";
 import { MotionGraphicsBlock } from "../../components/frontpage/MotionGraphicsBlock";

@@ -1,13 +1,24 @@
 import { logger } from "../../utils/logger.js";
+//accounts
 import Admin from "../../models/entities/accounts/Admin.model.js";
+// nodes
 import Page from "../../models/entities/nodes/StaticPage.model.js";
+import Service from "../../models/entities/nodes/Service.model.js";
+// fields
 import EntityStatus from "../../models/fields/EntityStatus.model.js";
+import ServiceType from "../../models/fields/ServiceType.model.js";
+import VideoSource from "../../models/fields/VideoSource.model.js";
+// utils
 import OTP from "../../models/utils/OTP.model.js";
+// paragraphs
 import Paragraph from "../../models/entities/paragraphs/Paragraph.model.js";
-import Image from "../../models/entities/paragraphs/Image.model.js";
-import pImage from "../../models/entities/paragraphs/Image.model.js";
-import pText from "../../models/entities/paragraphs/Text.model.js";
-import pVideo from "../../models/entities/paragraphs/Video.model.js";
+import PImage from "../../models/entities/paragraphs/PImage.model.js";
+import PText from "../../models/entities/paragraphs/PText.model.js";
+import PVideo from "../../models/entities/paragraphs/PVideo.model.js";
+// medias
+import Image from "../../models/entities/media/Image.model.js";
+import Video from "../../models/entities/media/Video.model.js";
+import UserRole from "../../models/fields/UserRole.model.js";
 
 const modelsSync = async () => {
   // if dev mode.
@@ -16,16 +27,23 @@ const modelsSync = async () => {
     //await Admin.sync({ alter: true });
 
     await EntityStatus.sync({ force: true });
+    await UserRole.sync({ force: true });
+    await ServiceType.sync({ force: true });
+    await VideoSource.sync({ force: true });
     await OTP.sync({ force: true });
-    await Page.sync({ force: true });
     await Admin.sync({ force: true });
+
     await Paragraph.sync({ force: true });
 
     //dependents
+    await PImage.sync({ force: true });
+    await PText.sync({ force: true });
+    await PVideo.sync({ force: true });
+
+    await Video.sync({ force: true });
     await Image.sync({ force: true });
-    await pImage.sync({ force: true });
-    await pText.sync({ force: true });
-    await pVideo.sync({ force: true });
+    await Page.sync({ force: true });
+    await Service.sync({ force: true });
 
     logger.info("All tables synced as needed!");
     console.log("All tables synced as needed!");

@@ -1,42 +1,51 @@
-import React, { useState } from "react";
+import React, { ReactElement, useEffect, useState } from "react";
+import validator from "validator";
+import { APP_ADDRESS } from "../utils/app.config";
 
-interface ButtonGroup {
-  styling?: string | ButtonGroupStyling;
-  clearButton?: number;
-  cancelButton?: number;
-  submit?: number;
+interface FormButtons {
+  value?: string;
+  weight?: number;
+  styling?: string;
+  submit?: boolean;
+  action: Function;
 }
-interface ButtonGroupStyling {
-  group?: string;
-  clearButton?: string;
-  cancelButton?: string;
-  submit?: string;
-}
+/* const buttons = [
+  { value: "Save as draft", weight: 3,  action: () => {} },
+  { value: "update", weight: 3, styling: 'p-3 mx-auto', submit: true, action: () => { } }
+]; */
+
 interface Fields {
   type: string; //textfield, textarea, radio, phone, password, checkbox
   weight?: number;
   container?: string;
   label: string;
   id: string;
+  required?: boolean; //yet to be implemented
+  defaultValue?: number | string | any;
   styling?: string;
-  options?: string[];
+  options?: string[] | object[];
+  description?: { before: string } | { after: string } | string; // use as field description text
+  extraElement?: ReactElement | null; // Extra react component that can be inserted along with each field
 }
+//radio, checkbox and select should be constructed with the options key as array
+// either as array strings or array objects. when using objects, 'key|value' keys must always be available
+//{"form-item-notice-" + field.id} can be used as per field error or extra description insert
+
 interface FormProps {
+  id: string;
   containers?: object;
   fields: Fields[];
-  formData: (data: object) => void;
-  buttons?: ButtonGroup;
+  formData?: (data: object) => void; //this is ignored when there's a button on the form
+  buttons?: FormButtons[]; //either buttons or formData should be available to retrieve data
   labelStyling?: string;
   inputStyling?: string;
   className?: string;
 }
 
-/* buttons.styling: string|object = {
-	group: string, //styling for button group
-	clearButton: string, //styling for clear button 
-	cancelButton: string, //styling for cancel button 
-	submit: string //styling for submit button 
-} */
+/* const buttons = [
+  { value: "Save as draft", weight: 3,  action: () => {} },
+  { value: "update", weight: 3, styling: 'p-3 mx-auto', submit: true, action: () => { } }
+]; */
 /* const containers = {
   type: 'detail', // detail, box
   weight: 0, //to order containers
@@ -46,21 +55,12 @@ interface FormProps {
 }; */
 
 //Sample styling
-/* const buttons = {
-  //styling: 'mx-auto', //string | option
-  styling: {
-    group: "mt-5 mx-auto w-fit flex gap-3",
-    clearButton: "bg-color-def p-2 capitalize",
-    cancelButton: "bg-color-ter p-2 capitalize text-color-def",
-    submit: "bg-color-pri p-2 capitalize",
-  },
-  clearButton: 2,
-  submit: 3,
-};
+/*
 const labelStyling = "ml-5 text-xl border-b-4 border-color-sec";
 const inputStyling = "px-2 rounded-full block w-full"; */
 
 export const FormUi = ({
+  id,
   containers,
   fields,
   formData,
@@ -69,87 +69,119 @@ export const FormUi = ({
   inputStyling,
   className,
 }: FormProps) => {
-  const [thisFormData, setThisFormData] = useState({});
+  const [thisFormData, setThisFormData]: FormData | any = useState();
+  useEffect(() => {
+    if (fields.length > 0) {
+      let importedData: FormData = new FormData();
+      fields.forEach((field, index) => {
+        if (field.defaultValue) {
+          if (field.type !== "file") {
+            importedData.append(field.id, field.defaultValue);
+          } else {
+            //importedData.append(field.id, field.defaultValue);
+          }
+        }
+      });
+      setThisFormData(importedData);
+    } else {
+      setThisFormData(new FormData());
+    }
+  }, [fields]);
+
   const handleInputData =
     (input: { id: string; type: string }) =>
-    (e: { target: { value: string } }) => {
+    (e: { target: { value: string } | any }) => {
       // input value from the form
       const { value } = e.target;
+
+      //process validation
+      let errorInsert = document.getElementById(
+        "form-item-notice-" + input.type
+      );
+      if (input.type === "email" && !validator.isEmail(value)) {
+        if (errorInsert) errorInsert.textContent = "Provide a valid email";
+        return;
+      } else if (input.type === "date" && !validator.isDate(value)) {
+        if (errorInsert) errorInsert.textContent = "Provide a valid date";
+        return;
+      } else if (input.type === "tel" && !validator.isMobilePhone(value)) {
+        if (errorInsert)
+          errorInsert.textContent = "Provide a valid phone number";
+        return;
+      } else if (input.type === "number" && !validator.isInt(value)) {
+        if (errorInsert) errorInsert.textContent = "Provide a valid number";
+        return;
+      } else if (input.type === "url" && !validator.isURL(value)) {
+        if (errorInsert) errorInsert.textContent = "Provide a valid url";
+        return;
+      } else if (input.type === "color" && !validator.isRgbColor(value)) {
+        if (errorInsert) errorInsert.textContent = "Provide a valid color";
+        return;
+      }
+      if (errorInsert && errorInsert.textContent) errorInsert.textContent = "";
+
+      //falsify disabled attribute on submit
+      let submitButton: any = document.querySelector("input[type=submit]");
+      if (submitButton && submitButton["disabled"])
+        submitButton["disabled"] = false;
+      // console.log(submitButton);
+
+      //the follow sequence allows to manually insert FormData in early implementation
+      //consider alternatively using formID
+
+      let importedData: FormData = thisFormData;
       let checkBoxValues: string[] | any;
       //check if checkbox
       if (input.type === "checkbox") {
-        checkBoxValues =
-          thisFormData && thisFormData[input.id as keyof typeof thisFormData]
-            ? thisFormData[input.id as keyof typeof thisFormData]
-            : [];
-        if (checkBoxValues.includes(value)) {
-          //remove from list
-          let filteredValues: string[] = [];
-          checkBoxValues.forEach((existingValue: string) => {
-            if (existingValue !== value) filteredValues.push(existingValue);
-          });
-          checkBoxValues = filteredValues;
-        } else {
-          checkBoxValues.push(value);
-        }
-      }
-      //updating for data state taking previous state and then adding new value to create new object
-      setThisFormData((prevState: any) => ({
-        ...prevState,
-        [input.id]: input.type !== "checkbox" ? value : checkBoxValues,
-      }));
-    };
-
-  interface ButtonGroupKeys {
-    id: string;
-    weight: number;
-    styling?: string;
-  }
-  let Buttons: ButtonGroupKeys[] = [];
-  if (buttons) {
-    Object.keys(buttons).forEach((button: string) => {
-      let thisButton = buttons[button as keyof typeof buttons];
-      //insert submit button if non-existence
-      if (!buttons["submit"]) {
-        Buttons.push({
-          id: "submit",
-          weight: 99,
-        });
-      }
-
-      if (thisButton && typeof thisButton === "number") {
-        if (buttons.styling) {
-          let stylingKeys =
-            buttons.styling[button as keyof typeof buttons.styling];
-          if (stylingKeys) {
-            Buttons.push({
-              id: button,
-              weight: thisButton,
-              styling: stylingKeys,
-            });
-          } else {
-            Buttons.push({
-              id: button,
-              weight: thisButton,
-            });
+        checkBoxValues = importedData.getAll(input.id);
+        if (Object.keys(checkBoxValues).length > 0) {
+          importedData.delete(input.id);
+          let valueExists = false;
+          for (let i = 0; i < checkBoxValues.length; i++) {
+            if (checkBoxValues[i] !== value) {
+              importedData.append(input.id, checkBoxValues[i]);
+            } else if (value) {
+              valueExists = true;
+            }
           }
+          if (!valueExists) importedData.append(input.id, value);
         } else {
-          Buttons.push({
-            id: button,
-            weight: thisButton,
-          });
+          importedData.set(input.id, value);
         }
+        setThisFormData(importedData);
+      } else if (input.type === "file") {
+        const thisFile = e.target.files[0];
+        console.log(thisFile);
+        //console.log(URL.createObjectURL(e.target.files[0]));
+        if (thisFile) {
+          importedData.set(input.id, thisFile);
+        } else if (!value && importedData.has(input.id)) {
+          importedData.delete(input.id);
+        }
+        setThisFormData(importedData);
+      } else {
+        if (value) {
+          importedData.set(input.id, value);
+        } else if (!value && importedData.has(input.id)) {
+          importedData.delete(input.id);
+        }
+        setThisFormData(importedData);
       }
-    });
-  } else {
-    //put submit button ibutton props is absent
-    Buttons.push({
-      id: "submit",
-      weight: 99,
-    });
-  }
-  //console.log("buttons", buttons);
-  if (Buttons.length > 0) Buttons.sort((a, b) => a.weight - b.weight);
+      /* for (let [key, val] of thisFormData.entries()) {
+        console.log("thisFormData Looped", [key, val]);
+      } */
+    };
+  //console.log("thisFormData", thisFormData);
+  /*   const callbackAction = () => (e: any) => {
+    e.preventDefault();
+    let fetchForm: any = document.getElementById(id);
+    if (fetchForm) {
+      return new FormData(fetchForm);
+    } else {
+      let getFormElement: any = document.querySelector("form");
+      if (getFormElement) getFormElement.textContent = "Form ID not attached";
+    }
+  }; */
 
   const dEfAuLtCoNtAiNeR = {
     type: null,
@@ -163,7 +195,13 @@ export const FormUi = ({
     dEfAuLtCoNtAiNeR: dEfAuLtCoNtAiNeR,
   };
 
+  /*   let formFieldsDefault = {}; */
   fields.forEach((field: Fields) => {
+    /*     if (field.defaultValue)
+      formFieldsDefault = {
+        ...formFieldsDefault,
+        [field.id]: field.defaultValue,
+      }; */
     if (field.container) {
       if (containersWithDefault[field["container"]]) {
         if (!containersWithDefault[field["container"]].fields)
@@ -186,6 +224,28 @@ export const FormUi = ({
       containersWithDefault.dEfAuLtCoNtAiNeR.fields.push(field);
     }
   });
+
+  //submit form button when no button is imported
+  const submitForm = (input: any) => (e: any) => {
+    e.preventDefault();
+    e.target.disabled = true;
+    if (formData) formData(input);
+  };
+  //form button(s)
+  let Buttons: FormButtons[] | any[] = buttons ? buttons : [];
+  if (Buttons?.length === 0) {
+    Buttons.push({
+      value: "Submit",
+      weight: 99,
+      submit: true,
+      action: submitForm,
+    });
+  }
+  //console.log("buttons", buttons);
+  if (Buttons.length > 0)
+    Buttons.sort(
+      (a, b) => a["weight" as keyof typeof a] - b["weight" as keyof typeof a]
+    );
 
   let Containers: object[] | any[] = [];
   Object.keys(containersWithDefault).forEach((id) => {
@@ -214,103 +274,251 @@ export const FormUi = ({
       >
         {container.fields.map((field: Fields, index: number) => {
           return (
-            <div key={index} className="form-item">
-              <span
-                className={
-                  "form-label" + (labelStyling ? " " + inputStyling : "")
-                }
+            <React.Fragment key={index}>
+              {field.description &&
+              field.description["before" as keyof typeof field.description] ? (
+                <div
+                  className={
+                    "field-decription " +
+                    field.type +
+                    "-decription-after" +
+                    " field-decription-" +
+                    field.id
+                  }
+                >
+                  {
+                    field.description[
+                      "before" as keyof typeof field.description
+                    ]
+                  }
+                </div>
+              ) : null}
+              <div
+                id={"form-item-" + field.id}
+                className={"form-item form-item-" + field.type}
               >
-                {field.label}
-              </span>
-              {field.type &&
-              (field.type === "password" ||
-                field.type === "email" ||
-                field.type === "tel" ||
-                field.type === "date" ||
-                field.type === "file" ||
-                field.type === "image" ||
-                field.type === "number" ||
-                field.type === "time" ||
-                field.type === "url" ||
-                field.type === "range" ||
-                field.type === "color") ? (
-                <input
-                  name={field.label}
-                  onChange={handleInputData({
-                    id: field.id,
-                    type: field.type,
-                  })}
+                <label
+                  htmlFor={field.id}
                   className={
-                    "form-input" +
-                    (field.styling ? " " + field.styling : "") +
-                    (inputStyling ? " " + inputStyling : "")
+                    "form-label" + (labelStyling ? " " + inputStyling : "")
                   }
-                  type={field.type}
-                />
-              ) : field.type && field.type === "textarea" ? (
-                <textarea
-                  name={field.label}
-                  onChange={handleInputData({
-                    id: field.id,
-                    type: field.type,
-                  })}
-                  className={
-                    "form-input" +
-                    (field.styling ? " " + field.styling : "") +
-                    (inputStyling ? " " + inputStyling : "")
-                  }
-                />
-              ) : field.type &&
-                (field.type === "radio" || field.type === "checkbox") ? (
-                field.options && field.options.length > 0 ? (
-                  <span
-                    id={field.type + "-container"}
-                    className={inputStyling ? " " + inputStyling : ""}
-                  >
-                    {field.options.map((option, index) => {
-                      return (
-                        <React.Fragment key={index}>
-                          <input
-                            name={
-                              field.type === "radio"
-                                ? field.label
-                                : index.toString()
-                            }
-                            onChange={handleInputData({
-                              id: field.id,
-                              type: field.type,
-                            })}
-                            className={
-                              "form-input" +
-                              (field.styling ? " " + field.styling : "")
-                            }
-                            type={field.type}
-                            value={option.toString()}
-                          />
-                          <label htmlFor={index.toString()}>
-                            {option.toString()}
-                          </label>
-                        </React.Fragment>
-                      );
+                >
+                  {field.label}
+                </label>
+                {field.type &&
+                (field.type === "password" ||
+                  field.type === "email" ||
+                  field.type === "tel" ||
+                  field.type === "date" ||
+                  field.type === "number" ||
+                  field.type === "time" ||
+                  field.type === "url" ||
+                  field.type === "range" ||
+                  field.type === "color") ? (
+                  <input
+                    id={field.id}
+                    name={field.id}
+                    onChange={handleInputData({
+                      id: field.id,
+                      type: field.type,
                     })}
-                  </span>
-                ) : null
-              ) : (
-                <input
-                  name={field.label}
-                  onChange={handleInputData({
-                    id: field.id,
-                    type: field.type,
-                  })}
+                    className={
+                      "form-input" +
+                      (field.styling ? " " + field.styling : "") +
+                      (inputStyling ? " " + inputStyling : "")
+                    }
+                    type={field.type}
+                    defaultValue={field.defaultValue ? field.defaultValue : ""}
+                    required={field.required ? true : false}
+                  />
+                ) : field.type && field.type === "file" ? (
+                  <>
+                    {field.defaultValue ? (
+                      <img
+                        id={field.id + "-preview"}
+                        src={APP_ADDRESS + "/" + field.defaultValue}
+                        alt="preview"
+                        style={{ width: "100px" }}
+                      />
+                    ) : (
+                      ""
+                    )}
+                    <input
+                      id={field.id}
+                      name={field.id}
+                      accept="image/png, image/jpeg"
+                      //onChange={imageUpload(field.id + "--preview")}
+                      /* onChange={(e) => {
+                        console.log(URL.createObjectURL(e.target.files[0]));
+                      }} */
+                      onChange={handleInputData({
+                        id: field.id,
+                        type: field.type,
+                      })}
+                      className={
+                        "form-input" +
+                        (field.styling ? " " + field.styling : "") +
+                        (inputStyling ? " " + inputStyling : "")
+                      }
+                      type="file"
+                      required={field.required ? true : false}
+                    />
+                  </>
+                ) : field.type && field.type === "textarea" ? (
+                  <textarea
+                    id={field.id}
+                    name={field.id}
+                    onChange={handleInputData({
+                      id: field.id,
+                      type: field.type,
+                    })}
+                    className={
+                      "form-input" +
+                      (field.styling ? " " + field.styling : "") +
+                      (inputStyling ? " " + inputStyling : "")
+                    }
+                    defaultValue={field.defaultValue ? field.defaultValue : ""}
+                    required={field.required ? true : false}
+                  />
+                ) : field.type && field.type === "select" ? (
+                  <select
+                    id={field.id}
+                    name={field.id}
+                    onChange={handleInputData({
+                      id: field.id,
+                      type: field.type,
+                    })}
+                    className={
+                      "form-input" +
+                      (field.styling ? " " + field.styling : "") +
+                      (inputStyling ? " " + inputStyling : "")
+                    }
+                    defaultValue={field.defaultValue ? field.defaultValue : ""}
+                    required={field.required ? true : false}
+                  >
+                    {field.options && field.options.length ? (
+                      field.options.map((option: string | object, index) => {
+                        return (
+                          <option
+                            key={index}
+                            value={
+                              typeof option === "string"
+                                ? option.toString()
+                                : option["key" as keyof typeof option]
+                                ? option["key" as keyof typeof option]
+                                : undefined
+                            }
+                          >
+                            {typeof option === "string"
+                              ? option.toString()
+                              : option["value" as keyof typeof option]
+                              ? option["value" as keyof typeof option]
+                              : undefined}
+                          </option>
+                        );
+                      })
+                    ) : (
+                      <option value={undefined}>{undefined}</option>
+                    )}
+                  </select>
+                ) : field.type &&
+                  (field.type === "radio" || field.type === "checkbox") ? (
+                  field.options && field.options.length > 0 ? (
+                    <span
+                      id={field.id}
+                      className={
+                        field.type +
+                        "-container" +
+                        (inputStyling ? " " + inputStyling : "")
+                      }
+                    >
+                      {field.options.map((option: string | object, index) => {
+                        return (
+                          <span className={field.type + "-option"} key={index}>
+                            <input
+                              name={field.id}
+                              onChange={handleInputData({
+                                id: field.id,
+                                type: field.type,
+                              })}
+                              className={
+                                "form-input" +
+                                (field.styling ? " " + field.styling : "")
+                              }
+                              type={field.type}
+                              value={
+                                typeof option === "string"
+                                  ? option.toString()
+                                  : option["key" as keyof typeof option]
+                                  ? option["key" as keyof typeof option]
+                                  : undefined
+                              }
+                              defaultChecked={
+                                field.defaultValue &&
+                                (typeof option === "string"
+                                  ? option.toString()
+                                  : option["key" as keyof typeof option]
+                                  ? option["key" as keyof typeof option]
+                                  : false)
+                                  ? true
+                                  : false
+                              }
+                              required={
+                                field.required && index === 0 ? true : false
+                              }
+                            />
+                            <label htmlFor={index.toString()}>
+                              {typeof option === "string"
+                                ? option.toString()
+                                : option["value" as keyof typeof option]
+                                ? option["value" as keyof typeof option]
+                                : undefined}
+                            </label>
+                          </span>
+                        );
+                      })}
+                    </span>
+                  ) : null
+                ) : (
+                  <input
+                    name={field.id}
+                    onChange={handleInputData({
+                      id: field.id,
+                      type: field.type,
+                    })}
+                    className={
+                      "form-input" +
+                      (field.styling ? " " + field.styling : "") +
+                      (inputStyling ? " " + inputStyling : "")
+                    }
+                    type="text"
+                    defaultValue={field.defaultValue ? field.defaultValue : ""}
+                    required={field.required ? true : false}
+                  />
+                )}
+                <div
+                  id={"form-item-notice-" + field.id}
+                  className="form-item-notice"
+                ></div>
+                {field.extraElement ? field.extraElement : null}
+              </div>
+              {field.description &&
+              field.description["after" as keyof typeof field.description] ? (
+                <div
                   className={
-                    "form-input" +
-                    (field.styling ? " " + field.styling : "") +
-                    (inputStyling ? " " + inputStyling : "")
+                    "field-decription " +
+                    field.type +
+                    "-decription-after" +
+                    " field-decription-" +
+                    field.id
                   }
-                  type="text"
-                />
-              )}
-            </div>
+                >
+                  {field.description["after" as keyof typeof field.description]}
+                </div>
+              ) : typeof field.description === "string" ? (
+                field.description
+              ) : null}
+            </React.Fragment>
           );
         })}
       </div>
@@ -319,24 +527,12 @@ export const FormUi = ({
     FormFields.push(thisContent);
   });
 
-  //buttons functions
-  const clearButton = () => {
-    let clearSelector = document.querySelectorAll(".form-input");
-    clearSelector.forEach((input: any) => {
-      if (input && input.value) input.value = "";
-    });
-  };
-  const cancelButton = () => {
-    window.history.back();
-  };
-
-  const submit = (e: { preventDefault: () => void }) => {
-    e.preventDefault();
-    formData(thisFormData);
-  };
-
   return (
-    <form id="form-ui" className={className}>
+    <form
+      id={id}
+      className={"form-ui" + (className ? " " + className : "")}
+      encType="multipart/form-data"
+    >
       <>
         {FormFields && FormFields.length > 0
           ? FormFields.map((formItem) => {
@@ -344,41 +540,31 @@ export const FormUi = ({
             })
           : null}
       </>
-      <div
-        className={
-          "form-button-group" +
-          (buttons
-            ? buttons.styling && typeof buttons.styling === "object"
-              ? buttons.styling["group"]
-                ? " " + buttons.styling["group"]
-                : ""
-              : buttons.styling && typeof buttons.styling === "string"
-              ? " " + buttons.styling
-              : ""
-            : "")
-        }
-      >
-        {Buttons.map((thisButton, index) => {
-          return (
-            <input
-              name="form-button"
-              key={index}
-              className={thisButton.styling ? thisButton.styling : ""}
-              type={thisButton.id === "submit" ? "submit" : "button"}
-              value={
-                thisButton.id === "clearButton"
-                  ? "clear"
-                  : thisButton.id === "cancelButton"
-                  ? "cancel"
-                  : thisButton.id === "submit"
-                  ? "submit"
-                  : thisButton.id
-              }
-              style={{ cursor: "pointer" }}
-              onClick={eval(thisButton.id)}
-            />
-          );
-        })}
+      <div id="form-actions">
+        <div id="form-actions-notice" />
+        <div id="form-button-group" className="form-button-group">
+          {Buttons.map((thisButton, index) => {
+            return (
+              <input
+                name="form-button"
+                key={index}
+                className={
+                  "form-button" +
+                  (thisButton.styling ? " " + thisButton.styling : "") +
+                  (thisButton.submit ? " submit" : "")
+                }
+                type={
+                  thisButton.submit ||
+                  thisButton.value.toLowerCase() === "submit"
+                    ? "submit"
+                    : "button"
+                }
+                value={thisButton.value}
+                onClick={thisButton.action(thisFormData)}
+              />
+            );
+          })}
+        </div>
       </div>
     </form>
   );

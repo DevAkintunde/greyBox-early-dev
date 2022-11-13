@@ -1,8 +1,10 @@
 import sequelize from "../../../config/db.config.js";
 import { DataTypes, Model, Deferrable } from "sequelize";
 import Status from "../../fields/EntityStatus.model.js";
+import ServiceType from "../../fields/ServiceType.model.js";
 import Admin from "../accounts/Admin.model.js";
 import Paragraph from "../paragraphs/Paragraph.model.js";
+import Image from "../media/Image.model.js";
 
 class Service extends Model {}
 
@@ -17,23 +19,31 @@ Service.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    featuredImageUrl: {
-      type: DataTypes.STRING,
-      field: "featured_image_url",
-    },
-    summary: {
-      type: DataTypes.TEXT,
-    },
-    /* body: {
-      type: DataTypes.TEXT,
-      allowNull: false,
-    }, */
     alias: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
     },
+    /* featuredImageUrl: {
+      type: DataTypes.STRING,
+      field: "featured_image_url",
+    }, */
+    summary: {
+      type: DataTypes.TEXT,
+    },
+    type: {
+      type: DataTypes.STRING,
+      references: {
+        model: ServiceType,
+        key: "key",
+        deferrable: Deferrable.INITIALLY_IMMEDIATE,
+      },
+    },
     state: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    status: {
       type: DataTypes.STRING,
       defaultValue: "draft",
       references: {
@@ -46,15 +56,6 @@ Service.init(
       type: DataTypes.TEXT,
       field: "revision_note",
     },
-    /* author: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      references: {
-        model: Admin,
-        key: "email",
-        deferrable: Deferrable.INITIALLY_IMMEDIATE,
-      },
-    }, */
   },
   {
     defaultScope: {
@@ -78,17 +79,20 @@ Service.init(
     modelName: "Service", // We need to choose the model name
   }
 );
+
 Admin.hasMany(Service, {
   foreignKey: {
-    type: DataTypes.UUID,
+    type: DataTypes.STRING,
     name: "author",
     allowNull: false,
   },
+  onDelete: "RESTRICT",
+  onUpdate: "RESTRICT",
 });
 Service.belongsTo(Admin, {
-  targetKey: "uuid",
+  targetKey: "email",
   foreignKey: {
-    type: DataTypes.UUID,
+    type: DataTypes.STRING,
     name: "author",
     allowNull: false,
   },
@@ -96,14 +100,16 @@ Service.belongsTo(Admin, {
 
 Admin.hasMany(Service, {
   foreignKey: {
-    type: DataTypes.UUID,
+    type: DataTypes.STRING,
     name: "last_revisor",
   },
+  onDelete: "RESTRICT",
+  onUpdate: "RESTRICT",
 });
 Service.belongsTo(Admin, {
-  targetKey: "uuid",
+  targetKey: "email",
   foreignKey: {
-    type: DataTypes.UUID,
+    type: DataTypes.STRING,
     name: "last_revisor",
   },
 });
@@ -114,11 +120,29 @@ Paragraph.hasOne(Service, {
     type: DataTypes.UUID,
     name: "body",
   },
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 Service.belongsTo(Paragraph, {
   foreignKey: {
     type: DataTypes.UUID,
     name: "body",
+  },
+});
+
+Image.hasMany(Service, {
+  sourceKey: "uuid",
+  foreignKey: {
+    type: DataTypes.UUID,
+    name: "featuredImage",
+  },
+  onDelete: "RESTRICT",
+  onUpdate: "RESTRICT",
+});
+Service.belongsTo(Image, {
+  foreignKey: {
+    type: DataTypes.UUID,
+    name: "featuredImage",
   },
 });
 

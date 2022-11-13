@@ -2,9 +2,9 @@ import sequelize from "../config/db.config.js";
 import StaticPage from "../models/entities/nodes/StaticPage.model.js";
 import Status from "../models/fields/EntityStatus.model.js";
 import Paragraph from "../models/entities/paragraphs/Paragraph.model.js";
-import PText from "../models/entities/paragraphs/Text.model.js";
-import PImage from "../models/entities/paragraphs/Image.model.js";
-import PVideo from "../models/entities/paragraphs/Video.model.js";
+import PText from "../models/entities/paragraphs/PText.model.js";
+import PImage from "../models/entities/paragraphs/PImage.model.js";
+import PVideo from "../models/entities/paragraphs/PVideo.model.js";
 import {
   BAD_REQUEST,
   SERVER_ERROR,

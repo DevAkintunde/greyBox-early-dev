@@ -1,19 +1,18 @@
-import { urlQueryTranslator } from "../../../middlewares/urlQueryTranslator.js";
 import {
   OK,
   UNAUTHORIZED,
   CREATED,
-  BAD_REQUEST,
-  NOT_FOUND,
-  SERVER_ERROR,
+  CONFLICT,
+  REDIRECTED,
+  SERVICE_UNAVAILABLE,
+  NOT_MODIFIED,
 } from "../../../constants/statusCodes.js";
-import { bearerTokenJwtAuth } from "../../../middlewares/authorization/bearerTokenJwtAuth.js";
 import * as formValidator from "../../../validators/adminAccountFormValidator.js";
 import checkAccount from "../../../middlewares/accounts/checkAccount.js";
 import * as accountController from "../../../controllers/account.controller.js";
-import sequelize from "../../../config/db.config.js";
 
 import Router from "@koa/router";
+import { mediaUpload } from "../../../middlewares/operations/mediaUpload.js";
 const router = new Router({
   prefix: "/account",
 });
@@ -37,103 +36,112 @@ router.use(async (ctx, next) => {
   await next();
 });
 
-router.get(
-  "/",
-  async (ctx, next) => {
-    console.log("justing checking");
-    if (ctx.path === ctx.originalUrl) {
-      ctx.originalUrl = ctx.originalUrl + "?sort[created=ASC]&page[limit=25]";
-    }
-    await next();
-  },
-  urlQueryTranslator,
-  (ctx) => {
-    //console.log('response',ctx.state.queryData)
-    if (ctx.state.queryData) {
-      ctx.status = OK;
-      return (ctx.body = ctx.state.queryData);
-    }
-    return (ctx.status = BAD_REQUEST);
+router.get("/", (ctx) => {
+  if (ctx.isAuthenticated) {
+    ctx.status = OK;
+    return (ctx.body = { status: OK, profile: ctx.state.user });
   }
-);
+  ctx.status = REDIRECTED;
+  return ctx.redirect("/account");
+});
 
 // sign out account
-router.delete("/signout", bearerTokenJwtAuth, (ctx) => {
+router.get("/sign-out", (ctx) => {
   if (ctx.isAuthenticated()) {
     ctx.logOut();
     ctx.status = OK;
-    return (ctx.body = { message: "Successful" });
+    ctx.body = { status: 200 };
+    return;
   } else {
     ctx.status = CONFLICT;
-    return (ctx.body = { message: "User already Signed Out" });
+    ctx.message = "User already Signed Out";
+    return;
   }
 });
 
 // account update
 router.patch(
   "/update",
-  bearerTokenJwtAuth,
   async (ctx, next) => {
-    if (ctx.isUnauthenticated()) {
-      ctx.status = UNAUTHORIZED;
-      return (ctx.body = { message: "Unauthorised. User not Signed In" });
-    }
     await next();
     if (ctx.state.updatedUser) {
-      ctx.logIn({ ...ctx.state.updatedUser, type: "Admin" });
+      let thisUser = { ...ctx.state.updatedUser, type: "Admin" };
+      ctx.logIn(thisUser);
       ctx.status = OK;
       return (ctx.body = {
         status: OK,
-        message: "Successful.",
+        statusText: "Successful.",
         profile: ctx.state.user,
       });
     }
   },
   formValidator.updateAccount,
+  mediaUpload,
   accountController.updateAccount
 );
+
+//remove account avatar
+router.delete("/delete-avatar", accountController.deleteAvatar, (ctx) => {
+  if (ctx.state.error) {
+    ctx.status = NOT_MODIFIED;
+    ctx.message = "Unable to remove avatar";
+    return;
+  }
+  let thisUser = { ...ctx.state.updatedUser, type: "Admin" };
+  ctx.logIn(thisUser);
+  ctx.status = OK;
+  return (ctx.body = {
+    status: OK,
+    statusText: "Avatar removed",
+    profile: ctx.state.user,
+  });
+});
+
 //account update password only
 router.patch(
   "/update-password",
-  bearerTokenJwtAuth,
-  async (ctx, next) => {
-    if (ctx.isUnauthenticated()) {
-      ctx.status = UNAUTHORIZED;
-      return (ctx.body = { message: "Unauthorised. User not Signed In" });
-    }
-    await next();
-  },
   formValidator.changePassword,
-  accountController.updatePassword
+  accountController.updatePassword,
+  (ctx) => {
+    ctx.status = OK;
+    return (ctx.body = {
+      status: OK,
+      statusText: "Password changed.",
+    });
+  }
 );
 
 //create new admin account
 router.post(
   "/create-account",
+  async (ctx, next) => {
+    if (ctx.request.body && ctx.request.body.role)
+      ctx.request.body.role = Number(ctx.request.body.role);
+    await next();
+  },
   formValidator.createAccount,
+  async (ctx, next) => {
+    ctx.state.userType = "Admin";
+    await next();
+  },
   checkAccount(false),
   async (ctx, next) => {
-    console.log("hello 112222");
     if (ctx.state.error) {
-      if (ctx.state.error.code === CONFLICT) {
+      if (ctx.state.error.status === CONFLICT) {
         ctx.status = CONFLICT;
-        return (ctx.body = {
-          status: CONFLICT,
-          message: "Conflict. Account already registered.",
-        });
+        ctx.message = "Account already registered";
+        return;
       } else {
-        ctx.status = ctx.state.error.code;
-        return (ctx.body = {
-          status: ctx.state.error.code,
-          message: ctx.state.error.message,
-        });
+        ctx.status = ctx.state.error.status;
+        ctx.message = ctx.state.error.message;
+        return;
       }
     }
-
     await next();
-    //console.log('uuuuuuse:: ', ctx.state.newUser)
+  },
+  accountController.createAccount,
+  (ctx) => {
     if (ctx.state.newUser) {
-      console.log("new user: ", ctx.state.newUser.toJSON());
       let profileData = {
         status: CREATED,
         profile: ctx.state.newUser.toJSON(),
@@ -142,14 +150,11 @@ router.post(
       ctx.status = OK;
       return (ctx.body = profileData);
     } else {
-      ctx.status = SERVER_ERROR;
-      return (ctx.body = {
-        status: SERVER_ERROR,
-        message: "Account creation failed.",
-      });
+      ctx.status = SERVICE_UNAVAILABLE;
+      ctx.message = "Account creation failed.";
+      return;
     }
-  },
-  accountController.createAccount
+  }
 );
 
 export default router;

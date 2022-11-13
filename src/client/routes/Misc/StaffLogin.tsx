@@ -1,65 +1,24 @@
-import React, { useEffect, useState } from "react";
-import { Link, Route, Routes } from "react-router-dom";
+import React, { useEffect, useState, useContext } from "react";
+import { Link, Route, Routes, useNavigate } from "react-router-dom";
 import PageTitle from "../../components/blocks/PageTitle";
 import { FormUi } from "../../global/FormUi";
 import { ServerHandler } from "../../global/functions/ServerHandler";
+import { Profile } from "../../global/AppFrame";
+import { PasswordResetForm } from "./PasswordResetForm";
 
 export const StaffLogin = () => {
   return (
     <Routes>
       <Route path={"/"} element={<SignIn />} />
-      <Route path="reset-password" index element={<ResetPassword />} />
+      <Route path="/forgot-password" index element={<PasswordResetForm />} />
     </Routes>
-  );
-};
-const ResetPassword = () => {
-  const [data, setData] = useState({});
-  let fields = [
-    {
-      type: "email",
-      weight: 0,
-      label: "Email",
-      id: "email",
-    },
-  ];
-  return (
-    <>
-      <PageTitle title="Reset Password" />
-      <div className="">
-        <FormUi
-          fields={fields}
-          formData={(data: object) => setData(data)}
-          className="max-w-screen-sm"
-        />
-      </div>
-    </>
   );
 };
 
 const SignIn = () => {
-  const [data, setData] = useState({});
-
-  useEffect(() => {
-    ServerHandler({
-      endpoint: "account/sign-in",
-      method: "POST",
-      headers: {
-        accept: "application/json",
-        "content-type": "application/json",
-        //"x-requesttoken": "cookie",
-      },
-      body: {
-        data: {
-          email: "jshdidijsxsxnsxhs",
-          password: "sdhijdjexmdhuhdu",
-        },
-      },
-    }).then((res) => {
-      console.log("res", res);
-    });
-    return () => {};
-  }, []);
-
+  const navigate = useNavigate();
+  const { profile, setProfile }: any = useContext(Profile);
+  // form data
   let fields = [
     {
       type: "email",
@@ -69,18 +28,70 @@ const SignIn = () => {
     },
     {
       type: "password",
-      weight: 0,
+      weight: 1,
       label: "Password",
       id: "password",
+      required: true,
     },
   ];
 
-  console.log("data", data);
+  const [data, setData]: any = useState();
+  useEffect(() => {
+    if (profile && profile.uuid) navigate("/auth");
+  }, [navigate, profile]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const signIn = async () => {
+      ServerHandler({
+        endpoint: "account/sign-in",
+        method: "POST",
+        headers: {
+          accept: "application/json",
+          "x-requesttoken": "session",
+        },
+        body: data,
+      }).then((res) => {
+        //console.log("res", res);
+        if (res.status !== 200) {
+          let submitNotice = document.getElementById("form-actions-notice");
+          if (submitNotice)
+            submitNotice.textContent = res.statusText
+              ? res.statusText
+              : "Oops! There was a problem somewhere. Please try again";
+          let button: any = document.querySelector("input.submit");
+          if (button) {
+            if (button.classList && button.classList.contains("bounce"))
+              button.classList.remove("bounce");
+            if (button["disabled"] && button["disabled"] === true)
+              button["disabled"] = false;
+          }
+        } else {
+          setProfile(res.profile);
+        }
+      });
+    };
+
+    if (data && isMounted) {
+      let button: any = document.querySelector("input.submit");
+      if (button && button.classList) button.classList.add("bounce");
+      signIn();
+      /* else {
+        if (button["disabled"] && button["disabled"] === true)
+          button["disabled"] = false;
+      } */
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [data, setProfile]);
+
   return (
     <>
       <PageTitle title="Staff Login" />
       <div className="">
         <FormUi
+          id="staffLogin"
           fields={fields}
           formData={(data: object) => setData(data)}
           className="max-w-screen-sm"

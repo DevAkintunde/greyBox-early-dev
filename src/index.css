@@ -13,8 +13,11 @@
     font-family: mellyFont, system-ui, sans-serif;
   }
 
-  #main {
+  #app {
     @apply max-w-[1280px] mx-auto h-screen bg-color-def text-color-sec text-sm;
+  }
+  main {
+    @apply mx-auto;
   }
   h1,
   h2,
@@ -86,8 +89,16 @@
     @apply text-lg text-color-def my-1;
   }
 
-  input[type="button"] {
-    @apply cursor-pointer;
+  .bounce {
+    @apply cursor-wait animate-bounce bg-color-def text-gray-600 !important;
+  }
+  input[type="button"],
+  input[type="submit"] {
+    @apply cursor-pointer disabled:text-gray-600;
+  }
+
+  .button-pri {
+    @apply bg-color-pri text-color-sec p-2 text-center;
   }
   /*  textarea {
     @apply text-black;
@@ -98,44 +109,56 @@
   }
 
   /* FormUi styling */
-  #form-ui {
+  .form-ui {
     @apply mx-auto bg-color-pri/20 p-10 shadow-lg;
   }
-  #form-ui .form-item {
+  .form-ui .form-item {
     @apply mb-4;
   }
-  #form-ui .form-input {
-    @apply px-2 rounded-full block w-full;
+  .form-ui .form-item.form-item-select,
+  .form-ui .form-item.form-item-radio,
+  .form-ui .form-item.form-item-checkbox {
+    @apply flex gap-4 items-center;
   }
-  #form-ui .form-input[type="radio"] {
+  .form-ui .form-input {
+    @apply px-4 rounded-full block w-full;
+  }
+  .form-ui .form-input[type="radio"] {
     @apply w-fit inline-block;
   }
-  #form-ui .form-input[type="checkbox"] {
+  .form-ui .form-input[type="checkbox"] {
     @apply rounded-none w-fit;
   }
-  #form-ui #radio-container,
-  #form-ui #checkbox-container {
-    @apply mt-3 block;
+  .form-ui select.form-input {
+    @apply rounded-md w-fit;
   }
-  #form-ui textarea.form-input {
+  .form-ui .form-item .radio-container,
+  .form-ui .form-item .checkbox-container {
+    @apply mt-3 ml-6 flex gap-4;
+  }
+  .form-ui .form-item .radio-option,
+  .form-ui .form-item .checkbox-option {
+    @apply flex gap-1 items-center;
+  }
+  .form-ui textarea.form-input {
     @apply rounded-lg;
   }
-  #form-ui .form-label {
+  .form-ui .form-label {
     @apply ml-5 text-xl border-b-4 border-color-sec capitalize;
   }
-  #form-ui .form-button-group {
+  .form-ui .form-button-group {
     @apply mt-5 mx-auto w-fit flex gap-3;
   }
-  #form-ui input[name="form-button"] {
+  .form-ui input[name="form-button"] {
     @apply p-2 capitalize;
   }
-  #form-ui input[value="clear"] {
-    @apply bg-color-def;
-  }
-  #form-ui input[value="cancel"] {
-    @apply bg-color-ter text-color-def;
-  }
-  #form-ui input[type="submit"] {
+  .form-ui input[type="submit"] {
     @apply bg-color-pri;
+  }
+  .form-ui .form-item-notice {
+    @apply first-letter:capitalize ml-5;
+  }
+  .form-ui #form-actions-notice {
+    @apply text-center first-letter:capitalize my-3;
   }
 }

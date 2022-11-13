@@ -5,6 +5,8 @@ const API_ENDPOINT = "/api/v2/";
 export const SITEURL = "https://studio.mellywood.com";
 const LOCAL_URL = "http://localhost:5173";
 
+export const APP_ADDRESS =
+  process.env.NODE_ENV === "development" ? LOCAL_URL : SITEURL;
 export const REST_ADDRESS =
   (process.env.NODE_ENV === "development" ? LOCAL_URL : SITEURL) + API_ENDPOINT;
 

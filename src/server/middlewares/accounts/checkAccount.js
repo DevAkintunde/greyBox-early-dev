@@ -1,10 +1,11 @@
-import admin from "../../models/entities/accounts/Admin.model.js";
+import Admin from "../../models/entities/accounts/Admin.model.js";
 import {
   NOT_FOUND,
   CONFLICT,
   BAD_REQUEST,
   SERVER_ERROR,
 } from "../../constants/statusCodes.js";
+import sequelize from "../../config/db.config.js";
 
 //Use this to check the status/existence of an account on the server.
 
@@ -15,35 +16,25 @@ const checkAccount = (existStatus) => async (ctx, next) => {
   if (email) {
     try {
       let thisUser;
-      if (ctx.state.userType === "Admin") {
-        thisUser = await Admin.scope("middleware").findOne({
-          where: {
-            email: email,
-          },
-        });
-      } else if (ctx.state.userType === "Designer") {
-        thisUser = await Customer.scope("middleware").findOne({
-          where: {
-            email: email,
-          },
-        });
-      } else if (ctx.state.userType === "Customer") {
-        thisUser = await Customer.scope("middleware").findOne({
+      if (ctx.state.userType) {
+        thisUser = await sequelize.models[ctx.state.userType].findOne({
           where: {
             email: email,
           },
         });
       } else {
-        ctx.throw(BAD_REQUEST, "Invalid account type");
+        ctx.status = BAD_REQUEST;
+        ctx.message = "Unsure of account type to create";
+        return;
       }
       if (existStatus && !thisUser) {
         ctx.state.error = {
-          code: NOT_FOUND,
+          status: NOT_FOUND,
           message: "Oops! Account not found",
         };
       } else if (!existStatus && thisUser) {
         ctx.state.error = {
-          code: CONFLICT,
+          status: CONFLICT,
           message: "Oops! Account already exist",
         };
       } /* else if (existStatus && thisUser && thisUser.email) {
@@ -51,16 +42,13 @@ const checkAccount = (existStatus) => async (ctx, next) => {
       } */
       await next();
     } catch (err) {
-      ctx.state.error = {
-        code: SERVER_ERROR,
-        message: "Server error.",
-      };
+      ctx.status = SERVER_ERROR;
+      ctx.message = "Server error";
     }
   } else {
-    ctx.state.error = {
-      code: BAD_REQUEST,
-      message: "Please provide a valid email address.",
-    };
+    ctx.status = BAD_REQUEST;
+    ctx.message = "Please provide a valid email address";
+    return;
   }
 };
 

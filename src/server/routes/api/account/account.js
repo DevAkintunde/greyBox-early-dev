@@ -1,17 +1,17 @@
 "use strict";
+
+//public account routes
+
 import {
   OK,
-  CREATED,
   UNAUTHORIZED,
   BAD_REQUEST,
   CONFLICT,
-  FORBIDDEN,
   NOT_FOUND,
   SERVER_ERROR,
 } from "../../../constants/statusCodes.js";
 import { logger } from "../../../utils/logger.js";
 import * as FormValidator from "../../../validators/adminAccountFormValidator.js";
-import { BASE_URL, API_ENDPOINT } from "../../../utils/secrets.js";
 import { generate } from "../../../utils/token.js";
 import { bearerTokenJwtAuth } from "../../../middlewares/authorization/bearerTokenJwtAuth.js";
 import * as accountController from "../../../controllers/account.controller.js";
@@ -29,8 +29,11 @@ const router = new Router();
 router.post(
   "/sign-in",
   async (ctx, next) => {
-    console.log("did i get here at all?");
-    console.log("req", ctx.request.body);
+    if (!ctx.request.body) {
+      ctx.status = BAD_REQUEST;
+      ctx.message = "Oops! No login detail provided.";
+      return;
+    }
     await next();
   },
   FormValidator.signin,
@@ -43,50 +46,40 @@ router.post(
         message: "Account is already Signed In.",
       });
     }
-    if (!ctx.request.body) {
-      ctx.status = OK;
-      return (ctx.body = {
-        status: BAD_REQUEST,
-        message: "No login detai provided.",
-      });
-    }
     passport.userType = "Admin"; //exported to authMiddleware
     passport.requestToken =
       ctx.header["x-requesttoken"] &&
-      (ctx.header["x-requesttoken"] === "cookie" ||
-        ctx.header["x-requesttoken"] === "bearer")
+      (ctx.header["x-requesttoken"] === "session" ||
+        ctx.header["x-requesttoken"] === "token")
         ? ctx.header["x-requesttoken"]
         : null;
 
-    return passport.authenticate("local", (err, user, info) => {
+    return passport.authenticate("local", async (err, user, info) => {
       if (err) {
         logger.error("Error:", err);
         ctx.status = SERVER_ERROR;
-        return (ctx.body = {
-          status: SERVER_ERROR,
-        });
+        return;
       }
       if (!user) {
         ctx.status = NOT_FOUND;
-        return (ctx.body = { message: "User not found" });
-        //ctx.throw(401);
+        ctx.message = "Oops! Incorrect email or password";
+        return;
       } else {
         //console.log("user: ", user.toJSON());
         let profileData = {
           status: OK,
           profile: { ...user.toJSON(), type: "Admin" },
         };
-        if (ctx.header["x-requesttoken"].toLowerCase() === "bearer") {
-          const token = generate(profileData.profile);
-          profileData = {
-            ...profileData,
-            token: token,
-          };
-          ctx.status = OK;
-          return (ctx.body = profileData);
-        } else if (ctx.header["x-requesttoken"].toLowerCase() === "session") {
-          ctx.login(profileData.profile);
-        }
+        if (passport.requestToken)
+          if (passport.requestToken === "token") {
+            const token = generate(profileData.profile);
+            profileData = {
+              ...profileData,
+              token: token,
+            };
+          } else if (passport.requestToken === "session") {
+            await ctx.login(profileData.profile);
+          }
         ctx.status = OK;
         return (ctx.body = profileData);
       }
@@ -95,14 +88,15 @@ router.post(
 );
 
 //account reset password
-router.patch(
+router.post(
   "/reset-password",
-  bearerTokenJwtAuth,
   async (ctx, next) => {
     if (ctx.isAuthenticated()) {
       ctx.status = UNAUTHORIZED;
-      return (ctx.body = { message: "User already Signed In" });
+      ctx.statusText = "User already Signed In";
+      return;
     }
+    ctx.state.userType = "Admin";
     await next();
   },
   FormValidator.resetPassword,
@@ -124,12 +118,9 @@ router.get(
       ctx.status = NOT_FOUND;
       return (ctx.body = {
         status: NOT_FOUND,
-        message: "Verification code may have expired or does not exist.",
+        statusText: "Verification code may have expired or does not exist.",
       });
     }
-    await next();
-  },
-  async (ctx, next) => {
     ctx.request.body = { email: ctx.state.queryData.OTP[0].id };
     await next();
   },
@@ -139,20 +130,20 @@ router.get(
       if (ctx.state.error.code === CONFLICT) {
         ctx.status = OK;
         return (ctx.body = {
-          status: ctx.state.error.code,
-          message: "Account already verified. Sign in to continue.",
+          status: ctx.state.error.status,
+          statusText: "Account already verified. Sign in to continue.",
         });
-      } else if (ctx.state.error.code === NOT_FOUND) {
-        ctx.status = ctx.state.error.code;
+      } else if (ctx.state.error.status === NOT_FOUND) {
+        ctx.status = ctx.state.error.status;
         return (ctx.body = {
           status: ctx.state.error.code,
-          message: "Oops! Account not found",
+          statusText: "Oops! Account not found",
         });
       } else {
-        ctx.status = ctx.state.error.code;
+        ctx.status = ctx.state.error.status;
         return (ctx.body = {
-          status: ctx.state.error.code,
-          message: ctx.state.error.message,
+          status: ctx.state.error.status,
+          statusText: ctx.state.error.message,
         });
       }
     }
@@ -166,7 +157,7 @@ router.get(
     ctx.status = OK;
     return (ctx.body = {
       status: OK,
-      message: "Account verified.",
+      statusText: "Account verified.",
     });
     //}
   }

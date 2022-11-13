@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import PageTitle from "../../components/blocks/PageTitle";
 import { FormUi } from "../../global/FormUi";
-import { promise } from "../../global/functions/ServerHandler";
 
 export const ContactForm = ({ className }: any) => {
   const [data, setData] = useState({});
@@ -28,7 +27,7 @@ export const ContactForm = ({ className }: any) => {
   return (
     <FormUi
       fields={fields}
-      buttons={buttons}
+      //buttons={buttons}
       formData={(data: object) => setData(data)}
       className="max-w-screen-sm"
     />

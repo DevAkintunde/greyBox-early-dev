@@ -2,19 +2,70 @@ import { logger } from "../../utils/logger.js";
 import sequelize from "../../config/db.config.js";
 import { hash } from "../../utils/password.js";
 import { markForDeletion } from "../../functions/markForDeletion.js";
-import State from "../../models/fields/EntityStatus.model.js";
+import Status from "../../models/fields/EntityStatus.model.js";
 import Admin from "../../models/entities/accounts/Admin.model.js";
 import OTP from "../../models/utils/OTP.model.js";
 import Page from "../../models/entities/nodes/StaticPage.model.js";
+import VideoSource from "../../models/fields/VideoSource.model.js";
+import ServiceType from "../../models/fields/ServiceType.model.js";
+import Role from "../../models/fields/UserRole.model.js";
 
 async function defaultTablesUp() {
-  // state/status options
-  const stateOptions = [
-    { key: "draft", state: "Draft" },
-    { key: "in_review", state: "In Review" },
-    { key: "published", state: "Published" },
-    { key: "unpublished", state: "Unpublished" },
-    { key: "deleted", state: "Deleted" },
+  // status options
+  const statusOptions = [
+    { key: "draft", value: "Draft" },
+    { key: "in_review", value: "In Review" },
+    { key: "published", value: "Published" },
+    { key: "unpublished", value: "Unpublished" },
+    { key: "deleted", value: "Deleted" },
+  ];
+
+  let serviceTypes = [
+    {
+      key: "cinematography_lighting",
+      value: "Cinematography & Lighting",
+    },
+    {
+      key: "graphics",
+      value: "Graphics",
+    },
+    {
+      key: "live_stream",
+      value: "Live Stream",
+    },
+    {
+      key: "motion_graphics",
+      value: "Motion Graphics",
+    },
+    {
+      key: "photography",
+      value: "Photography",
+    },
+    {
+      key: "story_development",
+      value: "Story Development",
+    },
+    {
+      key: "videography",
+      value: "Videography",
+    },
+    {
+      key: "web_design",
+      value: "Web Design",
+    },
+  ];
+  const videoTypes = [
+    { key: "hosted", value: "Upload to Server" },
+    { key: "youtube", value: "YouTube Video" },
+    { key: "vimeo", value: "Vimeo Video" },
+  ];
+  const roles = [
+    { key: 0, value: "Inactive" },
+    { key: 1, value: "Probation" },
+    { key: 2, value: "Staff (staff and client officers)" },
+    { key: 3, value: "Manager" },
+    { key: 4, value: "Executive" },
+    { key: 5, value: "dev" },
   ];
 
   const defaultAdmin = {
@@ -46,13 +97,16 @@ async function defaultTablesUp() {
     summary: "summary content goes here...",
     //body: "This is the body of this page content. Nice....",
     alias: "about",
-    state: "draft",
-    //author: "ebakintunde@gmail.com",
+    status: "draft",
+    author: "ebakintunde@gmail.com",
   };
   const defaultTablesUp = async () => {
     try {
       return sequelize.transaction(async (t) => {
-        await State.bulkCreate(stateOptions, { transaction: t });
+        await Status.bulkCreate(statusOptions, { transaction: t });
+        await Role.bulkCreate(roles, { transaction: t });
+        await VideoSource.bulkCreate(videoTypes, { transaction: t });
+        await ServiceType.bulkCreate(serviceTypes, { transaction: t });
         await Admin.create(defaultDev, { transaction: t });
         await Admin.create(defaultAdmin, { transaction: t });
         logger.info("Default Tables UP");

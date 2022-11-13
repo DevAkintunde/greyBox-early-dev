@@ -35,7 +35,7 @@ The backend server api for Studio|Mellywood corporate website server
   --- 1. 'session'. Save the user to browser session
   --- 2. 'bearer'. Generates JWT bearer token which can be saved in the frontend and used in request to server
 - - To use either of both options, Simply set a key in request header as
-    ---- {X-requestToken: 'option' // 'session'/'bearer'} to use.
+    ---- {X-requestToken: 'option' // 'session'/'token'} to use.
     ---- '\*' can be used in place of 'session'
 - - If X-requestToken is not set, authentication mechanism is discaded/auto-disabled.
 

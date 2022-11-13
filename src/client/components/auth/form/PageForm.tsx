@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from "react";
+import { importJsonData } from "../../../global/functions/importJsonData";
 import { FormUi } from "../../../global/FormUi";
 import { ServerHandler } from "../../../global/functions/ServerHandler";
 
 export const PageForm = ({ setData }: any) => {
   const statusOptions = [
-    { key: "draft", state: "Draft" },
-    { key: "in_review", state: "In Review" },
-    { key: "published", state: "Published" },
-    { key: "unpublished", state: "Unpublished" },
+    { key: "draft", value: "Draft" },
+    { key: "in_review", value: "In Review" },
+    { key: "published", value: "Published" },
+    { key: "unpublished", value: "Unpublished" },
   ];
+  let services = ["Draft", "In Review", "Published", "Unpublished"];
   useEffect(() => {
     let isMounted = true;
     /*  promise() */
@@ -40,6 +42,7 @@ export const PageForm = ({ setData }: any) => {
       container: "fromFields",
       label: "title",
       id: "title",
+      required: true,
     },
     {
       type: "radio",
@@ -47,10 +50,11 @@ export const PageForm = ({ setData }: any) => {
       container: "fromFields",
       label: "state",
       id: "state",
-      //options: statusOptions,
+      options: statusOptions,
+      //options: services,
     },
     {
-      type: "url",
+      type: "image",
       weight: 0,
       container: "fromFields",
       label: "Feature Image",
@@ -79,18 +83,29 @@ export const PageForm = ({ setData }: any) => {
       id: "revisionNote",
     },
   ];
-
-  const buttons = {
+  console.log("json", importJsonData("serviceTypes"));
+  /*   const buttons = {
     clearButton: 2,
     cancelButton: 1,
     submit: 3,
-  };
+    submit: {value: 'update', weight: 3}
+  }; */
+  const buttons = [
+    { value: "Save as draft", weight: 3, action: () => {} },
+    {
+      value: "update",
+      weight: 3,
+      styling: "p-3 mx-auto",
+      submit: true,
+      action: () => {},
+    },
+  ];
 
   return (
     <FormUi
       containers={containers}
       fields={fields}
-      formData={(data: object) => setData(data)}
+      //formData={(data: object) => setData(data)}
       buttons={buttons}
       className="mx-10"
     />

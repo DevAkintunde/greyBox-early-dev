@@ -17,8 +17,10 @@ import {
 } from "../../../validators/pageFormValidator.js";
 import * as pageController from "../../../controllers/page.controller.js";
 import sequelize from "../../../config/db.config.js";
+import { mediaUpload } from "../../../middlewares/operations/mediaUpload.js";
 
 import Router from "@koa/router";
+
 const router = new Router({
   prefix: "/page",
 });
@@ -26,13 +28,13 @@ const router = new Router({
 router.use(async (ctx, next) => {
   if (ctx.method.toLowerCase() !== "get" && ctx.state.user.role < 4) {
     ctx.status = UNAUTHORIZED;
-    return (ctx.body = {
-      message: "Admin user does not have the required permission.",
-    });
+    ctx.message = "Admin user does not have the required permission.";
+    return;
   }
   await next();
 });
 
+//view multiple available page entities
 router.get(
   "/",
   async (ctx, next) => {
@@ -55,13 +57,9 @@ router.get(
 router.post(
   "/create",
   validateSubmit,
-  async (ctx, next) => {
-    ctx.request.body = {
-      ...ctx.request.body,
-      author: ctx.state.user.uuid,
-    };
-
-    await next();
+  mediaUpload,
+  pageController.createItem,
+  (ctx) => {
     if (ctx.state.error) {
       ctx.status = ctx.state.error.status;
       return (ctx.body = {
@@ -71,8 +69,7 @@ router.post(
     }
     ctx.status = CREATED;
     return (ctx.body = ctx.state.page);
-  },
-  pageController.createItem
+  }
 );
 
 router.get(

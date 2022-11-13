@@ -1,9 +1,9 @@
 import sequelize from "../../../config/db.config.js";
-import { DataTypes, Model, Deferrable } from "sequelize";
+import { DataTypes, Model } from "sequelize";
 
-class Text extends Model {}
+class PText extends Model {}
 
-Text.init(
+PText.init(
   {
     uuid: {
       type: DataTypes.UUID,
@@ -26,4 +26,4 @@ Text.init(
   }
 );
 
-export default Text;
+export default PText;

@@ -1,7 +1,5 @@
 import sequelize from "../../../config/db.config.js";
-import { DataTypes, Model, Deferrable } from "sequelize";
-import Status from "../../fields/dbFields/EntityStatus.model.js";
-import Admin from "../accounts/Admin.model.js";
+import { DataTypes, Model } from "sequelize";
 
 class Image extends Model {}
 
@@ -12,31 +10,18 @@ Image.init(
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-    serviceType: {
-      //options available in json data
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
     title: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    url: {
+    alias: {
       type: DataTypes.STRING,
       allowNull: false,
+      unique: true,
     },
-    state: {
+    path: {
       type: DataTypes.STRING,
-      defaultValue: "draft",
-      references: {
-        model: Status,
-        key: "key",
-        deferrable: Deferrable.INITIALLY_IMMEDIATE,
-      },
-    },
-    revisionNote: {
-      type: DataTypes.TEXT,
-      field: "revision_note",
+      allowNull: false,
     },
   },
   {

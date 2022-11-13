@@ -93,6 +93,7 @@ const MainNav = ({ routes }: any) => {
                   ? serviceList.map((service) => {
                       return (
                         <NavLink
+                          key={service.path}
                           to={service.path ? service.path : "/"}
                           className={
                             "border-b-2 block p-3 text-center hover:text-color-def hover:bg-color-ter/60 hover:border-x-4" +
@@ -112,7 +113,7 @@ const MainNav = ({ routes }: any) => {
           })}
           <li>
             <NavLink
-              to="staff-login"
+              to="account"
               className={
                 "border-b-2 block p-3 text-center hover:text-color-def hover:bg-color-ter/60 hover:border-x-4" +
                 (location.pathname === "staff-login"

@@ -1,5 +1,7 @@
 import React, { useEffect } from "react";
+import { FaGripLines } from "react-icons/fa";
 import { NavLink, useLocation } from "react-router-dom";
+import { AppSignOut } from "../../global/functions/AppSignOut";
 import { jsStyler } from "../../global/functions/jsStyler";
 
 const UserMenu = () => {
@@ -53,10 +55,63 @@ const UserMenu = () => {
       >
         <ul>
           <li>
-            <NavLink to="dashboard">Dashboard</NavLink>
+            <NavLink
+              to="dashboard"
+              className={({ isActive }) =>
+                "border-b-2 block p-3 text-center hover:text-yellow-900 hover:bg-amber-300 hover:border-r-4" +
+                (isActive
+                  ? " text-color-ter bg-amber-300 border-r-4"
+                  : " text-color-sec")
+              }
+              title="Dashboard"
+            >
+              Dashboard
+            </NavLink>
           </li>
           <li>
             <NavLink to="auth/pages/create">New Page</NavLink>
+          </li>
+          <li>
+            <NavLink to="auth/media/add">Upload Media</NavLink>
+          </li>
+          <nav className="relative group jsstyler accordion">
+            <button
+              className={
+                "w-full relative border-b-2 p-3 group-hover:border-r-4 group-hover:text-yellow-900 hover:bg-amber-300 group-hover:bg-amber-300 active:bg-amber-300 text-color-sec transition duration-150 ease-in-out items-center whitespace-nowrap"
+              }
+              type="button"
+              aria-expanded="false"
+              onClick={jsStyler()}
+            >
+              Profile
+              <FaGripLines className="absolute right-4 top-0 bottom-0 h-full" />
+            </button>
+            <ul>
+              <li>
+                <NavLink
+                  to="auth/update"
+                  className={({ isActive }) =>
+                    "border-b-2 block p-3 pl-6 w-full whitespace-nowrap text-color-def hover:bg-color-pri/50" +
+                    (isActive ? " bg-color-pri/80" : "")
+                  }
+                  title="Browse all scopes"
+                >
+                  Update Profile
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="auth/update-password">Update Password</NavLink>
+              </li>
+            </ul>
+          </nav>
+
+          <li>
+            <NavLink to="auth/create-account">Create an Account</NavLink>
+          </li>
+          <li>
+            <span className="nav-link" onClick={AppSignOut}>
+              Sign Out
+            </span>
           </li>
         </ul>
       </div>

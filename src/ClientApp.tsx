@@ -1,9 +1,11 @@
 import { Route, Routes } from "react-router-dom";
 import MainNav from "./client/regions/MainNav";
 import { Router } from "./client/routes/Router";
-import Authoriser from "./client/global/Authoriser";
+import AppFrame from "./client/global/AppFrame";
 import bgImage from "./assets/lens-contour2.png";
 import QuickButtons from "./client/regions/QuickButtons";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 //server conditional logic
 //import.meta.env.SSR
@@ -40,10 +42,10 @@ routes.sort((a, b) => a.weight - b.weight);
 
 export function ClientApp() {
   return (
-    <Authoriser
+    <AppFrame
       app={
         <div
-          id="main"
+          id="app"
           className="relative scrollbar"
           style={{
             backgroundImage: "url(" + bgImage + ")",
@@ -82,6 +84,14 @@ export function ClientApp() {
             </>
           ) : null}
           <Router />
+          <ToastContainer
+            position="top-right"
+            autoClose={10000}
+            closeOnClick={false}
+            pauseOnHover
+            theme="light"
+          />
+          ;
         </div>
       }
     />

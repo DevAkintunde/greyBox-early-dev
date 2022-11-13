@@ -1,7 +1,7 @@
 import sequelize from "../../../config/db.config.js";
 import { DataTypes, Model, Deferrable } from "sequelize";
-import Status from "../../fields/dbFields/EntityStatus.model.js";
-import Admin from "../accounts/Admin.model.js";
+import VideoSource from "../../fields/VideoSource.model.js";
+import Image from "./Image.model.js";
 
 class Video extends Model {}
 
@@ -12,36 +12,31 @@ Video.init(
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-    serviceType: {
-      //options available in json data
+    title: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    type: {
+    alias: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+    },
+    path: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    url: {
+    source: {
       type: DataTypes.STRING,
       allowNull: false,
-    },
-    thumbnail_url: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    state: {
-      type: DataTypes.STRING,
-      defaultValue: "draft",
       references: {
-        model: Status,
+        model: VideoSource,
         key: "key",
         deferrable: Deferrable.INITIALLY_IMMEDIATE,
       },
     },
-    revisionNote: {
-      type: DataTypes.TEXT,
-      field: "revision_note",
-    },
+    /* thumbnail_url: {
+      type: DataTypes.STRING,
+    }, */
   },
   {
     tableName: "videos",
@@ -53,4 +48,22 @@ Video.init(
   }
 );
 
-module.exports = Video;
+Image.hasMany(Video, {
+  sourceKey: "uuid",
+  foreignKey: {
+    type: DataTypes.UUID,
+    name: "thumbnailImage",
+    allowNull: false,
+  },
+  onDelete: "RESTRICT",
+  onUpdate: "RESTRICT",
+});
+Video.belongsTo(Image, {
+  foreignKey: {
+    type: DataTypes.UUID,
+    name: "thumbnailImage",
+    allowNull: false,
+  },
+});
+
+export default Video;

@@ -1,5 +1,7 @@
 import { UNAUTHORIZED, OK } from "../../../constants/statusCodes.js";
 import { bearerTokenJwtAuth } from "../../../middlewares/authorization/bearerTokenJwtAuth.js";
+import { default as pages } from "./pages.js";
+import { default as account } from "./account.js";
 
 import Router from "@koa/router";
 const router = new Router({
@@ -15,12 +17,12 @@ router.use(
 
     await next();
   },
-  (ctx, next) => {
+  async (ctx, next) => {
     if (ctx.isUnauthenticated()) {
       ctx.status = UNAUTHORIZED;
       return (ctx.body = { message: "Unauthorised. User not Signed In" });
     }
-    next();
+    await next();
   }
 );
 
@@ -41,11 +43,9 @@ router.get("/paths", (ctx) => {
 });
 
 // pages
-import { default as pages } from "./pages.js";
 router.use(pages.routes());
 
 // all accounts routes condensed in one router @ /account
-import { default as account } from "./account.js";
 router.use(account.routes());
 
 // Entity creation endpoints for dev purposes

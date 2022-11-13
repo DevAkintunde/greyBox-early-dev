@@ -1,8 +1,8 @@
 import sequelize from "../../../config/db.config.js";
-import { DataTypes, Model, Deferrable } from "sequelize";
-import Image from "./Image.model.js";
-import Text from "./Text.model.js";
-import Video from "./Video.model.js";
+import { DataTypes, Model } from "sequelize";
+import PImage from "./PImage.model.js";
+import PText from "./PText.model.js";
+import PVideo from "./PVideo.model.js";
 
 class Paragraph extends Model {}
 
@@ -24,15 +24,17 @@ Paragraph.init(
   }
 );
 
-Paragraph.hasMany(Image, {
+Paragraph.hasMany(PImage, {
   sourceKey: "uuid",
   foreignKey: {
     type: DataTypes.UUID,
     name: "parent", //the paragraph holder
     allowNull: false,
   },
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
-Image.belongsTo(Paragraph, {
+PImage.belongsTo(Paragraph, {
   foreignKey: {
     type: DataTypes.UUID,
     name: "parent",
@@ -40,15 +42,17 @@ Image.belongsTo(Paragraph, {
   },
 });
 
-Paragraph.hasMany(Text, {
+Paragraph.hasMany(PText, {
   sourceKey: "uuid",
   foreignKey: {
     type: DataTypes.UUID,
     name: "parent", //the paragraph holder
     allowNull: false,
   },
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
-Text.belongsTo(Paragraph, {
+PText.belongsTo(Paragraph, {
   foreignKey: {
     type: DataTypes.UUID,
     name: "parent",
@@ -56,15 +60,17 @@ Text.belongsTo(Paragraph, {
   },
 });
 
-Paragraph.hasMany(Video, {
+Paragraph.hasMany(PVideo, {
   sourceKey: "uuid",
   foreignKey: {
     type: DataTypes.UUID,
     name: "parent", //the paragraph holder
     allowNull: false,
   },
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
-Video.belongsTo(Paragraph, {
+PVideo.belongsTo(Paragraph, {
   foreignKey: {
     type: DataTypes.UUID,
     name: "parent",

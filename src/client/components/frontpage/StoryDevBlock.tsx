@@ -13,13 +13,12 @@ export const StoryDevBlock = (props: any) => {
 
     ServerHandler({
       endpoint: "pages/about",
-      method: "GET",
+      method: "patch",
       headers: {
         accept: "application/vnd.api+json",
         "content-type": "application/vnd.api+json",
         "x-requestapp": "react-app",
       },
-      //body:{}
     }).then((res) => {
       setServer(res);
     });

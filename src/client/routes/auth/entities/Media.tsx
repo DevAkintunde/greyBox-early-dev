@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Route, Routes, useLocation } from "react-router-dom";
-import { PageForm } from "../../../components/auth/form/PageForm";
+import { Link, Route, Routes, useLocation } from "react-router-dom";
 import PageTitle from "../../../components/blocks/PageTitle";
 import { FormUi } from "../../../global/FormUi";
 import { ServerHandler } from "../../../global/functions/ServerHandler";
+import FileUploadForm from "../forms/FileUploadForm";
 
 //view all page entities
 
@@ -11,7 +11,7 @@ const Media = () => {
   return (
     <Routes>
       <Route path="/" index element={<ViewAllMedia />} />
-      <Route path="add/*" element={<AddMedia />} />
+      <Route path="add" element={<AddMedia />} />
       <Route path="add/image" element={<AddImage />} />
       <Route path="add/video" element={<AddVideo />} />
       <Route path="image/:media" element={<PerImage />} />
@@ -26,27 +26,22 @@ const ViewAllMedia = () => {
   return <></>;
 };
 const AddMedia = () => {
-  const location = useLocation();
-  const [data, setData] = useState({});
-  useEffect(() => {
-    /* ServerHandler({
-      endpoint: location.pathname,
-      method: "post",
-      body: {},
-    }); */
-
-    return () => {};
-  }, []);
-  console.log(data);
   return (
     <>
-      <PageTitle title="Create a page" />
-      <PageForm setData={setData} />
+      <PageTitle title="Add new media" />
+      <div className="grid grid-flow-col gap-4 mx-auto text-4xl">
+        <Link to="image" className="button-pri">
+          Add Image
+        </Link>
+        <Link to="video" className="button-pri">
+          Add Video
+        </Link>
+      </div>
     </>
   );
 };
 const AddImage = () => {
-  return <></>;
+  return <FileUploadForm />;
 };
 const AddVideo = () => {
   return <></>;

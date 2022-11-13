@@ -2,8 +2,7 @@ import sequelize from "../../../config/db.config.js";
 import { DataTypes, Model } from "sequelize";
 //const Page = require("./StaticPage.model");
 
-{
-  /*
+/*
   admin ranks are defined by roles in interger values. 
   1 being the least and rank increases upward. 
   a role of 3 automatically has the privileges of 1, 2 and 3.
@@ -15,7 +14,7 @@ import { DataTypes, Model } from "sequelize";
     4. executive
     5. dev
 */
-}
+
 const PROTECTED_ATTRIBUTES = ["password"];
 class Admin extends Model {
   toJSON() {
@@ -43,6 +42,10 @@ Admin.init(
     lastName: {
       type: DataTypes.STRING,
       field: "last_name",
+    },
+    phoneNumber: {
+      type: DataTypes.STRING,
+      field: "phone_number",
     },
     email: {
       type: DataTypes.STRING,

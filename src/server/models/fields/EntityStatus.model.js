@@ -1,12 +1,12 @@
 import sequelize from "../../config/db.config.js";
-import { DataTypes, Model, Deferrable } from "sequelize";
+import { DataTypes, Model } from "sequelize";
 
-/* const stateOptions = [
-  { key: "draft", state: "Draft" },
-    { key: "in_review", state: "In Review" },
-    { key: "published", state: "Published" },
-    { key: "unpublished", state: "Unpublished" },
-    { key: "deleted", state: "Deleted" },
+/* const statusOptions = [
+  { key: "draft", value: "Draft" },
+    { key: "in_review", value: "In Review" },
+    { key: "published", value: "Published" },
+    { key: "unpublished", value: "Unpublished" },
+    { key: "deleted", value: "Deleted" },
 ]; */
 
 class Status extends Model {}
@@ -17,12 +17,12 @@ Status.init(
       type: DataTypes.STRING,
       primaryKey: true,
     },
-    state: {
+    value: {
       type: DataTypes.STRING,
     },
   },
   {
-    tableName: "entity_status",
+    tableName: "entity_statuses",
     timestamps: false,
     sequelize, // We need to pass the connection instance
     modelName: "Status", // We need to choose the model name
