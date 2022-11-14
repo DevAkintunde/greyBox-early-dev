@@ -28,6 +28,16 @@ The backend server api for Studio|Mellywood corporate website server
 - Dev available paths: POST:/paths
 - Create new account: POST:/create-account
 
+### Media public routes: /api/v2/media/
+
+- only jpg/jpeg/png/webp supported & @ max size of 2mb
+- View: GET:/images/upload
+
+### Media auth operation routes: /api/v2/auth/media/
+
+- Upload new Image: POST:/images/upload
+- Upload new Video: POST:/videos/upload
+
 #### Note on authentication
 
 - Default authorisation does not keep users signed In.

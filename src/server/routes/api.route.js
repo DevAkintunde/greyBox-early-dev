@@ -15,8 +15,15 @@ router
     koaBody({
       multipart: true,
       formidable: {
+        maxFileSize: 1024 * 1024,
         filter: (part) => {
-          return part.mimetype && part.mimetype.includes("image");
+          return (
+            (part.mimetype &&
+              (part.mimetype.includes("image/jpg") ||
+                part.mimetype.includes("image/jpeg"))) ||
+            part.mimetype.includes("image/png") ||
+            part.mimetype.includes("image/webp")
+          );
         },
         uploadDir: path.join(__dirname, process.env.privatePath),
         keepExtensions: true,
@@ -58,8 +65,8 @@ router
     )
       ctx.throw(400, "Bad request!");
 
-    console.log("body", ctx.request.body);
-    console.log("files", ctx.request.files);
+    /* console.log("body", ctx.request.body);
+    console.log("files", ctx.request.files); */
 
     await next();
   })

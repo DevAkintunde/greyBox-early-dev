@@ -1,9 +1,9 @@
 import { Route, Routes } from "react-router-dom";
-import MainNav from "./client/regions/MainNav";
+import MainNav from "./client/regions/nav/MainNav";
 import { Router } from "./client/routes/Router";
 import AppFrame from "./client/global/AppFrame";
 import bgImage from "./assets/lens-contour2.png";
-import QuickButtons from "./client/regions/QuickButtons";
+import QuickButtons from "./client/regions/nav/QuickButtons";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -68,13 +68,7 @@ export function ClientApp() {
                         key={name}
                         path={path ? path : "/"}
                         element={
-                          <RouteComp
-                            className={
-                              !path
-                                ? ""
-                                : "w-[90%] sm:w-[80%] lg:w-[70%] mx-auto mt-32"
-                            }
-                          />
+                          <RouteComp className={!path ? "" : "app-container"} />
                         }
                       />
                     );

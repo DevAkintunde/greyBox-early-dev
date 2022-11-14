@@ -44,7 +44,7 @@ const SignIn = () => {
     let isMounted = true;
     const signIn = async () => {
       ServerHandler({
-        endpoint: "account/sign-in",
+        endpoint: "/account/sign-in",
         method: "POST",
         headers: {
           accept: "application/json",

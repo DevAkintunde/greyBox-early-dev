@@ -1,4 +1,3 @@
-"use strict";
 // query caller/processors
 import compose from "koa-compose";
 // Always remember to map modelToPath each time urlQueryTranslator is added to a new path pattern
@@ -14,7 +13,7 @@ import { BAD_REQUEST } from "../constants/statusCodes.js";
 const urlQueryTranslator = compose([
   async (ctx, next) => {
     let entityPath = ctx.originalUrl;
-    if (ctx.isUnauthenticated && !entityPath.includes("state=published")) {
+    if (ctx.isUnauthenticated() && !entityPath.includes("state=published")) {
       if (entityPath.includes("?")) {
         ctx.originalUrl = entityPath + "&filter[state=published]";
       } else {
@@ -24,8 +23,7 @@ const urlQueryTranslator = compose([
     await next();
   },
   async (ctx, next) => {
-    {
-      /*
+    /*
   Only use this middleware to breakdown queries attached to url. 
   Queries should generally be attached behind the '?' notation.
   where the first character of the back_half of the router URL is '?'
@@ -68,7 +66,6 @@ structure is contructed as:
     Optional filters should be preceded with '!' of the operator.
       filter[address.state[!END_WITH]="town"]
 */
-    }
     /*
     console.log("originalUrl: ", ctx.originalUrl);
     console.log("path: ", ctx.path);
@@ -82,6 +79,7 @@ structure is contructed as:
       if (queryChecker && queryChecker[1]) {
         query = decodeURI(queryChecker[1]);
       }
+
       if (query || ctx.params) {
         let queryArray = query ? query.split("&") : null;
         // model is always the last param in path before query
@@ -90,6 +88,7 @@ structure is contructed as:
         if (urlParamsCheck.length === 0) {
           dbCaller = "findAll";
           let modelFromPathSplit = ctx.path.split("/");
+          //console.log("modelFromPathSplit: ", modelFromPathSplit);
           //condition carters for trailing slash that may be in url
           if (modelFromPathSplit[modelFromPathSplit.length - 1]) {
             model =
@@ -166,7 +165,7 @@ structure is contructed as:
             include: include,
           };
         }
-        //console.log('query: ', urlQuery)
+        console.log("query: ", urlQuery);
         ctx.state.urlQuery = urlQuery;
       }
     }

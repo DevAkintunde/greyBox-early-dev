@@ -1,10 +1,12 @@
-import React, { useEffect } from "react";
+import React, { useContext, useEffect } from "react";
 import { FaGripLines } from "react-icons/fa";
 import { NavLink, useLocation } from "react-router-dom";
+import { TabMenu } from "../../global/AppFrame";
 import { AppSignOut } from "../../global/functions/AppSignOut";
 import { jsStyler } from "../../global/functions/jsStyler";
 
 const UserMenu = () => {
+  const { tab }: any = useContext(TabMenu);
   const location = useLocation();
   const menuButton = (
     <>
@@ -53,6 +55,27 @@ const UserMenu = () => {
         //tabIndex={-1}
         jsstyler-toggle="UserMenuButton"
       >
+        {/* Import per entity menu through context */}
+        {tab && Object.keys(tab).length > 0
+          ? Object.keys(tab).map((thisMenu) => {
+              return (
+                <li>
+                  <NavLink
+                    to={tab[thisMenu]}
+                    className={({ isActive }) =>
+                      "border-b-2 block p-3 text-center hover:text-yellow-900 hover:bg-amber-300 hover:border-r-4" +
+                      (isActive
+                        ? " text-color-ter bg-amber-300 border-r-4"
+                        : " text-color-sec")
+                    }
+                    title={thisMenu}
+                  >
+                    {thisMenu}
+                  </NavLink>
+                </li>
+              );
+            })
+          : null}
         <ul>
           <li>
             <NavLink
@@ -70,6 +93,12 @@ const UserMenu = () => {
           </li>
           <li>
             <NavLink to="auth/pages/create">New Page</NavLink>
+          </li>
+          <li>
+            <NavLink to="auth/media">Media</NavLink>
+          </li>
+          <li>
+            <NavLink to="auth/media/images">Images</NavLink>
           </li>
           <li>
             <NavLink to="auth/media/add">Upload Media</NavLink>

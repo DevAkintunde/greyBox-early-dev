@@ -71,7 +71,7 @@ export const FormUi = ({
 }: FormProps) => {
   const [thisFormData, setThisFormData]: FormData | any = useState();
   useEffect(() => {
-    if (fields.length > 0) {
+    if (fields && fields.length > 0) {
       let importedData: FormData = new FormData();
       fields.forEach((field, index) => {
         if (field.defaultValue) {
@@ -196,34 +196,36 @@ export const FormUi = ({
   };
 
   /*   let formFieldsDefault = {}; */
-  fields.forEach((field: Fields) => {
-    /*     if (field.defaultValue)
+  fields &&
+    fields.length > 0 &&
+    fields.forEach((field: Fields) => {
+      /*     if (field.defaultValue)
       formFieldsDefault = {
         ...formFieldsDefault,
         [field.id]: field.defaultValue,
       }; */
-    if (field.container) {
-      if (containersWithDefault[field["container"]]) {
-        if (!containersWithDefault[field["container"]].fields)
-          containersWithDefault[field["container"]] = {
-            ...containersWithDefault[field["container"]],
-            fields: [],
+      if (field.container) {
+        if (containersWithDefault[field["container"]]) {
+          if (!containersWithDefault[field["container"]].fields)
+            containersWithDefault[field["container"]] = {
+              ...containersWithDefault[field["container"]],
+              fields: [],
+            };
+          containersWithDefault[field["container"]].fields.push(field);
+        } else {
+          let newContainer = {
+            ...dEfAuLtCoNtAiNeR,
+            fields: [field],
           };
-        containersWithDefault[field["container"]].fields.push(field);
+          containersWithDefault = {
+            ...containersWithDefault,
+            [field["container"]]: newContainer,
+          };
+        }
       } else {
-        let newContainer = {
-          ...dEfAuLtCoNtAiNeR,
-          fields: [field],
-        };
-        containersWithDefault = {
-          ...containersWithDefault,
-          [field["container"]]: newContainer,
-        };
+        containersWithDefault.dEfAuLtCoNtAiNeR.fields.push(field);
       }
-    } else {
-      containersWithDefault.dEfAuLtCoNtAiNeR.fields.push(field);
-    }
-  });
+    });
 
   //submit form button when no button is imported
   const submitForm = (input: any) => (e: any) => {

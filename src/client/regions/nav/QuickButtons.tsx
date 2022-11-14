@@ -1,7 +1,7 @@
 import React from "react";
 import { useLocation } from "react-router-dom";
-import UserMenu from "../components/auth/UserMenu";
-import ContactButton from "../components/blocks/ContactButton";
+import UserMenu from "../../components/auth/UserMenu";
+import ContactButton from "../../components/blocks/ContactButton";
 
 const QuickButtons = () => {
   let location = useLocation();

@@ -1,7 +1,7 @@
 export const SITENAME_FULL = "Studio | Mellywood";
 export const SITENAME = "Studio|M";
 
-const API_ENDPOINT = "/api/v2/";
+const API_ENDPOINT = "/api/v2";
 export const SITEURL = "https://studio.mellywood.com";
 const LOCAL_URL = "http://localhost:5173";
 

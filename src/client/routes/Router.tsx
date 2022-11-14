@@ -6,7 +6,7 @@ import { StaffLogin } from "./Misc/StaffLogin";
 
 export const Router = () => {
   return (
-    <div className="w-[90%] sm:w-[80%] lg:w-[70%] mx-auto mt-32">
+    <div className="app-container">
       <Routes>
         <Route path="auth/*" element={<AuthRouter />} />
         <Route path="account/*" element={<StaffLogin />} />

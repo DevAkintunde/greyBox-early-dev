@@ -1,7 +1,7 @@
 import Router from "@koa/router";
 import { default as account } from "./account/index.js";
 import { default as page } from "./page/index.js";
-import { default as media } from "./media/index.js";
+import { default as publicMedia } from "./media/index.js";
 import { default as auth } from "./authRoutes/index.js";
 import { default as dbFields } from "./dbFieldsOptions/index.js";
 
@@ -12,8 +12,8 @@ const router = new Router({
 // pages, anonymous account routes & other public entities routes
 router.use(account.routes());
 router.use(page.routes());
-// media entities routes
-router.use(media.routes());
+// public media entities routes
+router.use(publicMedia.routes());
 
 // privileged routes
 router.use(auth.routes());

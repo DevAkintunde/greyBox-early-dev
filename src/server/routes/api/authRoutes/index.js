@@ -2,6 +2,7 @@ import { UNAUTHORIZED, OK } from "../../../constants/statusCodes.js";
 import { bearerTokenJwtAuth } from "../../../middlewares/authorization/bearerTokenJwtAuth.js";
 import { default as pages } from "./pages.js";
 import { default as account } from "./account.js";
+import { default as authMedia } from "./media/index.js";
 
 import Router from "@koa/router";
 const router = new Router({
@@ -44,9 +45,10 @@ router.get("/paths", (ctx) => {
 
 // pages
 router.use(pages.routes());
-
 // all accounts routes condensed in one router @ /account
 router.use(account.routes());
+//auth media routes
+router.use(authMedia.routes());
 
 // Entity creation endpoints for dev purposes
 /* import { default as entityCreate } from "./createEndpoints";

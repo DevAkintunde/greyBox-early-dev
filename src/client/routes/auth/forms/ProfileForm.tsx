@@ -63,7 +63,7 @@ export const ProfileForm = () => {
     if (e.target.classList && !e.target.classList.contains("bounce"))
       e.target.classList.add("bounce");
     ServerHandler({
-      endpoint: "auth/account/update",
+      endpoint: "/auth/account/update",
       method: "patch",
       headers: {
         accept: "application/json",

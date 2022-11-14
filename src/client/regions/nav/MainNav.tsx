@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { jsStyler } from "../global/functions/jsStyler";
-import SocialMediaLinks from "../components/blocks/SocialMediaLinks";
+import { jsStyler } from "../../global/functions/jsStyler";
+import SocialMediaLinks from "../../components/blocks/SocialMediaLinks";
 //import { FaGripLines } from "react-icons/fa";
 
 const MainNav = ({ routes }: any) => {

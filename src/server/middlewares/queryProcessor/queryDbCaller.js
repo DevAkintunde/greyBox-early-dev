@@ -5,7 +5,8 @@ import sequelize from "../../config/db.config.js";
 import Page from "../../models/entities/nodes/StaticPage.model.js";
 import Admin from "../../models/entities/accounts/Admin.model.js";
 
-import { OK, SERVER_ERROR } from "../../constants/statusCodes.js";
+import { BAD_REQUEST, OK, SERVER_ERROR } from "../../constants/statusCodes.js";
+import { logger } from "../../utils/logger.js";
 
 const queryDbCaller = async (ctx, next) => {
   // Call the database from processored urlQuery
@@ -65,7 +66,7 @@ const queryDbCaller = async (ctx, next) => {
             }
           }
           //console.log("transactions:", t);
-          // check of model is a group of Array.
+          // check if model is a group of Array.
           if (Array.isArray(model)) {
             model.forEach((thisModel) => {
               caller(thisModel);
@@ -84,11 +85,12 @@ const queryDbCaller = async (ctx, next) => {
             return outputData;
           });
         });
-        ctx.state.queryData = data;
+        ctx.state.data = data;
       } catch (err) {
-        //next(err);
-        ctx.status = SERVER_ERROR;
-        ctx.message = err.message;
+        logger.error(err);
+        ctx.status = BAD_REQUEST;
+        ctx.message = "Unable to find entities";
+        return;
       }
     }
     //console.log("query data 1: ", JSON.stringify(ctx.state.queryData, null, 2));

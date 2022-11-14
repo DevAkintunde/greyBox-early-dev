@@ -11,10 +11,14 @@
 @layer base {
   html {
     font-family: mellyFont, system-ui, sans-serif;
+    @apply bg-color-def;
   }
 
   #app {
     @apply max-w-[1280px] mx-auto h-screen bg-color-def text-color-sec text-sm;
+  }
+  .app-container {
+    @apply w-[90%] sm:w-[80%] lg:w-[70%] mx-auto mt-32 drop-shadow-2xl shadow-md shadow-color-ter;
   }
   main {
     @apply mx-auto;
