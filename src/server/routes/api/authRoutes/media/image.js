@@ -45,6 +45,7 @@ router.post(
   "/upload",
   async (ctx, next) => {
     ctx.state.entityType = "Image";
+    console.log("review header", ctx.header);
     await next();
   },
   mediaUpload,

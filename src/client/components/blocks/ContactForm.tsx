@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import PageTitle from "../../components/blocks/PageTitle";
-import { FormUi } from "../../global/FormUi";
+import { FormUi } from "../../global/UI/FormUi";
 
 export const ContactForm = ({ className }: any) => {
   const [data, setData] = useState({});

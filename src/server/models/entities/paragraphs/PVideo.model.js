@@ -26,7 +26,7 @@ PVideo.init(
     createdAt: "created",
     updatedAt: "updated",
     sequelize, // We need to pass the connection instance
-    modelName: "PVideo", // We need to choose the model name
+    modelName: "Pvideo", // We need to choose the model name
   }
 );
 

@@ -2,7 +2,7 @@ import { ServerHandler } from "./ServerHandler";
 
 const AppSignOut = () => {
   ServerHandler({
-    endpoint: "auth/account/sign-out",
+    endpoint: "/auth/account/sign-out",
     method: "get",
     headers: {
       accept: "application/json",

@@ -7,17 +7,23 @@ export const Image = ({
   alt,
   modal,
   entityUrl,
+  display,
 }: {
   src: string;
   alt: string;
   modal?: boolean;
   entityUrl?: string;
+  display?: string;
 }) => {
   return entityUrl ? (
     <Link to={entityUrl}>
       <img src={APP_ADDRESS + "/" + src} alt={alt} />
+      <h6>{alt}</h6>
     </Link>
   ) : (
-    <img src={APP_ADDRESS + "/" + src} alt={alt} />
+    <>
+      <img src={APP_ADDRESS + "/" + src} alt={alt} />
+      <h6>{alt}</h6>
+    </>
   );
 };

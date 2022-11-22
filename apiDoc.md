@@ -38,6 +38,11 @@ The backend server api for Studio|Mellywood corporate website server
 - Upload new Image: POST:/images/upload
 - Upload new Video: POST:/videos/upload
 
+### Notes of entity creation
+
+- Paragraphs must be attached to form as an array of sub-entities in the expected order required.
+  weight be be assigned to them by this order.
+
 #### Note on authentication
 
 - Default authorisation does not keep users signed In.

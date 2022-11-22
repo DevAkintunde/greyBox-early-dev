@@ -4,7 +4,7 @@ interface Fetcher {
   endpoint: string;
   headers?: object;
   method?: string;
-  body?: FormData;
+  body?: object;
   id?: string;
   waitFor?: string;
 }
@@ -65,12 +65,22 @@ const ServerHandler = async (data: string | Fetcher | Fetcher[]) => {
       });
     }
 
-    let headers = {
-      accept: "application/json",
-      //"content-type": "application/json",
+    let headers: any = {
+      accept: "application/vnd.api+json",
+      "content-type": "application/vnd.api+json",
       ...importedHeaders,
     };
-    let body = data.body ? data.body : null;
+    if (
+      headers["content-type"] &&
+      headers["content-type"].includes("form-data")
+    ) {
+      delete headers["content-type"];
+    }
+    let body = data.body
+      ? headers["content-type"] && headers["content-type"].includes("json")
+        ? JSON.stringify(data.body)
+        : data.body
+      : null;
 
     const getMethod = {
       method: "GET",
@@ -149,11 +159,11 @@ const ServerHandler = async (data: string | Fetcher | Fetcher[]) => {
       }
 
       let headers = {
-        accept: "application/json",
-        //"content-type": "application/json",
+        accept: "application/vnd.api+json",
+        "content-type": "application/vnd.api+json",
         ...importedHeaders,
       };
-      let body = thisCall.body ? thisCall.body : null;
+      let body = thisCall.body ? JSON.stringify(thisCall.body) : null;
 
       const getMethod = {
         method: "GET",
@@ -234,8 +244,8 @@ const ServerHandler = async (data: string | Fetcher | Fetcher[]) => {
     return fetch(serverAddress + data, {
       method: "GET",
       headers: {
-        accept: "application/json",
-        //"content-type": "application/json",
+        accept: "application/vnd.api+json",
+        "content-type": "application/vnd.api+json",
       },
     })
       .then((res: any) => {
@@ -264,8 +274,8 @@ const ServerHandler = async (data: string | Fetcher | Fetcher[]) => {
     return fetch(serverAddress!, {
       method: "GET",
       headers: {
-        accept: "application/json",
-        //"content-type": "application/json",
+        accept: "application/vnd.api+json",
+        "content-type": "application/vnd.api+json",
       },
     })
       .then((res) => {

@@ -12,7 +12,7 @@ import path from "node:path";
 const resolve = (p) => path.join("public", p);
 
 export const upload = async (ctx, next) => {
-  if (Object.keys(ctx.request.files).length > 0) {
+  if (ctx.request.files && Object.keys(ctx.request.files).length > 0) {
     try {
       let newMedia = await sequelize.transaction(async (t) => {
         let createdMedia = await Promise.all(

@@ -26,7 +26,7 @@ PImage.init(
     createdAt: "created",
     updatedAt: "updated",
     sequelize, // We need to pass the connection instance
-    modelName: "PImage", // We need to choose the model name
+    modelName: "Pimage", // We need to choose the model name
   }
 );
 

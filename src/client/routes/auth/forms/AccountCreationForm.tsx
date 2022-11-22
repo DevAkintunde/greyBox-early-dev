@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import PageTitle from "../../../components/blocks/PageTitle";
-import { FormUi } from "../../../global/FormUi";
+import { FormUi } from "../../../global/UI/FormUi";
 import { ServerHandler } from "../../../global/functions/ServerHandler";
 import { toast } from "react-toastify";
 

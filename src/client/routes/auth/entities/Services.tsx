@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
 import { PageForm } from "../../../components/auth/form/PageForm";
 import PageTitle from "../../../components/blocks/PageTitle";
-import { FormUi } from "../../../global/FormUi";
+import { FormUi } from "../../../global/UI/FormUi";
 import { ServerHandler } from "../../../global/functions/ServerHandler";
 
 //view all Service entities

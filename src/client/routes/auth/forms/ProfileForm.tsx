@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import PageTitle from "../../../components/blocks/PageTitle";
 import { Profile } from "../../../global/AppFrame";
-import { FormUi } from "../../../global/FormUi";
+import { FormUi } from "../../../global/UI/FormUi";
 import { ServerHandler } from "../../../global/functions/ServerHandler";
 
 export const ProfileForm = () => {

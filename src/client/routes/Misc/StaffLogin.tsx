@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from "react";
 import { Link, Route, Routes, useNavigate } from "react-router-dom";
 import PageTitle from "../../components/blocks/PageTitle";
-import { FormUi } from "../../global/FormUi";
+import { FormUi } from "../../global/UI/FormUi";
 import { ServerHandler } from "../../global/functions/ServerHandler";
 import { Profile } from "../../global/AppFrame";
 import { PasswordResetForm } from "./PasswordResetForm";
@@ -40,6 +40,8 @@ const SignIn = () => {
     if (profile && profile.uuid) navigate("/auth");
   }, [navigate, profile]);
 
+  console.log("data", data);
+
   useEffect(() => {
     let isMounted = true;
     const signIn = async () => {
@@ -47,12 +49,12 @@ const SignIn = () => {
         endpoint: "/account/sign-in",
         method: "POST",
         headers: {
-          accept: "application/json",
           "x-requesttoken": "session",
+          "content-type": "multipart/form-data",
         },
         body: data,
       }).then((res) => {
-        //console.log("res", res);
+        console.log("res", res);
         if (res.status !== 200) {
           let submitNotice = document.getElementById("form-actions-notice");
           if (submitNotice)
@@ -93,7 +95,16 @@ const SignIn = () => {
         <FormUi
           id="staffLogin"
           fields={fields}
-          formData={(data: object) => setData(data)}
+          formData={(data: FormData) => setData(data)}
+          /* buttons={[
+            {
+              value: "Upload",
+              weight: 1,
+              styling: "p-3 mx-auto",
+              submit: true,
+              action: () => setData(data),
+            },
+          ]} */
           className="max-w-screen-sm"
         />
         <Link

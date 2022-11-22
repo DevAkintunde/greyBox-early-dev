@@ -1,6 +1,7 @@
 import React, { ReactElement, useEffect, useState } from "react";
 import validator from "validator";
 import { APP_ADDRESS } from "../utils/app.config";
+import { ParagraphUI } from "./UI/ParagraphUI";
 
 interface FormButtons {
   value?: string;
@@ -69,8 +70,8 @@ export const FormUi = ({
   inputStyling,
   className,
 }: FormProps) => {
-  const [thisFormData, setThisFormData]: FormData | any = useState();
-  useEffect(() => {
+  const [thisFormData, setThisFormData]: any = useState({});
+  /* useEffect(() => {
     if (fields && fields.length > 0) {
       let importedData: FormData = new FormData();
       fields.forEach((field, index) => {
@@ -86,13 +87,13 @@ export const FormUi = ({
     } else {
       setThisFormData(new FormData());
     }
-  }, [fields]);
+  }, [fields]); */
 
   const handleInputData =
     (input: { id: string; type: string }) =>
     (e: { target: { value: string } | any }) => {
       // input value from the form
-      const { value } = e.target;
+      let { value } = e.target;
 
       //process validation
       let errorInsert = document.getElementById(
@@ -126,52 +127,46 @@ export const FormUi = ({
         submitButton["disabled"] = false;
       // console.log(submitButton);
 
-      //the follow sequence allows to manually insert FormData in early implementation
-      //consider alternatively using formID
-
-      let importedData: FormData = thisFormData;
       let checkBoxValues: string[] | any;
       //check if checkbox
       if (input.type === "checkbox") {
-        checkBoxValues = importedData.getAll(input.id);
-        if (Object.keys(checkBoxValues).length > 0) {
-          importedData.delete(input.id);
-          let valueExists = false;
-          for (let i = 0; i < checkBoxValues.length; i++) {
-            if (checkBoxValues[i] !== value) {
-              importedData.append(input.id, checkBoxValues[i]);
-            } else if (value) {
-              valueExists = true;
-            }
-          }
-          if (!valueExists) importedData.append(input.id, value);
+        checkBoxValues =
+          thisFormData && thisFormData[input.id as keyof typeof thisFormData]
+            ? thisFormData[input.id as keyof typeof thisFormData]
+            : [];
+        if (checkBoxValues.includes(value)) {
+          //remove from list
+          let filteredValues: string[] = [];
+          checkBoxValues.forEach((existingValue: string) => {
+            if (existingValue !== value) filteredValues.push(existingValue);
+          });
+          checkBoxValues = filteredValues;
         } else {
-          importedData.set(input.id, value);
+          checkBoxValues.push(value);
         }
-        setThisFormData(importedData);
+        if (checkBoxValues.length === 0) checkBoxValues = undefined;
       } else if (input.type === "file") {
-        const thisFile = e.target.files[0];
-        console.log(thisFile);
+        value = URL.createObjectURL(e.target.files[0]);
+        console.log(value);
         //console.log(URL.createObjectURL(e.target.files[0]));
-        if (thisFile) {
-          importedData.set(input.id, thisFile);
-        } else if (!value && importedData.has(input.id)) {
-          importedData.delete(input.id);
-        }
-        setThisFormData(importedData);
-      } else {
-        if (value) {
-          importedData.set(input.id, value);
-        } else if (!value && importedData.has(input.id)) {
-          importedData.delete(input.id);
-        }
-        setThisFormData(importedData);
       }
-      /* for (let [key, val] of thisFormData.entries()) {
-        console.log("thisFormData Looped", [key, val]);
-      } */
+
+      let thisValue = input.type !== "checkbox" ? value : checkBoxValues;
+      //updating for data state taking previous state and then adding new value
+      //delete form's field key once field is re-emptied
+      let newFormData;
+      if (thisValue.length > 0) {
+        newFormData = {
+          ...thisFormData,
+          [input.id]: input.type !== "checkbox" ? value : checkBoxValues,
+        };
+      } else {
+        delete thisFormData[input.id as keyof typeof thisFormData];
+        newFormData = thisFormData;
+      }
+      setThisFormData(newFormData);
     };
-  //console.log("thisFormData", thisFormData);
+  console.log("thisFormData", thisFormData);
   /*   const callbackAction = () => (e: any) => {
     e.preventDefault();
     let fetchForm: any = document.getElementById(id);
@@ -374,6 +369,20 @@ export const FormUi = ({
                       id: field.id,
                       type: field.type,
                     })}
+                    className={
+                      "form-input" +
+                      (field.styling ? " " + field.styling : "") +
+                      (inputStyling ? " " + inputStyling : "")
+                    }
+                    defaultValue={field.defaultValue ? field.defaultValue : ""}
+                    required={field.required ? true : false}
+                  />
+                ) : field.type && field.type === "paragraph" ? (
+                  <ParagraphUI
+                    id={field.id}
+                    name={field.id}
+                    formData={thisFormData}
+                    setFormData={setThisFormData}
                     className={
                       "form-input" +
                       (field.styling ? " " + field.styling : "") +

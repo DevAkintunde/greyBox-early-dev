@@ -6,11 +6,11 @@ import paragraphTextValidator from "./paragraph/textValidator.js";
 const submit = async (ctx, next) => {
   const schema = Joi.object().keys({
     title: Joi.string().trim().min(3).max(250).required(),
-    featuredImagePath: Joi.string().trim().uri().min(3).max(250),
+    featuredImage: Joi.string().trim().uri().min(3).max(250),
     summary: Joi.string().trim(),
     body: Joi.any(),
-    alias: Joi.string().trim().max(100).required(),
-    state: Joi.string().trim(),
+    alias: Joi.string().trim().max(100),
+    status: Joi.string().trim(),
     revisionNote: Joi.string().trim(),
     uuid: Joi.string().guid({ version: ["uuidv4"] }),
     //UUID is mere placeholder during creation but needed during entity update.
@@ -51,11 +51,11 @@ const alias = async (ctx, next) => {
   await validatorHandler(ctx, next, schema);
 };
 
-const state = async (ctx, next) => {
+const status = async (ctx, next) => {
   const schema = Joi.object().keys({
-    state: Joi.string().trim(),
+    status: Joi.string().trim(),
   });
   await validatorHandler(ctx, next, schema);
 };
 
-export { submit, alias, state };
+export { submit, alias, status };

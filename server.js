@@ -12,6 +12,7 @@ import logger from "koa-logger";
 import cron from "node-cron";
 import cors from "@koa/cors";
 import passport from "koa-passport";
+import { logger as appLogger } from "./src/server/utils/logger.js";
 //const { jobScheduler } = require("./cron/job");
 //const { httpLogStream } = require("./utils/logger");
 
@@ -80,7 +81,21 @@ export async function createThisServer(env = process.env.NODE_ENV) {
     .use(session(sessionConfig, app))
     .use(cors(corsOptions))
     .use(passport.initialize())
-    .use(passport.session());
+    .use(passport.session())
+    .use(async (ctx, next) => {
+      try {
+        await next();
+      } catch (err) {
+        appLogger.error(err);
+        if (env !== "production") console.log(err);
+        ctx.status = err.statusCode || err.status || err.statusText || 500;
+        if (err.message) ctx.message = err.message;
+        ctx.body = {
+          status: ctx.status,
+          statusText: err.message ? err.message : undefined,
+        };
+      }
+    });
 
   if (env !== "production") {
     //add Vite middleware watcher.
@@ -131,6 +146,9 @@ export async function createThisServer(env = process.env.NODE_ENV) {
       ctx.body = e.stack;
     }
   });
+  /* app.on("error", (err, ctx) => {
+    appLogger.error(err);
+  }); */
   app.listen(5173);
   //return { app, vite };
 }

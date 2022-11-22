@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import PageTitle from "../../../components/blocks/PageTitle";
-import { FormUi } from "../../../global/FormUi";
+import { FormUi } from "../../../global/UI/FormUi";
 import { ServerHandler } from "../../../global/functions/ServerHandler";
 
 export const PasswordForm = () => {

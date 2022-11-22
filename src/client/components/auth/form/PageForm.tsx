@@ -1,19 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { importJsonData } from "../../../global/functions/importJsonData";
-import { FormUi } from "../../../global/FormUi";
+import { FormUi } from "../../../global/UI/FormUi";
 import { ServerHandler } from "../../../global/functions/ServerHandler";
 
-export const PageForm = ({ setData }: any) => {
-  const statusOptions = [
-    { key: "draft", value: "Draft" },
-    { key: "in_review", value: "In Review" },
-    { key: "published", value: "Published" },
-    { key: "unpublished", value: "Unpublished" },
-  ];
-  let services = ["Draft", "In Review", "Published", "Unpublished"];
+export const PageForm = ({ setData, buttons, id }: any) => {
+  const [statusOptions, setStatusOptions] = useState();
+
   useEffect(() => {
     let isMounted = true;
-    /*  promise() */
+    ServerHandler("/field/auth/statuses").then((res) => {
+      if (res.status === 200 && isMounted) setStatusOptions(res.options);
+    });
+
     return () => {
       isMounted = false;
     };
@@ -25,7 +22,6 @@ export const PageForm = ({ setData }: any) => {
     //styling: '',
   };
   const paragraphContainer = {
-    //type: null,
     weight: 2,
     indent: 2,
     //styling: '',
@@ -35,7 +31,45 @@ export const PageForm = ({ setData }: any) => {
     fromFields: fromFields,
   };
 
+  let paragraphs = [
+    {
+      type: "image",
+      weight: 2,
+      id: "paraImage",
+      value: "http://mellywood.com/pathToImage",
+      /* value: {
+        title: "image test here",
+        path: "http://mellywood.com/pathToImage",
+      }, */
+    },
+    /*  {
+      type: "video",
+      weight: 1,
+      //id: Math.random().toString(36).substring(2), //uuid from db when it's available
+      id: "hdiudhyyedioid",
+      value: {
+        title: "this is video title field",
+        source: "youtube",
+        path: "http://mellywood.com/strnage-capo",
+      },
+    }, */
+    {
+      type: "text",
+      weight: 3,
+      //id: Math.random().toString(36).substring(2), //uuid from db when it's available
+      id: "tuwcvsxixnjnxs",
+      value: "this is a test text field alone",
+    },
+  ];
+
   let fields = [
+    {
+      type: "image",
+      weight: 0,
+      container: "fromFields",
+      label: "Featured Image",
+      id: "featuredImage",
+    },
     {
       type: "text",
       weight: 0,
@@ -45,23 +79,6 @@ export const PageForm = ({ setData }: any) => {
       required: true,
     },
     {
-      type: "radio",
-      weight: 0,
-      container: "fromFields",
-      label: "state",
-      id: "state",
-      options: statusOptions,
-      //options: services,
-    },
-    {
-      type: "image",
-      weight: 0,
-      container: "fromFields",
-      label: "Feature Image",
-      id: "featuredImageUri",
-    },
-
-    {
       type: "textarea",
       weight: 0,
       container: "fromFields",
@@ -69,11 +86,12 @@ export const PageForm = ({ setData }: any) => {
       id: "summary",
     },
     {
-      type: "text",
+      type: "radio",
       weight: 0,
       container: "fromFields",
-      label: "alias",
-      id: "alias",
+      label: "Status",
+      id: "status",
+      options: statusOptions,
     },
     {
       type: "textarea",
@@ -82,32 +100,17 @@ export const PageForm = ({ setData }: any) => {
       label: "Revision",
       id: "revisionNote",
     },
-  ];
-  console.log("json", importJsonData("serviceTypes"));
-  /*   const buttons = {
-    clearButton: 2,
-    cancelButton: 1,
-    submit: 3,
-    submit: {value: 'update', weight: 3}
-  }; */
-  const buttons = [
-    { value: "Save as draft", weight: 3, action: () => {} },
     {
-      value: "update",
-      weight: 3,
-      styling: "p-3 mx-auto",
-      submit: true,
-      action: () => {},
+      type: "paragraph",
+      weight: 0,
+      container: "fromFields",
+      label: "Body",
+      id: "body",
+      defaultValue: paragraphs,
     },
   ];
 
   return (
-    <FormUi
-      containers={containers}
-      fields={fields}
-      //formData={(data: object) => setData(data)}
-      buttons={buttons}
-      className="mx-10"
-    />
+    <FormUi containers={containers} id={id} fields={fields} buttons={buttons} />
   );
 };

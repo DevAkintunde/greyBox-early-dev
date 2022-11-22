@@ -22,7 +22,7 @@ PText.init(
     //createdAt: "created",
     //updatedAt: "updated",
     sequelize, // We need to pass the connection instance
-    modelName: "PText", // We need to choose the model name
+    modelName: "Ptext", // We need to choose the model name
   }
 );
 

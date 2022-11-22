@@ -14,24 +14,36 @@ import {
 import { markForDeletion } from "../functions/markForDeletion.js";
 import { logger } from "../utils/logger.js";
 
-export const createItem = async (ctx) => {
+export const createItem = async (ctx, next) => {
   try {
-    let { state } = ctx.request.body;
-    const checkStatus = await Status.findByPk(state);
+    let { status } = ctx.request.body;
+    const checkStatus = await Status.findByPk(status);
     let modelAttributes = ctx.request.body;
     if (!checkStatus) {
       modelAttributes = {
         ...modelAttributes,
-        state: "draft",
-        author: ctx.state.user.uuid,
+        status: "draft",
+        author: ctx.state.user.email,
+      };
+    } else if (status.toLowerCase() === "publish") {
+      modelAttributes = {
+        ...modelAttributes,
+        state: true,
+        author: ctx.state.user.email,
+      };
+    } else {
+      modelAttributes = {
+        ...modelAttributes,
+        author: ctx.state.user.email,
       };
     }
+
     if (modelAttributes.body) {
       if (
         Array.isArray(modelAttributes.body) &&
         modelAttributes.body.length > 0
       ) {
-        createdPage = await sequelize.transaction(async (t) => {
+        let createdPage = await sequelize.transaction(async (t) => {
           const newParagraph = await Paragraph.create({ transaction: t });
           let parentParagraph = newParagraph.dataValues.uuid;
           let paragraphsBundle = [];
@@ -39,10 +51,7 @@ export const createItem = async (ctx) => {
           modelAttributes.body.forEach((paragraph, index) => {
             if (paragraph.validated) {
               let thisType = paragraph.type;
-              let thisModelType =
-                "P" +
-                thisType.substring(1, 0).toUpperCase() +
-                thisType.substring(1);
+              let thisModelType = "P" + thisType.toLowerCase();
               //exclude type value from been forwarded to ORM
               delete paragraph.type;
               //remove validation checker from validator.
@@ -86,34 +95,35 @@ export const createItem = async (ctx) => {
             relations: { body: paragraphRelations },
           };
         });
-        return (ctx.state.page = createdPage);
+        ctx.state.data = createdPage;
       } else {
-        return (ctx.state.error = {
+        ctx.state.error = {
           status: BAD_REQUEST,
-          message: "Paragraphs must be an array in the expected view order.",
-        });
+          statusText: "Paragraphs must be an array in the expected view order.",
+        };
       }
     } else {
       try {
         const page = await StaticPage.create(modelAttributes);
-        return (ctx.state.page = { ...page.toJSON(), type: "page" });
+        ctx.state.data = { ...page.toJSON(), type: "page" };
       } catch (err) {
         logger.error("Page Controller", err);
-        return (ctx.state.error = {
+        ctx.state.error = {
           status: SERVER_ERROR,
-          message: err.parent ? err.parent.detail : err.message,
-        });
+          statusText: err.parent ? err.parent.detail : err.message,
+        };
       }
     }
   } catch (err) {
     logger.error("Page Controller", err);
 
-    //console.log("Page 222::", JSON.stringify(err, null, 2));
-    return (ctx.state.error = {
+    console.log("Page 222::", JSON.stringify(err, null, 2));
+    ctx.state.error = {
       status: SERVER_ERROR,
-      message: err.parent ? err.parent.detail : err.message,
-    });
+      statusText: err.parent ? err.parent.detail : err.message,
+    };
   }
+  await next();
 };
 
 export const updateItem = async (ctx) => {
@@ -289,7 +299,7 @@ export const updateAlias = async (ctx) => {
   }
 };
 
-export const updateState = async (ctx) => {
+export const updateStatus = async (ctx) => {
   let { alias, state } = ctx.request.body;
   try {
     return sequelize.transaction(async (t) => {

@@ -10,16 +10,13 @@ import {
   NOT_FOUND,
   SERVER_ERROR,
 } from "../../../constants/statusCodes.js";
-import {
-  submit as validateSubmit,
-  alias as validateAlias,
-  state as validateStateOptions,
-} from "../../../validators/pageFormValidator.js";
+import * as formValidator from "../../../validators/pageFormValidator.js";
 import * as pageController from "../../../controllers/page.controller.js";
 import sequelize from "../../../config/db.config.js";
 import { mediaUpload } from "../../../middlewares/operations/mediaUpload.js";
 
 import Router from "@koa/router";
+import { aliasInjector } from "../../../middlewares/operations/aliasInjector.js";
 
 const router = new Router({
   prefix: "/page",
@@ -56,19 +53,34 @@ router.get(
 
 router.post(
   "/create",
-  validateSubmit,
+  async (ctx, next) => {
+    console.log("page string", JSON.stringify(ctx.request.body));
+    console.log("page data", JSON.stringify(ctx.request.body, null, 2));
+    await next();
+  },
+  formValidator.submit,
+  aliasInjector,
   mediaUpload,
+  async (ctx, next) => {
+    console.log("page media check string", JSON.stringify(ctx.request.body));
+    console.log(
+      "page media check data",
+      JSON.stringify(ctx.request.body, null, 2)
+    );
+    await next();
+  },
   pageController.createItem,
   (ctx) => {
     if (ctx.state.error) {
       ctx.status = ctx.state.error.status;
-      return (ctx.body = {
-        status: ctx.state.error.status,
-        message: ctx.state.error.message,
-      });
+      ctx.message = ctx.state.error.statusText;
+      return;
     }
-    ctx.status = CREATED;
-    return (ctx.body = ctx.state.page);
+    ctx.body = {
+      status: OK,
+      data: ctx.state.data,
+    };
+    return;
   }
 );
 
@@ -104,7 +116,7 @@ router.patch(
     };
     await next();
   },
-  validateSubmit,
+  formValidator.submit,
   async (ctx, next) => {
     await next();
     if (ctx.state.error) {
@@ -151,7 +163,7 @@ router.patch(
     };
     await next();
   },
-  validateAlias,
+  formValidator.alias,
   async (ctx, next) => {
     await next();
     if (ctx.state.error) {
@@ -168,7 +180,7 @@ router.patch(
 );
 
 router.patch(
-  "/:alias/update/state",
+  "/:alias/update/status",
   async (ctx, next) => {
     ctx.request.body = {
       ...ctx.request.body,
@@ -176,7 +188,7 @@ router.patch(
     };
     await next();
   },
-  validateStateOptions,
+  formValidator.status,
   async (ctx, next) => {
     await next();
     if (ctx.state.error) {
@@ -189,7 +201,7 @@ router.patch(
     ctx.status = OK;
     return ctx.body;
   },
-  pageController.updateState
+  pageController.updateStatus
 );
 
 export default router;

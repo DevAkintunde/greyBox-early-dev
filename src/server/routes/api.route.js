@@ -5,6 +5,7 @@ import Router from "@koa/router";
 import { default as routes } from "./api/index.js";
 import path from "node:path";
 import serve from "koa-static-server";
+import { NOT_ACCEPTABLE } from "../constants/statusCodes.js";
 
 const router = new Router();
 const __dirname = path.dirname("./");
@@ -15,7 +16,7 @@ router
     koaBody({
       multipart: true,
       formidable: {
-        maxFileSize: 1024 * 1024,
+        maxFileSize: 2 * 1024 * 1024,
         filter: (part) => {
           return (
             (part.mimetype &&
@@ -37,6 +38,12 @@ router
             ext
           );
         },
+      },
+      onError: (err, ctx) => {
+        //formidable Error: image more than required size, CODE = 1009
+        if (err.code === 1009)
+          ctx.throw(NOT_ACCEPTABLE, "Media exceeds maximum allowed size");
+        ctx.throw(err);
       },
     })
   )
@@ -65,8 +72,8 @@ router
     )
       ctx.throw(400, "Bad request!");
 
-    /* console.log("body", ctx.request.body);
-    console.log("files", ctx.request.files); */
+    //console.log("body", JSON.stringify(ctx.request.body, null, 2));
+    console.log("files", ctx.request.files);
 
     await next();
   })

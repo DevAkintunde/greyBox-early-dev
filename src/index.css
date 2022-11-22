@@ -98,7 +98,7 @@
   }
   input[type="button"],
   input[type="submit"] {
-    @apply cursor-pointer disabled:text-gray-600;
+    @apply cursor-pointer disabled:text-gray-600 p-2 border-4 rounded-lg mx-2;
   }
 
   .button-pri {

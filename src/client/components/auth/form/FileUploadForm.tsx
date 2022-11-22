@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { FormUi } from "../../../global/FormUi";
+import { FormUi } from "../../../global/UI/FormUi";
 import { ServerHandler } from "../../../global/functions/ServerHandler";
 
 interface ComponentData {
   type: string;
   updateForm?: boolean;
+  callback: Function;
 }
-const FileUploadForm = ({ type, updateForm }: ComponentData) => {
+const FileUploadForm = ({ type, updateForm, callback }: ComponentData) => {
   const navigate = useNavigate();
   let location = useLocation();
+
   //fields
   const [fields, setFields]: any = useState([
     {
@@ -28,7 +30,7 @@ const FileUploadForm = ({ type, updateForm }: ComponentData) => {
       label: "Title",
     },
   ]);
-  console.log(location);
+  //console.log(location);
   let isUpdateForm = updateForm ? location.pathname.split("/update")[0] : "";
   //update form resolver
   useEffect(() => {
@@ -61,9 +63,9 @@ const FileUploadForm = ({ type, updateForm }: ComponentData) => {
     e.preventDefault();
     e.target.disabled = true;
     console.log("data", data);
-    for (let [key, val] of data.entries()) {
+    /* for (let [key, val] of data.entries()) {
       console.log("fetchForm", [key, val]);
-    }
+    } */
     if (e.target.classList && !e.target.classList.contains("bounce"))
       e.target.classList.add("bounce");
 
@@ -72,7 +74,8 @@ const FileUploadForm = ({ type, updateForm }: ComponentData) => {
       endpoint: `/auth/media/${type}s/upload`,
       method: "post",
       headers: {
-        accept: "application/json",
+        //accept: "application/json",
+        "content-type": "multipart/form-data",
       },
       body: data,
     }).then((res) => {
@@ -91,7 +94,8 @@ const FileUploadForm = ({ type, updateForm }: ComponentData) => {
             button["disabled"] = false; */
         }
       } else {
-        navigate("/auth/media/" + type + "s/" + res.data.alias);
+        callback(res);
+        //navigate("/auth/media/" + type + "s/" + res.data.alias);
       }
     });
   };

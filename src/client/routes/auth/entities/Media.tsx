@@ -4,9 +4,9 @@ import PageTitle from "../../../components/blocks/PageTitle";
 import { Throbber } from "../../../components/blocks/Throbber";
 import { Image } from "../../../components/Image";
 import { TabMenu } from "../../../global/AppFrame";
-import { FormUi } from "../../../global/FormUi";
+import { FormUi } from "../../../global/UI/FormUi";
 import { ServerHandler } from "../../../global/functions/ServerHandler";
-import FileUploadForm from "../forms/FileUploadForm";
+import FileUploadForm from "../../../components/auth/form/FileUploadForm";
 
 //view all page entities
 
