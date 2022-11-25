@@ -10,6 +10,7 @@ import * as mediaController from "../../../../controllers/media.controller.js";
 import * as mediaFormValidator from "../../../../validators/mediaFormValidator.js";
 import { NOT_FOUND } from "../../../../constants/statusCodes.js";
 import { aliasInjector } from "../../../../middlewares/operations/aliasInjector.js";
+import { UUID4Validator } from "../../../../functions/UUID4Validator.js";
 
 const router = new Router({
   prefix: "/images",
@@ -70,11 +71,16 @@ router.post(
   }
 );
 
+//alias can be either path alias or entity UUID
 router.get(
   "/:alias",
   async (ctx, next) => {
     ctx.state.entityType = "Image";
-    ctx.request.body = { alias: ctx.params.alias };
+    if (UUID4Validator(ctx.params.alias)) {
+      ctx.request.body = { uuid: ctx.params.alias };
+    } else {
+      ctx.request.body = { alias: ctx.params.alias };
+    }
     await next();
   },
   mediaController.viewItem,

@@ -1,7 +1,8 @@
 import React, { ReactElement, useEffect, useState } from "react";
 import validator from "validator";
-import { APP_ADDRESS } from "../../utils/app.config";
+import { jsStyler } from "../functions/jsStyler";
 import { ImageUi } from "./ImageUi";
+import { VideoUi } from "./VideoUi";
 
 interface pParagraphUI {
   id: string;
@@ -27,7 +28,7 @@ export const ParagraphUI = ({
     label: string;
     id: string;
     required?: boolean; //yet to be implemented
-    value?: number | string | any;
+    defaultValue?: number | string | any;
     styling?: string;
     description?: { before: string } | { after: string } | string; // use as field description text
     extraElement?: ReactElement | null; // Extra react component that can be inserted along with each field
@@ -43,23 +44,34 @@ export const ParagraphUI = ({
       defaultValue.length > 0
     ) {
       let importedData: FormData = formData;
+      //starting at -ve 1 to compensate for the speed difference between React SetState and variable update
+      let defaultIndex = -1;
       defaultValue.forEach((paragraph: any) => {
-        //console.log("paragraphhhh", paragraph);
-        if (typeof paragraph.value === "string") {
-          importedData.append(
-            "body[" + paragraph.id + "][" + paragraph.type + "]",
-            paragraph.value
+        if (typeof paragraph.defaultValue === "string") {
+          importedData.set(
+            "body[" + paragraph.id + "][" + paragraph.type + "][value]",
+            paragraph.defaultValue
+          );
+          defaultIndex++;
+          importedData.set(
+            "body[" + paragraph.id + "][" + paragraph.type + "][weight]",
+            defaultIndex.toString()
           );
         } else if (
-          typeof paragraph.value === "object" &&
-          Object.keys(paragraph.value).length > 0
+          typeof paragraph.defaultValue === "object" &&
+          Object.keys(paragraph.defaultValue).length > 0
         ) {
-          Object.keys(paragraph.value).forEach((key) => {
-            importedData.append(
+          Object.keys(paragraph.defaultValue).forEach((key) => {
+            importedData.set(
               "body[" + paragraph.id + "][" + paragraph.type + "][" + key + "]",
-              paragraph.value[key]
+              paragraph.defaultValue[key]
             );
           });
+          defaultIndex++;
+          importedData.set(
+            "body[" + paragraph.id + "][" + paragraph.type + "][weight]",
+            defaultIndex.toString()
+          );
         }
       });
       setInitialParagraphValues(true);
@@ -68,66 +80,64 @@ export const ParagraphUI = ({
   }, [defaultValue, formData, id, initialParagraphValues, setFormData]);
 
   const handleInputData =
-    (paragraphProps: { paragraphID: string; type: string; value?: string }) =>
+    (paragraphProps: {
+      name: string;
+      id: string;
+      type: string;
+      value?: string;
+    }) =>
     (e: { target: { value: string } | any }) => {
       // input value from the form
-      let { value } =
+      let { name, id, value } =
         paragraphProps && paragraphProps.type !== "image"
           ? e.target
           : paragraphProps;
 
-      let perParagraphContents = e.target.parentNode.childNodes;
-      //console.log("perParagraphContents:", perParagraphContents);
-      let allInputs: any[] = [];
-      perParagraphContents &&
-        perParagraphContents.length > 0 &&
-        perParagraphContents.forEach((input: any) => {
-          if (
-            input &&
-            (input.tagName === "INPUT" || input.tagName === "TEXTAREA")
-          ) {
-            allInputs.push({ name: input.name, value: input.value });
-          }
-        });
-      //console.log("inputs:", allInputs);
-
       //process validation
-      /* let errorInsert = document.getElementById(
-        "form-item-notice-" + paragraphProps.type
-      );
+      let errorInsert = document.getElementById("form-item-notice-" + id);
       if (paragraphProps.type === "text" && validator.isEmpty(value)) {
-        if (errorInsert) errorInsert.textContent = "Add content to field";
-        return;
+        if (errorInsert) errorInsert.textContent = "Add text to field";
       } else if (paragraphProps.type === "video" && validator.isEmpty(value)) {
         if (errorInsert) errorInsert.textContent = "Add content to field";
         return;
       }
-      if (errorInsert && errorInsert.textContent) errorInsert.textContent = ""; */
+      if (errorInsert && errorInsert.textContent) errorInsert.textContent = "";
 
       //falsify disabled attribute on submit
       let submitButton: any = document.querySelector("input[type=submit]");
       if (submitButton && submitButton["disabled"])
         submitButton["disabled"] = false;
-      // console.log(submitButton);
 
       //updating for data state taking previous state and then adding new values
       //delete form's field key once field is re-emptied
       let importedData: FormData = formData;
-      if (allInputs.length > 0) {
-        allInputs.forEach((input) => {
-          console.log("input this", input);
-          if (input.value) {
-            importedData.set(input.name, input.value);
-          } else if (!input.value && importedData.has(input.name)) {
-            importedData.delete(input.name);
-          }
-        });
+      if (value) {
+        importedData.set(name, value);
+      } else if (!value && importedData.has(name)) {
+        importedData.delete(name);
       }
+      //generate weights of paragraphs by their html element placement
+      let paragraphElements = document.querySelectorAll(".paragraph-form-item");
+      paragraphElements.forEach((paragraph, index) => {
+        if (importedData.has(name)) {
+          importedData.set(paragraph.id + "[weight]", index.toString());
+        } else if (importedData.has(paragraph.id + "[weight]")) {
+          importedData.delete(paragraph.id + "[weight]");
+        }
+      });
       setFormData(importedData);
     };
 
-  /* process imported paragraphs from server with editing entities */
+  //paragraph remover/deleter
+  const deleteParagraphFromBody = () => {
+    console.log("oya naa");
+    let createNoticeElement = document.createElement("div");
+    //createNoticeElement.setAttribute("id", 'deletethisParagraph');
+    //createNoticeElement.onchange = "";
+    createNoticeElement.innerText = "Add Text";
+  };
 
+  /* process imported paragraphs from server with editing entities */
   let paragraphDefaults: any[] = defaultValue ? defaultValue : null;
   if (paragraphDefaults && paragraphDefaults.length > 0) {
     paragraphDefaults.sort((a, b): any => a.weight - b.weight);
@@ -139,113 +149,76 @@ export const ParagraphUI = ({
           return (
             <React.Fragment key={index}>
               <div
-                id={field.id}
+                id={"body[" + field.id + "][" + field.type + "]"}
                 className={
                   "paragraph-form-item form-item form-item-" + field.type
                 }
               >
-                <label
-                  htmlFor={field.id}
-                  /* className={
+                <div className={"paragraph-label paragraph-label-" + field.id}>
+                  <label
+                    htmlFor={field.id}
+                    /* className={
                     "form-label" + (labelStyling ? " " + inputStyling : "")
                   } */
-                >
-                  {field.type === "video"
-                    ? "Add Video"
-                    : field.type === "image"
-                    ? "Add Image"
-                    : "Add Text"}
-                  {field.label}
-                </label>
+                  >
+                    {field.type === "video"
+                      ? "Add Video"
+                      : field.type === "image"
+                      ? "Add Image"
+                      : "Add Text"}
+                    {field.label}
+                  </label>
+                  <span className="jsstyler toggle">
+                    <input
+                      id={"delete-paragraph-" + field.id}
+                      type="button"
+                      value="remove"
+                      onClick={jsStyler()}
+                    />
+                    <div jsstyler-toggle={"delete-paragraph-" + field.id}>
+                      <input
+                        type="button"
+                        value="Confirm Delete"
+                        onClick={deleteParagraphFromBody}
+                      />
+                    </div>
+                  </span>
+                </div>
                 {field.type && field.type === "image" ? (
-                  <>
-                    {/* <label htmlFor={field.id + "-" + field.type + "-image"}>Image</label> */}
-                    <ImageUi
-                      id={field.id + "-" + field.type + "-image"}
-                      name={"body[" + field.id + "][value]"}
-                      defaultValue={field && field.value ? field.value : null}
-                      formData={formData}
-                      handleInputData={handleInputData({
-                        paragraphID: field.id,
-                        type: field.type,
-                      })}
-                      required={true}
-                    />
-                  </>
+                  <ImageUi
+                    id={"body[" + field.id + "][" + field.type + "]"}
+                    name={"body[" + field.id + "][" + field.type + "][uuid]"}
+                    defaultValue={
+                      field.defaultValue ? field.defaultValue : null
+                    }
+                    formData={formData}
+                    handleInputData={handleInputData}
+                    required={true}
+                  />
                 ) : field.type && field.type === "video" ? (
-                  <>
-                    <label htmlFor={"title"}>Title</label>
-                    <input
-                      type="text"
-                      id={field.id + "-" + field.type + "-title"}
-                      name={"body[" + field.id + "][" + field.type + "][title]"}
-                      onChange={handleInputData({
-                        paragraphID: field.id,
-                        type: field.type,
-                        //weight: index,
-                      })}
-                      className={className}
-                      defaultValue={
-                        field.value && field.value.title
-                          ? field.value.title
-                          : ""
-                      }
-                      required={true}
-                    />
-                    <label htmlFor={"source"}>Source</label>
-                    <input
-                      type="text"
-                      id={field.id + "-" + field.type + "-source"}
-                      name={
-                        "body[" + field.id + "][" + field.type + "][source]"
-                      }
-                      onChange={handleInputData({
-                        paragraphID: field.id,
-                        type: field.type,
-                      })}
-                      className={className}
-                      defaultValue={
-                        field.value && field.value.source
-                          ? field.value.source
-                          : ""
-                      }
-                      required={true}
-                    />
-                    <label htmlFor={"path"}>Video Url</label>
-                    <input
-                      type="text"
-                      id={field.id + "-" + field.type + "-path"}
-                      name={"body[" + field.id + "][" + field.type + "][path]"}
-                      onChange={handleInputData({
-                        paragraphID: field.id,
-                        type: field.type,
-                        //weight: index,
-                      })}
-                      className={className}
-                      defaultValue={
-                        field.value && field.value.path ? field.value.path : ""
-                      }
-                      required={true}
-                    />
-                  </>
+                  <VideoUi
+                    id={"body[" + field.id + "][" + field.type + "]"}
+                    name={"body[" + field.id + "][" + field.type + "][uuid]"}
+                    defaultValue={
+                      field.defaultValue ? field.defaultValue : null
+                    }
+                    formData={formData}
+                    handleInputData={handleInputData}
+                    required={true}
+                  />
                 ) : field.type && field.type === "text" ? (
-                  <>
-                    <label htmlFor={field.id + "-" + field.type + "-text"}>
-                      Text
-                    </label>
-                    <textarea
-                      id={field.id + "-" + field.type + "-text"}
-                      name={"body[" + field.id + "][value]"}
-                      onChange={handleInputData({
-                        paragraphID: field.id,
-                        type: field.type,
-                        //weight: index,
-                      })}
-                      className={className}
-                      defaultValue={field.value ? field.value : ""}
-                      required={true}
-                    />{" "}
-                  </>
+                  <textarea
+                    id={field.id}
+                    name={"body[" + field.id + "][" + field.type + "][value]"}
+                    onChange={handleInputData({
+                      id: field.id,
+                      name: "body[" + field.id + "][text]",
+                      type: field.type,
+                    })}
+                    className={className}
+                    defaultValue={field.defaultValue ? field.defaultValue : ""}
+                    required={true}
+                  />
                 ) : (
                   <div>NO paragraph type indicated</div>
                 )}
@@ -278,44 +251,139 @@ export const ParagraphUI = ({
 
   const paragraphFormId = id + "-paragraph";
   const addText = () => {
-    console.log("add text clicked");
-    console.log("paragraphFormId", paragraphFormId);
     let paragraphElement = document.getElementById(paragraphFormId);
-    /* <textarea
-          id={field.id}
-          name={field.id}
-          onChange={onChangeAction}
-          className={
-            "form-input" +
-            (field.styling ? " " + field.styling : "") +
-            (inputStyling ? " " + inputStyling : "")
-          }
-          defaultValue={field.value ? field.value : ""}
-          required={field.required ? true : false}
-        /> */
+    let newParagraphID = Math.random().toString(36).substring(2);
+    let paragraphName = "body[" + newParagraphID + "][text]";
+
     let newContainerElement = document.createElement("div");
+
+    let paragraphLabelContainer = document.createElement("div");
+    let paragraphLabel = document.createElement("label");
+    let paragraphRemoveButtonContainer = document.createElement("span");
+    let paragraphRemoveButtonToggle = document.createElement("input");
+    let paragraphRemoveButtonConfirmContainer = document.createElement("div");
+    let paragraphRemoveButtonConfirm = document.createElement("input");
+    paragraphLabel.setAttribute("for", newParagraphID);
+    paragraphLabel.innerText = "Add Text";
+    paragraphRemoveButtonContainer.setAttribute("class", "jsstyler toggle");
+    paragraphRemoveButtonToggle.setAttribute(
+      "id",
+      "delete-paragraph-" + newParagraphID
+    );
+    paragraphRemoveButtonToggle.setAttribute("type", "button");
+    paragraphRemoveButtonToggle.setAttribute("value", "remove");
+    paragraphRemoveButtonToggle.onclick = jsStyler();
+    paragraphRemoveButtonConfirmContainer.setAttribute(
+      "jsstyler-toggle",
+      "delete-paragraph-" + newParagraphID
+    );
+    paragraphRemoveButtonConfirm.setAttribute("type", "button");
+    paragraphRemoveButtonConfirm.setAttribute("value", "Confirm Delete");
+    paragraphRemoveButtonConfirm.onclick = deleteParagraphFromBody;
+
+    paragraphRemoveButtonConfirmContainer.appendChild(
+      paragraphRemoveButtonConfirm
+    );
+    paragraphRemoveButtonContainer.appendChild(paragraphRemoveButtonToggle);
+    paragraphRemoveButtonContainer.appendChild(
+      paragraphRemoveButtonConfirmContainer
+    );
+    paragraphLabelContainer.appendChild(paragraphLabel);
+    paragraphLabelContainer.appendChild(paragraphRemoveButtonContainer);
+
+    let noticeContainer = document.createElement("div");
+    noticeContainer.setAttribute("id", "form-item-notice-" + newParagraphID);
+    noticeContainer.setAttribute("class", "form-item-notice");
+
     let textElement = document.createElement("textarea");
-    textElement.setAttribute("id", id);
-    textElement.setAttribute("name", "text");
-    //textElement.setAttribute(onchange, { onChangeAction });
-    textElement.setAttribute("class", "text");
+    textElement.setAttribute("id", newParagraphID);
+    textElement.setAttribute("name", paragraphName + "[value]");
+    textElement.setAttribute("class", "form-input");
     textElement.setAttribute("required", "");
-    //textElement.onchange = onChangeAction;
+    textElement.onchange = handleInputData({
+      id: newParagraphID,
+      name: paragraphName,
+      type: "text",
+    });
+    newContainerElement.appendChild(paragraphLabelContainer);
     newContainerElement.appendChild(textElement);
+    newContainerElement.appendChild(noticeContainer);
     paragraphElement?.appendChild(newContainerElement);
   };
+
+  const addImage = () => {
+    let paragraphElement = document.getElementById(paragraphFormId);
+    let newParagraphID = Math.random().toString(36).substring(2);
+    let paragraphName = "body[" + newParagraphID + "][text]";
+
+    let newContainerElement = document.createElement("div");
+
+    let paragraphLabelContainer = document.createElement("div");
+    let paragraphLabel = document.createElement("label");
+    let paragraphRemoveButtonContainer = document.createElement("span");
+    let paragraphRemoveButtonToggle = document.createElement("input");
+    let paragraphRemoveButtonConfirmContainer = document.createElement("div");
+    let paragraphRemoveButtonConfirm = document.createElement("input");
+    paragraphLabel.setAttribute("for", newParagraphID);
+    paragraphLabel.innerText = "Add Text";
+    paragraphRemoveButtonContainer.setAttribute("class", "jsstyler toggle");
+    paragraphRemoveButtonToggle.setAttribute(
+      "id",
+      "delete-paragraph-" + newParagraphID
+    );
+    paragraphRemoveButtonToggle.setAttribute("type", "button");
+    paragraphRemoveButtonToggle.setAttribute("value", "remove");
+    paragraphRemoveButtonToggle.onclick = jsStyler();
+    paragraphRemoveButtonConfirmContainer.setAttribute(
+      "jsstyler-toggle",
+      "delete-paragraph-" + newParagraphID
+    );
+    paragraphRemoveButtonConfirm.setAttribute("type", "button");
+    paragraphRemoveButtonConfirm.setAttribute("value", "Confirm Delete");
+    paragraphRemoveButtonConfirm.onclick = deleteParagraphFromBody;
+
+    paragraphRemoveButtonConfirmContainer.appendChild(
+      paragraphRemoveButtonConfirm
+    );
+    paragraphRemoveButtonContainer.appendChild(paragraphRemoveButtonToggle);
+    paragraphRemoveButtonContainer.appendChild(
+      paragraphRemoveButtonConfirmContainer
+    );
+    paragraphLabelContainer.appendChild(paragraphLabel);
+    paragraphLabelContainer.appendChild(paragraphRemoveButtonContainer);
+
+    let noticeContainer = document.createElement("div");
+    noticeContainer.setAttribute("id", "form-item-notice-" + newParagraphID);
+    noticeContainer.setAttribute("class", "form-item-notice");
+
+    let textElement = document.createElement("textarea");
+    textElement.setAttribute("id", newParagraphID);
+    textElement.setAttribute("name", paragraphName + "[value]");
+    textElement.setAttribute("class", "form-input");
+    textElement.setAttribute("required", "");
+    textElement.onchange = handleInputData({
+      id: newParagraphID,
+      name: paragraphName,
+      type: "text",
+    });
+    newContainerElement.appendChild(paragraphLabelContainer);
+    newContainerElement.appendChild(textElement);
+    newContainerElement.appendChild(noticeContainer);
+    paragraphElement?.appendChild(newContainerElement);
+  };
+
   return (
-    <div id={paragraphFormId}>
-      <>
+    <>
+      <div id={paragraphFormId}>
         {ParagraphFields && ParagraphFields.length > 0
           ? ParagraphFields.map((field, index) => {
               return field;
             })
           : null}
-      </>
+      </div>
       <input onClick={addText} type="button" value="Add Text" />
-      <input type="button" value="Add Image" />
+      <input onClick={addImage} type="button" value="Add Image" />
       <input type="button" value="Add Video" />
-    </div>
+    </>
   );
 };

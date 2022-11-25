@@ -36,29 +36,29 @@ export const PageForm = ({ setData, buttons, id }: any) => {
       type: "image",
       weight: 2,
       id: "paraImage",
-      value: "http://mellywood.com/pathToImage",
-      /* value: {
+      //defaultValue: "31f2b002-efe0-4af1-8871-2a68449d27f1",
+      defaultValue: {
         title: "image test here",
-        path: "http://mellywood.com/pathToImage",
-      }, */
+        uuid: "31f2b002-efe0-4af1-8871-2a68449d27f1",
+      },
     },
-    /*  {
+    {
       type: "video",
       weight: 1,
       //id: Math.random().toString(36).substring(2), //uuid from db when it's available
       id: "hdiudhyyedioid",
-      value: {
+      defaultValue: {
         title: "this is video title field",
         source: "youtube",
-        path: "http://mellywood.com/strnage-capo",
+        uuid: "http://mellywood.com/strnage-capo",
       },
-    }, */
+    },
     {
       type: "text",
       weight: 3,
       //id: Math.random().toString(36).substring(2), //uuid from db when it's available
       id: "tuwcvsxixnjnxs",
-      value: "this is a test text field alone",
+      defaultValue: "this is a test text field alone",
     },
   ];
 
@@ -69,6 +69,11 @@ export const PageForm = ({ setData, buttons, id }: any) => {
       container: "fromFields",
       label: "Featured Image",
       id: "featuredImage",
+      defaultValue: {
+        uuid: "31f2b002-efe0-4af1-8871-2a68449d27f1",
+        title: "featured image title",
+      },
+      //defaultValue: "31f2b002-efe0-4af1-8871-2a68449d27f1",
     },
     {
       type: "text",

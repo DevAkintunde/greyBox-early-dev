@@ -3,6 +3,12 @@ import { DataTypes, Model, Deferrable } from "sequelize";
 import VideoSource from "../../fields/VideoSource.model.js";
 import Image from "./Image.model.js";
 
+/* const videoTypes = [
+  { key: "hosted", value: "Upload to Server" },
+  { key: "youtube", value: "YouTube Video" },
+  { key: "vimeo", value: "Vimeo Video" },
+]; */
+
 class Video extends Model {}
 
 Video.init(

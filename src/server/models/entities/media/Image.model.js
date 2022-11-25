@@ -23,6 +23,9 @@ Image.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    styles: {
+      type: DataTypes.JSON,
+    },
   },
   {
     tableName: "images",

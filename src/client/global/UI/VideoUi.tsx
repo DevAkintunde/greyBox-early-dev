@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { Image } from "../../components/Image";
+import { Video } from "../../components/Video";
 import FileUploadForm from "../../components/auth/form/FileUploadForm";
 import { APP_ADDRESS } from "../../utils/app.config";
 import { ServerHandler } from "../functions/ServerHandler";
 import { Throbber } from "../../components/blocks/Throbber";
 
-export const ImageUi = ({
+export const VideoUi = ({
   defaultValue,
   id,
   name,
@@ -21,7 +21,7 @@ export const ImageUi = ({
   formData: FormData;
   handleInputData: Function;
 }) => {
-  const [previewImage, setPreviewImage]: any = useState(null);
+  const [previewVideo, setPreviewVideo]: any = useState(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -33,13 +33,21 @@ export const ImageUi = ({
     }
 
     if (isMounted && defaultImported)
-      ServerHandler("/auth/media/images/" + defaultImported).then((res) => {
-        //console.log("res", res);
-        if (res && res.status === 200)
-          setPreviewImage({
-            path: APP_ADDRESS + "/" + res.data.styles.path.small,
-            mediaTitle: res.data.title,
-          });
+      ServerHandler("/auth/media/videos/" + defaultImported).then((res) => {
+        console.log("res", res);
+        if (res && res.status === 200) {
+          if (res.data.source !== "hosted") {
+            setPreviewVideo({
+              path: res.data.path,
+              mediaTitle: res.data.title,
+            });
+          } else {
+            setPreviewVideo({
+              path: APP_ADDRESS + "/" + res.data.path,
+              mediaTitle: res.data.title,
+            });
+          }
+        }
       });
 
     return () => {
@@ -48,25 +56,25 @@ export const ImageUi = ({
   }, [defaultValue]);
 
   const [view, setView]: any = useState(
-    <ImagePreview
+    <VideoPreview
       handleInputData={handleInputData}
-      media={previewImage ? previewImage : null}
+      media={previewVideo ? previewVideo : null}
       name={name}
       id={id}
       defaultValue={defaultValue}
-      setPreviewImage={setPreviewImage}
+      setPreviewVideo={setPreviewVideo}
     />
   );
 
   const switchToPreview: any = (media: string | null) => {
     setView(
-      <ImagePreview
+      <VideoPreview
         handleInputData={handleInputData}
-        media={media ? media : previewImage ? previewImage : null}
+        media={media ? media : previewVideo ? previewVideo : null}
         name={name}
         id={id}
         defaultValue={defaultValue}
-        setPreviewImage={setPreviewImage}
+        setPreviewVideo={setPreviewVideo}
       />
     );
   };
@@ -75,49 +83,49 @@ export const ImageUi = ({
     let isMounted = true;
     if (isMounted)
       setView(
-        <ImagePreview
+        <VideoPreview
           handleInputData={handleInputData}
-          media={previewImage ? previewImage : null}
+          media={previewVideo ? previewVideo : null}
           name={name}
           id={id}
           defaultValue={defaultValue}
-          setPreviewImage={setPreviewImage}
+          setPreviewVideo={setPreviewVideo}
         />
       );
     return () => {
       isMounted = false;
     };
-  }, [defaultValue, handleInputData, id, name, previewImage]);
+  }, [defaultValue, handleInputData, id, name, previewVideo]);
 
   const switchToUploadNew = () => {
     setView(
-      <ImageUpload
+      <VideoUpload
         name={name}
-        setPreviewImage={setPreviewImage}
+        setPreviewVideo={setPreviewVideo}
         handleInputData={handleInputData}
       />
     );
   };
   const switchToLibrary = () => {
     setView(
-      <ImageLibrary
+      <VideoLibrary
         name={name}
         id={id}
         formData={formData}
         handleInputData={handleInputData}
-        setPreviewImage={setPreviewImage}
+        setPreviewVideo={setPreviewVideo}
       />
     );
   };
 
   return (
-    <div id="image-ui">
+    <div id="video-ui">
       <div id="viewer">{view ? view : <Throbber />}</div>
-      <div id="image-ui-buttons">
+      <div id="video-ui-buttons">
         <input
           type="button"
           value="Preview"
-          onClick={() => switchToPreview(previewImage)}
+          onClick={() => switchToPreview(previewVideo)}
         />
         <input type="button" value="Upload" onClick={switchToUploadNew} />
         <input type="button" value="Library" onClick={switchToLibrary} />
@@ -126,61 +134,61 @@ export const ImageUi = ({
   );
 };
 
-const ImagePreview = ({
+const VideoPreview = ({
   handleInputData,
   media,
   name,
   id,
   defaultValue,
-  setPreviewImage,
+  setPreviewVideo,
 }: {
   handleInputData: any;
   media: { path: string; mediaTitle?: string };
   name: string;
   id: string;
   defaultValue: { uuid: string; title?: string };
-  setPreviewImage?: any;
+  setPreviewVideo?: any;
 }) => {
-  const imageRemover = () => {
-    setPreviewImage();
+  const videoRemover = () => {
+    setPreviewVideo();
     handleInputData({
       name: name,
       id: id,
-      type: "image",
+      type: "video",
       value: "",
     })();
   };
 
   return media && handleInputData ? (
     <>
-      <span className="image-previewer-container">
+      <span className="video-previewer-container">
         <img
-          id={"image-previewer"}
+          id={"video-previewer"}
           src={media.path}
           alt="preview"
           style={{ width: "100px" }}
         />
         {media && media.mediaTitle ? (
-          <div className={"image-previewer-title"}>{media.mediaTitle}</div>
+          <div className={"video-previewer-title"}>{media.mediaTitle}</div>
         ) : null}
         <input
-          id="image-selected-remover"
+          id="video-selected-remover"
           type="button"
           value="X"
-          onClick={imageRemover}
+          onClick={videoRemover}
         />
       </span>
-      <div className="image-ui-title">
-        <label htmlFor={id + "-image-title"}>Title|</label>
+      <div className="video-ui-title">
+        <label htmlFor={id + "-video-title"}>Title|</label>
         <input
           type="text"
-          id={id + "-image-title"}
+          id={id + "-video-title"}
           name={id + "[title]"}
           onChange={(e: any) => {
             handleInputData({
               name: id + "[title]",
               id: id,
-              type: "image",
+              type: "video",
               value: e.target.value,
             })();
           }}
@@ -193,27 +201,27 @@ const ImagePreview = ({
       </div>
     </>
   ) : (
-    <span id={"image-previewer"}>Add an Image</span>
+    <span id={"video-previewer"}>Add an Video</span>
   );
 };
 
-const ImageLibrary = ({
+const VideoLibrary = ({
   formData,
   name,
   id,
-  setPreviewImage,
+  setPreviewVideo,
   handleInputData,
 }: {
   formData: FormData;
   name: string;
   id: string;
-  setPreviewImage: any;
+  setPreviewVideo: any;
   handleInputData: any;
 }) => {
   const [library, setLibrary]: any = useState({});
   useEffect(() => {
     let isMounted = true;
-    ServerHandler("/auth/media/images").then((res) => {
+    ServerHandler("/auth/media/videos").then((res) => {
       if (isMounted && res.status === 200) setLibrary(res.data);
     });
     return () => {
@@ -221,53 +229,59 @@ const ImageLibrary = ({
     };
   }, []);
 
-  const [imageChoice, setImageChoice]: any = useState(null);
+  const [videoChoice, setVideoChoice]: any = useState(null);
 
   //console.log("library", library);
 
   const onSelect = () => {
-    if (imageChoice && imageChoice.uuid) {
-      setPreviewImage({
-        path: APP_ADDRESS + "/" + imageChoice.styles.path.small,
-        mediaTitle: imageChoice.title,
-      });
+    if (videoChoice && videoChoice.uuid) {
+      if (videoChoice.source !== "hosted") {
+        setPreviewVideo({
+          path: videoChoice.path,
+          mediaTitle: videoChoice.title,
+        });
+      } else {
+        setPreviewVideo({
+          path: APP_ADDRESS + "/" + videoChoice.path,
+          mediaTitle: videoChoice.title,
+        });
+      }
     } else {
-      setPreviewImage((prev: any) => prev);
+      setPreviewVideo((prev: any) => prev);
     }
     handleInputData({
       name: name,
       id: id,
-      type: "image",
-      value: imageChoice && imageChoice.uuid ? imageChoice.uuid : "",
+      type: "video",
+      value: videoChoice && videoChoice.uuid ? videoChoice.uuid : "",
     })();
   };
 
-  const deleteImage = (uuid: string) => {
+  const deleteVideo = (uuid: string) => {
     if (uuid)
       ServerHandler({
         method: "delete",
-        endpoint: "/auth/media/images/delete/" + uuid,
+        endpoint: "/auth/media/videos/delete/" + uuid,
       }).then((res) => {
         //console.log("res delete", res);
         toast(res.statusText);
-        setPreviewImage(null);
+        setPreviewVideo(null);
       });
   };
 
-  return library && !library.image ? (
+  return library && !library.video ? (
     <Throbber />
-  ) : library && library.image && library.image.length > 0 ? (
+  ) : library && library.video && library.video.length > 0 ? (
     <>
       <div className="grid grid-cols-4">
-        {library.image.map((media: any) => {
+        {library.video.map((media: any) => {
           return (
-            <span key={media.uuid} className="image-ui-library">
+            <span key={media.uuid} className="video-ui-library">
               <label htmlFor={media.uuid}>
-                <Image
+                <Video
                   src={media.styles.path.small}
                   alt={media.title}
                   display="overlay"
-                  //entityUrl={media.alias}
                 />
               </label>
               <input
@@ -275,7 +289,7 @@ const ImageLibrary = ({
                 type="radio"
                 //value="Select"
                 name="media"
-                onClick={() => setImageChoice(media)}
+                onClick={() => setVideoChoice(media)}
                 defaultChecked={
                   formData &&
                   formData.has(name) &&
@@ -286,10 +300,10 @@ const ImageLibrary = ({
               />
               {media && media.uuid ? (
                 <input
-                  id="image-ui-library-delete-button"
+                  id="video-ui-library-delete-button"
                   type="button"
                   value="Delete"
-                  onClick={() => deleteImage(media.uuid)}
+                  onClick={() => deleteVideo(media.uuid)}
                 />
               ) : null}
             </span>
@@ -298,7 +312,7 @@ const ImageLibrary = ({
       </div>
 
       <input
-        id="image-ui-select-button"
+        id="video-ui-select-button"
         type="button"
         value="Select"
         //name={name}
@@ -306,29 +320,37 @@ const ImageLibrary = ({
       />
     </>
   ) : (
-    <div>No image found in library</div>
+    <div>No video found in library</div>
   );
 };
 
-const ImageUpload = ({ setPreviewImage, handleInputData, name, id }: any) => {
+const VideoUpload = ({ setPreviewVideo, handleInputData, name, id }: any) => {
   const uploadAction = (res: any) => {
     //console.log("the", res);
     if (res && res.data && res.data.path)
-      setPreviewImage({
-        path: APP_ADDRESS + "/" + res.data.styles.path.small,
-        mediaTitle: res.data.title,
-      });
+      if (res.data.source !== "hosted") {
+        setPreviewVideo({
+          path: res.data.path,
+          mediaTitle: res.data.title,
+        });
+      } else {
+        setPreviewVideo({
+          path: APP_ADDRESS + "/" + res.data.path,
+          mediaTitle: res.data.title,
+        });
+      }
+
     handleInputData({
       name: name,
       id: id,
-      type: "image",
+      type: "video",
       value: res && res.data && res.data.uuid ? res.data.uuid : "",
     })();
   };
   return (
     <FileUploadForm
       nested={true}
-      type="image"
+      type="video"
       callback={(res: any) => uploadAction(res)}
     />
   );

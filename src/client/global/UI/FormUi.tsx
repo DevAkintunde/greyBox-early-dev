@@ -42,6 +42,7 @@ interface FormProps {
   labelStyling?: string;
   inputStyling?: string;
   className?: string;
+  nested?: boolean;
 }
 
 /* const buttons = [
@@ -70,18 +71,37 @@ export const FormUi = ({
   labelStyling,
   inputStyling,
   className,
+  nested,
 }: FormProps) => {
   const [thisFormData, setThisFormData]: FormData | any = useState();
   //set initial form values
   useEffect(() => {
     if (!thisFormData) {
-      console.log("sssssssssssssss");
       if (fields && fields.length > 0) {
         let importedData: FormData = new FormData();
         fields.forEach((field, index) => {
           if (field.defaultValue) {
-            if (field.type !== "file" && field.type !== "paragraph") {
+            if (
+              field.type !== "file" &&
+              field.type !== "image" &&
+              field.type !== "paragraph"
+            ) {
               importedData.append(field.id, field.defaultValue);
+            } else if (field.type === "image") {
+              if (typeof field.defaultValue === "string") {
+                importedData.append(field.id + "[uuid]", field.defaultValue);
+              } else {
+                if (field.defaultValue.uuid)
+                  importedData.append(
+                    field.id + "[uuid]",
+                    field.defaultValue.uuid
+                  );
+                if (field.defaultValue.title)
+                  importedData.append(
+                    field.id + "[title]",
+                    field.defaultValue.title
+                  );
+              }
             } else {
               //importedData.append(field.id, field.defaultValue);
             }
@@ -95,10 +115,9 @@ export const FormUi = ({
   }, [fields, thisFormData]);
 
   const handleInputData =
-    (input: { id: string; type: string; value?: string }) =>
+    (input: { name: string; id: string; type: string; value?: string }) =>
     (e: { target: { value: string } | any }) => {
-      console.log("input", input);
-      console.log("eeee", e);
+      //console.log("input", input);
       // input value from the form
       let { value } = input && input.type !== "image" ? e.target : input;
       //e && e.target ? e.target : input && input.value ? input.value : null;
@@ -139,41 +158,46 @@ export const FormUi = ({
       let checkBoxValues: string[] | any;
       //check if checkbox
       if (input.type === "checkbox") {
-        checkBoxValues = importedData.getAll(input.id);
+        checkBoxValues = importedData.getAll(input.name);
         if (Object.keys(checkBoxValues).length > 0) {
-          importedData.delete(input.id);
+          importedData.delete(input.name);
           let valueExists = false;
           for (let i = 0; i < checkBoxValues.length; i++) {
             if (checkBoxValues[i] !== value) {
-              importedData.append(input.id, checkBoxValues[i]);
+              importedData.append(input.name, checkBoxValues[i]);
             } else if (value) {
               valueExists = true;
             }
           }
-          if (!valueExists) importedData.append(input.id, value);
+          if (!valueExists) importedData.append(input.name, value);
         } else {
-          importedData.set(input.id, value);
+          importedData.set(input.name, value);
         }
       } else if (input.type === "file") {
         const thisFile = e.target && e.target.files && e.target.files[0];
-        console.log("thisFile", thisFile);
+        //console.log("thisFile", thisFile);
         //console.log(URL.createObjectURL(e.target.files[0]));
         if (thisFile) {
-          importedData.set(input.id, thisFile);
-        } else if (importedData.has(input.id)) {
-          importedData.delete(input.id);
+          importedData.set(input.name, thisFile);
+        } else if (importedData.has(input.name)) {
+          importedData.delete(input.name);
         }
       } else if (input.type === "boolean") {
         if (value === true || value.toLowerCase() === "yes" || value === 1) {
-          importedData.set(input.id, "true");
+          importedData.set(input.name, "true");
         } else {
-          importedData.set(input.id, "false");
+          importedData.set(input.name, "false");
         }
       } else {
         if (value) {
-          importedData.set(input.id, value);
-        } else if (!value && importedData.has(input.id)) {
-          importedData.delete(input.id);
+          importedData.set(input.name, value);
+        } else if (!value && importedData.has(input.name)) {
+          if (input.type === "image") {
+            let imageFieldName = input.name.split("[uuid]")[0];
+            if (importedData.has(imageFieldName + "[title]"))
+              importedData.delete(imageFieldName + "[title]");
+          }
+          importedData.delete(input.name);
         }
       }
       setThisFormData(importedData);
@@ -182,7 +206,7 @@ export const FormUi = ({
         console.log("thisFormData Looped", { [key]: val });
       }
     };
-  console.log("thisFormData", thisFormData);
+
   /*   const callbackAction = () => (e: any) => {
     e.preventDefault();
     let fetchForm: any = document.getElementById(id);
@@ -194,6 +218,7 @@ export const FormUi = ({
     }
   }; */
 
+  //set a default container for un-containerised fields
   const dEfAuLtCoNtAiNeR = {
     type: null,
     weight: 0,
@@ -206,7 +231,8 @@ export const FormUi = ({
     dEfAuLtCoNtAiNeR: dEfAuLtCoNtAiNeR,
   };
 
-  /*   let formFieldsDefault = {}; */
+  //insert fields into containers and sort them by such.
+  //Fields are displayed inj order of weight
   fields &&
     fields.length > 0 &&
     fields.forEach((field: Fields) => {
@@ -333,6 +359,7 @@ export const FormUi = ({
                     name={field.id}
                     onChange={handleInputData({
                       id: field.id,
+                      name: field.id,
                       type: field.type,
                     })}
                     className={
@@ -364,6 +391,7 @@ export const FormUi = ({
                       }} */
                       onChange={handleInputData({
                         id: field.id,
+                        name: field.id,
                         type: field.type,
                       })}
                       className={
@@ -378,8 +406,10 @@ export const FormUi = ({
                 ) : field.type && field.type === "image" ? (
                   <ImageUi
                     id={field.id}
-                    name={field.id}
-                    defaultValue={field.defaultValue ? field.defaultValue : ""}
+                    name={field.id + "[uuid]"}
+                    defaultValue={
+                      field.defaultValue ? field.defaultValue : null
+                    }
                     formData={thisFormData}
                     handleInputData={handleInputData}
                     required={field.required ? true : false}
@@ -390,6 +420,7 @@ export const FormUi = ({
                     name={field.id}
                     onChange={handleInputData({
                       id: field.id,
+                      name: field.id,
                       type: field.type,
                     })}
                     className={
@@ -417,6 +448,7 @@ export const FormUi = ({
                               name={field.id}
                               onChange={handleInputData({
                                 id: field.id,
+                                name: field.id,
                                 type: field.type,
                               })}
                               className={
@@ -462,6 +494,7 @@ export const FormUi = ({
                         name={field.id}
                         onChange={handleInputData({
                           id: field.id,
+                          name: field.id,
                           type: field.type,
                         })}
                         className={
@@ -477,6 +510,7 @@ export const FormUi = ({
                       <input
                         name={field.id}
                         onChange={handleInputData({
+                          name: field.id,
                           id: field.id,
                           type: field.type,
                         })}
@@ -512,6 +546,7 @@ export const FormUi = ({
                     name={field.id}
                     onChange={handleInputData({
                       id: field.id,
+                      name: field.id,
                       type: field.type,
                     })}
                     className={
@@ -565,6 +600,7 @@ export const FormUi = ({
                               name={field.id}
                               onChange={handleInputData({
                                 id: field.id,
+                                name: field.id,
                                 type: field.type,
                               })}
                               className={
@@ -610,6 +646,7 @@ export const FormUi = ({
                     name={field.id}
                     onChange={handleInputData({
                       id: field.id,
+                      name: field.id,
                       type: field.type,
                     })}
                     className={
@@ -653,12 +690,8 @@ export const FormUi = ({
     FormFields.push(thisContent);
   });
 
-  return (
-    <form
-      id={id}
-      className={"form-ui" + (className ? " " + className : "")}
-      encType="multipart/form-data"
-    >
+  let returnOutput = (
+    <React.Fragment>
       <>
         {FormFields && FormFields.length > 0
           ? FormFields.map((formItem) => {
@@ -692,6 +725,27 @@ export const FormUi = ({
           })}
         </div>
       </div>
-    </form>
+    </React.Fragment>
   );
+
+  //'nested' boolean allows swapping 'form' element indicator for 'div' html element
+  //to mitigate Form in Form nesting where possible
+  return nested
+    ? React.createElement(
+        "div",
+        {
+          id: id,
+          className: "form-ui" + (className ? " " + className : ""),
+        },
+        returnOutput
+      )
+    : React.createElement(
+        "form",
+        {
+          id: id,
+          className: "form-ui" + (className ? " " + className : ""),
+          encType: "multipart/form-data",
+        },
+        returnOutput
+      );
 };

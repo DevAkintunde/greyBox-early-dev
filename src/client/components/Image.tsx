@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { APP_ADDRESS } from "../utils/app.config";
 
+//display options: overlay|
 export const Image = ({
   src,
   alt,

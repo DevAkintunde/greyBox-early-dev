@@ -1,8 +1,8 @@
 import React, { ReactElement, useEffect, useState } from "react";
 import validator from "validator";
-import { APP_ADDRESS } from "../../utils/app.config";
-import { ImageUi } from "./ImageUi";
-import { ParagraphUI } from "./ParagraphUI";
+import { APP_ADDRESS } from "../src/client/utils/app.config";
+import { ImageUi } from "../src/client/global/UI/ImageUi";
+import { ParagraphUI } from "../src/client/global/UI/ParagraphUI";
 
 interface FormButtons {
   value?: string;

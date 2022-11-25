@@ -5,10 +5,12 @@ const jsStyler = () => (event: any) => {
     < jsStyler()/>
   </> */
 
-  let targetID = event.target.id;
+  let targetID =
+    event && event.target && event.target.id ? event.target.id : null;
   //vary the level where jsstyler class is
+
   let parent =
-    event.target &&
+    targetID &&
     event.target.parentElement &&
     event.target.parentElement.classList &&
     event.target.parentElement.classList.contains("jsstyler")

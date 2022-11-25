@@ -1,5 +1,11 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Link, Route, Routes, useLocation } from "react-router-dom";
+import {
+  Link,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import PageTitle from "../../../components/blocks/PageTitle";
 import { Throbber } from "../../../components/blocks/Throbber";
 import { Image } from "../../../components/Image";
@@ -108,7 +114,13 @@ const ViewAllVideos = () => {
 };
 
 const AddImage = () => {
-  return <FileUploadForm type="image" />;
+  const navigate = useNavigate();
+  const callbackAction = (res: any) => {
+    navigate("/auth/media/images/" + res.data.alias);
+  };
+  return (
+    <FileUploadForm type="image" callback={(res: any) => callbackAction} />
+  );
 };
 
 const ViewImage = () => {

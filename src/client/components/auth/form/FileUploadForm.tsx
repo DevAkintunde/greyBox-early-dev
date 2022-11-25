@@ -7,8 +7,14 @@ interface ComponentData {
   type: string;
   updateForm?: boolean;
   callback: Function;
+  nested?: boolean;
 }
-const FileUploadForm = ({ type, updateForm, callback }: ComponentData) => {
+const FileUploadForm = ({
+  type,
+  nested,
+  updateForm,
+  callback,
+}: ComponentData) => {
   const navigate = useNavigate();
   let location = useLocation();
 
@@ -95,7 +101,6 @@ const FileUploadForm = ({ type, updateForm, callback }: ComponentData) => {
         }
       } else {
         callback(res);
-        //navigate("/auth/media/" + type + "s/" + res.data.alias);
       }
     });
   };
@@ -112,7 +117,12 @@ const FileUploadForm = ({ type, updateForm, callback }: ComponentData) => {
 
   return (
     <div>
-      <FormUi id={type + "-upload-form"} fields={fields} buttons={buttons} />
+      <FormUi
+        nested={nested ? true : false}
+        id={type + "-upload-form"}
+        fields={fields}
+        buttons={buttons}
+      />
     </div>
   );
 };
