@@ -37,7 +37,7 @@ export const upload = async (ctx, next) => {
     await next();
   } else {
     ctx.status = NO_CONTENT;
-    ctx.message = "No media present in upload";
+    ctx.statusText = "No media present in upload";
     return;
   }
 };
@@ -60,21 +60,46 @@ export const viewItem = async (ctx, next) => {
 
 export const updateItem = async (ctx, next) => {
   try {
+    let searchKey = ctx.request.body.uuid ? "uuid" : "alias";
     let updatedMedia = await sequelize.transaction(async (t) => {
       let thisMedia = await sequelize.models[ctx.state.entityType].findOne({
-        where: { alias: ctx.request.body.alias },
+        where: {
+          [searchKey]: ctx.request.body[searchKey],
+        },
       });
 
-      Object.keys(ctx.request.files) &&
-        Object.keys(ctx.request.files).length > 0 &&
-        Object.keys(ctx.request.files).forEach((file) => {
-          if (ctx.request.files[file].filepath !== resolve(thisMedia.path)) {
+      if (
+        ctx.request.files &&
+        ctx.request.files[0] &&
+        ctx.request.files[0].filepath
+      ) {
+        if (ctx.request.files[0].filepath !== resolve(thisMedia.path)) {
+          let promises = [];
+
+          promises.push(
             fs.unlinkSync(resolve(thisMedia.path), (err) => {
               if (err) ctx.throw(500, err);
+            })
+          );
+          let styles = Object.keys(thisMedia.styles).map((stylePath) => {
+            return fs.unlinkSync(resolve(stylePath.path), (err) => {
+              if (err) ctx.throw(500, err);
             });
-            thisMedia.update({ path: ctx.request.files[file].filepath });
+          });
+          promises.push(styles);
+          try {
+            Promise.all(promises);
+          } catch (err) {
+            logger.error(err);
+            ctx.state.error = err;
           }
-        });
+
+          thisMedia.update({
+            ...ctx.request.body,
+            path: ctx.request.files[0].filepath,
+          });
+        }
+      }
     });
 
     console.log("updatedMedia.toJSON()", updatedMedia.toJSON());
@@ -91,13 +116,20 @@ export const deleteItem = async (ctx, next) => {
     let thisMedia = await sequelize.models[ctx.state.entityType].findOne({
       where: ctx.request.body,
     });
-    fs.unlinkSync(thisMedia.path, (err) => {
-      if (err) {
-        ctx.status = SERVER_ERROR;
-        ctx.message = "Unable to delete media";
-        return;
-      }
-    });
+    if (
+      thisMedia &&
+      (ctx.state.entityType === "Image" ||
+        (ctx.state.entityType === "Video" && thisMedia.source === "hosted"))
+    ) {
+      fs.unlinkSync(thisMedia.path, (err) => {
+        if (err) {
+          ctx.status.error = {
+            status: SERVER_ERROR,
+            statusText: "Unable to delete media",
+          };
+        }
+      });
+    }
     thisMedia.destroy();
   } catch (err) {
     logger.error(err);
@@ -108,8 +140,12 @@ export const deleteItem = async (ctx, next) => {
 
 export const updateAlias = async (ctx, next) => {
   try {
+    let searchKey = ctx.request.body.uuid ? "uuid" : "alias";
     let thisMedia = await sequelize.models[ctx.state.entityType].findOne({
-      where: { alias: ctx.request.body.currentAlias },
+      where: {
+        [searchKey]:
+          ctx.request.body[searchKey === "uuid" ? "uuid" : "currentAlias"],
+      },
     });
     if (thisMedia) {
       thisMedia.update({ alias: ctx.request.body.alias });
@@ -118,6 +154,7 @@ export const updateAlias = async (ctx, next) => {
     } else {
       ctx.state.error = {
         status: NOT_FOUND,
+        statusText: "The media to be updated does not seem to exist",
       };
     }
   } catch (err) {

@@ -30,6 +30,7 @@
     "cross-env": "^7.0.3",
     "dotenv": "^16.0.3",
     "email-templates": "^10.0.1",
+    "framer-motion": "^7.6.12",
     "frupal": "^0.9.25",
     "joi": "^17.6.4",
     "joi-phone-number": "^5.1.1",

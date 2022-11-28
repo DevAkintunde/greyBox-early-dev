@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Link,
   Route,
@@ -9,10 +9,9 @@ import {
 import PageTitle from "../../../components/blocks/PageTitle";
 import { Throbber } from "../../../components/blocks/Throbber";
 import { Image } from "../../../components/Image";
-import { TabMenu } from "../../../global/AppFrame";
-import { FormUi } from "../../../global/UI/FormUi";
 import { ServerHandler } from "../../../global/functions/ServerHandler";
 import FileUploadForm from "../../../components/auth/form/FileUploadForm";
+import { Video } from "../../../components/Video";
 
 //view all page entities
 
@@ -20,20 +19,26 @@ const Media = () => {
   return (
     <Routes>
       <Route path="/" index element={<ViewAllMedia />} />
-      <Route path="add" element={<AddMedia />} />
-      <Route path="add/image" element={<AddImage />} />
-      <Route path="add/video" element={<AddVideo />} />
-      <Route path="images" element={<ViewAllImages />} />
-      <Route path="videos" element={<ViewAllVideos />} />
-      <Route path="images/:media" element={<ViewImage />} />
-      <Route path="videos/:media" element={<ViewVideo />} />
-      <Route path="images/:media/update" element={<PerImageUpdate />} />
-      <Route path="videos/:media/update" element={<PerVideoUpdate />} />
+      <Route path="add" element={<AddMediaOverview />} />
+      <Route path="add/image" element={<AddMedia type="image" />} />
+      <Route path="add/video" element={<AddMedia type="video" />} />
+      <Route path="images" element={<ViewTypeMedia type="image" />} />
+      <Route path="videos" element={<ViewTypeMedia type="video" />} />
+      <Route path="images/:media" element={<ViewMedia type="image" />} />
+      <Route path="videos/:media" element={<ViewMedia type="video" />} />
+      <Route
+        path="images/:media/update"
+        element={<PerMediaUpdate type="image" />}
+      />
+      <Route
+        path="videos/:media/update"
+        element={<PerMediaUpdate type="video" />}
+      />
     </Routes>
   );
 };
 
-const AddMedia = () => {
+const AddMediaOverview = () => {
   return (
     <>
       <PageTitle title="Add new media" />
@@ -50,51 +55,99 @@ const AddMedia = () => {
 };
 
 const ViewAllMedia = () => {
+  const [entities, setEntities]: any = useState({});
   useEffect(() => {
     let isMounted = true;
-    ServerHandler({
-      endpoint: "/auth/media/images",
-      method: "get",
-      headers: {
-        accept: "application/json",
-      },
-    }).then((res) => {
+    ServerHandler("/auth/media").then((res) => {
       console.log("res", res);
+      if (res.status !== 200) {
+        console.log(res);
+      } else {
+        if (isMounted) setEntities(res.data);
+      }
     });
     return () => {
       isMounted = false;
     };
   }, []);
-  return <></>;
+  return (
+    <>
+      <PageTitle title="Media" />
+      {entities && (entities.image || entities.video) ? (
+        <div>
+          {entities.image && entities.image.length > 0 ? (
+            <div>
+              <h2>Images</h2>
+              <div className="grid grid-cols-4">
+                {entities.image.map((entity: any) => {
+                  return (
+                    <Image
+                      key={entity.alias}
+                      src={entity.path}
+                      alt={entity.title}
+                      entityUrl={"images/" + entity.alias}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+          {entities.video && entities.video.length > 0 ? (
+            <div>
+              <h2>Videos</h2>
+              <div className="grid grid-cols-4">
+                {entities.video.map((entity: any) => {
+                  return (
+                    <Video
+                      key={entity.alias}
+                      src={entity.path}
+                      alt={entity.title}
+                      entityUrl={"videos/" + entity.alias}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+        </div>
+      ) : null}{" "}
+    </>
+  );
 };
 
-const ViewAllImages = () => {
+const ViewTypeMedia = ({ type }: { type: string }) => {
   const [entities, setEntities]: any = useState();
   useEffect(() => {
     let isMounted = true;
     ServerHandler({
-      endpoint: "/auth/media/images",
+      endpoint: "/auth/media/" + type + "s",
       method: "get",
       headers: {
         accept: "application/json",
       },
     }).then((res) => {
-      if (isMounted && res.status === 200) setEntities(res.data.image);
+      if (isMounted && res.status === 200) setEntities(res.data[type]);
     });
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [type]);
 
   return (
     <>
-      <PageTitle title="Images" />
+      <PageTitle title={type + "s"} />
       {entities ? (
         <>
           <div className="grid grid-cols-4">
             {entities.map((entity: any) => {
-              return (
+              return type === "image" ? (
                 <Image
+                  src={entity.path}
+                  alt={entity.title}
+                  entityUrl={entity.alias}
+                />
+              ) : (
+                <Video
                   src={entity.path}
                   alt={entity.title}
                   entityUrl={entity.alias}
@@ -109,31 +162,19 @@ const ViewAllImages = () => {
     </>
   );
 };
-const ViewAllVideos = () => {
-  return <></>;
-};
 
-const AddImage = () => {
+const AddMedia = ({ type }: { type: string }) => {
   const navigate = useNavigate();
   const callbackAction = (res: any) => {
-    navigate("/auth/media/images/" + res.data.alias);
+    navigate("/auth/media/" + type + "s/" + res.data.alias);
   };
   return (
-    <FileUploadForm type="image" callback={(res: any) => callbackAction} />
+    <FileUploadForm type={type} callback={(res: any) => callbackAction(res)} />
   );
 };
 
-const ViewImage = () => {
-  const { setTab }: any = useContext(TabMenu);
+const ViewMedia = ({ type }: { type: string }) => {
   let location = useLocation();
-
-  useEffect(() => {
-    let isMounted = true;
-    if (isMounted) setTab({ Edit: location.pathname + "/update" });
-    return () => {
-      isMounted = false;
-    };
-  }, [location.pathname, setTab]);
 
   const [entity, setEntity]: any = useState();
   useEffect(() => {
@@ -150,34 +191,29 @@ const ViewImage = () => {
   return entity ? (
     <>
       <PageTitle title={entity.title} />
-      <Image src={entity.path} alt={entity.title} />
+      {type === "image" ? (
+        <Image src={entity.path} alt={entity.title} entityUrl={entity.alias} />
+      ) : (
+        <Video src={entity.path} alt={entity.title} entityUrl={entity.alias} />
+      )}
     </>
   ) : null;
 };
 
-const PerImageUpdate = () => {
-  const { setTab }: any = useContext(TabMenu);
-  let location = useLocation();
+const PerMediaUpdate = ({ type }: { type: string }) => {
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    let isMounted = true;
-    if (isMounted) setTab({ View: location.pathname.split("/update")[0] });
-    return () => {
-      isMounted = false;
-    };
-  }, [location.pathname, setTab]);
+  const callbackAction = (res: any) => {
+    navigate("/auth/media/" + type + "s/" + res.data.alias);
+  };
 
-  return <FileUploadForm type="image" updateForm={true} />;
-};
-
-const AddVideo = () => {
-  return <FileUploadForm type="video" />;
-};
-const ViewVideo = () => {
-  return <></>;
-};
-const PerVideoUpdate = () => {
-  return <FileUploadForm type="video" />;
+  return (
+    <FileUploadForm
+      type={type}
+      updateForm={true}
+      callback={(res: any) => callbackAction(res)}
+    />
+  );
 };
 
 export default Media;

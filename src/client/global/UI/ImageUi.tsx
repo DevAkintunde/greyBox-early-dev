@@ -14,7 +14,7 @@ export const ImageUi = ({
   formData,
   handleInputData,
 }: {
-  defaultValue: any;
+  defaultValue?: any;
   id: string;
   name: string;
   required: boolean;
@@ -25,23 +25,24 @@ export const ImageUi = ({
 
   useEffect(() => {
     let isMounted = true;
-    let defaultImported;
-    if (typeof defaultValue === "string") {
-      defaultImported = defaultValue;
-    } else {
-      defaultImported = defaultValue.uuid;
+    if (defaultValue) {
+      let defaultImported;
+      if (typeof defaultValue === "string") {
+        defaultImported = defaultValue;
+      } else {
+        defaultImported = defaultValue.uuid;
+      }
+
+      if (isMounted && defaultImported)
+        ServerHandler("/auth/media/images/" + defaultImported).then((res) => {
+          //console.log("res", res);
+          if (res && res.status === 200)
+            setPreviewImage({
+              path: APP_ADDRESS + "/" + res.data.styles.path.small,
+              mediaTitle: res.data.title,
+            });
+        });
     }
-
-    if (isMounted && defaultImported)
-      ServerHandler("/auth/media/images/" + defaultImported).then((res) => {
-        //console.log("res", res);
-        if (res && res.status === 200)
-          setPreviewImage({
-            path: APP_ADDRESS + "/" + res.data.styles.path.small,
-            mediaTitle: res.data.title,
-          });
-      });
-
     return () => {
       isMounted = false;
     };

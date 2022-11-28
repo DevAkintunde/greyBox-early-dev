@@ -10,10 +10,6 @@ export const Token = createContext({
   token: "",
   setToken: () => {},
 });
-export const TabMenu = createContext({
-  tab: {},
-  setTab: () => {},
-});
 
 const AppFrame = ({ app }: any) => {
   const [token, setToken]: any = useState({});
@@ -32,9 +28,6 @@ const AppFrame = ({ app }: any) => {
 
   const [profile, setProfile]: any = useState({});
   const thisUserProfile = useMemo(() => ({ profile, setProfile }), [profile]);
-
-  const [tab, setTab]: any = useState({});
-  const tabMenu = useMemo(() => ({ tab, setTab }), [tab]);
 
   useEffect(() => {
     const checkUserStatus = async () => {
@@ -61,9 +54,7 @@ const AppFrame = ({ app }: any) => {
 
   return (
     <Token.Provider value={thisToken}>
-      <Profile.Provider value={thisUserProfile}>
-        <TabMenu.Provider value={tabMenu}>{app}</TabMenu.Provider>
-      </Profile.Provider>
+      <Profile.Provider value={thisUserProfile}>{app}</Profile.Provider>
     </Token.Provider>
   );
 };

@@ -6,6 +6,7 @@ import {
   OK,
   SERVER_ERROR,
 } from "../../../../constants/statusCodes.js";
+import { urlQueryTranslator } from "../../../../middlewares/urlQueryTranslator.js";
 import { default as image } from "./image.js";
 import { default as video } from "./video.js";
 
@@ -24,6 +25,32 @@ router.use(async (ctx, next) => {
   }
   await next();
 });
+
+router.get(
+  "/",
+  async (ctx, next) => {
+    console.log("ctx.path", ctx.path);
+    console.log("ctx.originalUrl", ctx.originalUrl);
+    if (ctx.path === ctx.originalUrl) {
+      ctx.originalUrl = ctx.originalUrl + "?sort[updated=ASC]&page[limit=10]";
+    }
+    await next();
+  },
+  urlQueryTranslator,
+  (ctx) => {
+    console.log("response", ctx.state.data);
+    if (ctx.state.data) {
+      ctx.status = OK;
+      ctx.body = {
+        status: OK,
+        data: ctx.state.data,
+      };
+      return;
+    }
+    ctx.status = BAD_REQUEST;
+    return;
+  }
+);
 
 router.post("/swap-permission", async (ctx) => {
   const { uuid, type } = ctx.request.body;

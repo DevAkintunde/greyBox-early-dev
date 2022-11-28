@@ -2,9 +2,6 @@ import * as operator from "../../constants/urlQueryOperatorsOrmTranslator.js";
 import * as pathToModel from "../../constants/urlPreQueryPathToModelMapping.js";
 
 const sortProcessor = async (ctx, next) => {
-  {
-    /* hello */
-  }
   const urlQuery = ctx.state.urlQuery;
   // Construct ORM (sequelize) path for sorting, which is equivalent 'order' in ORM.
   // Model.findAll
@@ -18,7 +15,7 @@ const sortProcessor = async (ctx, next) => {
       let foreignTargetModel;
       let sortTargetHolder = sortSplit[0].split("sort[")[1];
       if (sortTargetHolder.includes("[")) {
-        sortTargetHolderSplit = sortTargetHolder.split("[");
+        let sortTargetHolderSplit = sortTargetHolder.split("[");
         sortTarget = sortTargetHolderSplit[0];
         foreignTargetModel =
           pathToModel[sortTargetHolderSplit[1].split("]")[0]];

@@ -59,7 +59,7 @@ router.post(
   (ctx) => {
     if (ctx.state.error) {
       ctx.status = SERVER_ERROR;
-      ctx.message = ctx.state.error;
+      ctx.message = ctx.state.error.statusText;
       return;
     }
     ctx.status = OK;
@@ -87,7 +87,7 @@ router.get(
   (ctx) => {
     if (ctx.state.error) {
       ctx.status = BAD_REQUEST;
-      ctx.message = ctx.state.error.message;
+      ctx.message = ctx.state.error.statusText;
       return;
     }
     if (!ctx.state.data) {
@@ -107,20 +107,27 @@ router.patch(
   "/:alias/update",
   async (ctx, next) => {
     ctx.state.entityType = "Image";
-    ctx.request.body = {
-      ...ctx.request.body,
-      alias: ctx.params.alias,
-    };
+    if (UUID4Validator(ctx.params.alias)) {
+      ctx.request.body = {
+        ...ctx.request.body,
+        uuid: ctx.params.alias,
+      };
+    } else {
+      ctx.request.body = {
+        ...ctx.request.body,
+        alias: ctx.params.alias,
+      };
+    }
     await next();
   },
   mediaFormValidator.uploadImage,
   mediaUpload,
-  mediaController.updateAlias,
+  mediaController.updateItem,
   async (ctx, next) => {
     await next();
     if (ctx.state.error) {
       ctx.status = ctx.state.error.status;
-      ctx.message = ctx.state.error.message;
+      ctx.message = ctx.state.error.statusText;
       return;
     }
     if (!ctx.state.data) {
@@ -139,20 +146,25 @@ router.patch(
 router.delete(
   "/:alias/delete",
   async (ctx, next) => {
-    ctx.request.body = { alias: ctx.params.alias };
+    ctx.state.entityType = "Image";
+    if (UUID4Validator(ctx.params.alias)) {
+      ctx.request.body = { uuid: ctx.params.alias };
+    } else {
+      ctx.request.body = { alias: ctx.params.alias };
+    }
     await next();
   },
   mediaController.deleteItem,
   (ctx) => {
     if (ctx.state.error) {
       ctx.status = ctx.state.error.status;
-      ctx.message = ctx.state.error.message;
+      ctx.message = ctx.state.error.statusText;
       return;
     }
     ctx.status = OK;
     ctx.body = {
       status: OK,
-      statustext: "Deleted",
+      statusText: "Deleted",
     };
     return;
   }
@@ -160,15 +172,22 @@ router.delete(
 
 router.patch(
   "/:alias/update/alias",
+  mediaFormValidator.alias,
   async (ctx, next) => {
     ctx.state.entityType = "Image";
-    ctx.request.body = {
-      ...ctx.request.body,
-      currentAlias: ctx.params.alias,
-    };
+    if (UUID4Validator(ctx.params.alias)) {
+      ctx.request.body = {
+        ...ctx.request.body,
+        uuid: ctx.params.alias,
+      };
+    } else {
+      ctx.request.body = {
+        ...ctx.request.body,
+        currentAlias: ctx.params.alias,
+      };
+    }
     await next();
   },
-  mediaFormValidator.alias,
   mediaController.updateAlias,
   async (ctx, next) => {
     await next();

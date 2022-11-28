@@ -2,9 +2,6 @@ import * as operator from "../../constants/urlQueryOperatorsOrmTranslator.js";
 import { Op } from "sequelize";
 
 const includeTranslator = async (ctx, next) => {
-  {
-    /* hello */
-  }
   const urlQuery = ctx.state.urlQuery;
   // Construct ORM (sequelize) path.
   // Model.findAll
@@ -21,7 +18,7 @@ const includeTranslator = async (ctx, next) => {
       let validEntity = entity.trim();
       if (validEntity) {
         let thisComboEntities = [];
-        splitEntity = validEntity.split(".");
+        let splitEntity = validEntity.split(".");
 
         for (let i = 0; i < splitEntity.length; i++) {
           if (i < 1) {

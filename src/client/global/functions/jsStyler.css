@@ -1,11 +1,15 @@
-.jsstyler .show {
-  display: block;
-}
+@tailwind base;
 
-/**** Toggle ***/
-.jsstyler [jsstyler-toggle] {
-  display: none;
-}
-.jsstyler [jsstyler-toggle].show {
-  display: block;
+@layer base {
+  .jsstyler .show {
+    @apply block;
+  }
+
+  /**** Toggle ***/
+  .jsstyler [data-jsstyler-target] {
+    @apply opacity-0 collapse max-h-0 transition-all duration-1000 ease-in-out;
+  }
+  .jsstyler [data-jsstyler-target].show {
+    @apply visible opacity-100 max-h-screen;
+  }
 }

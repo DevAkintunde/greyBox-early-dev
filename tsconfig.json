@@ -17,6 +17,6 @@
     "jsx": "react-jsx",
     "types": ["vite/client"]
   },
-  "include": ["src", "server.js"],
+  "include": ["src", "server.js", "legacyLib/UserMenuuuu.tsx"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

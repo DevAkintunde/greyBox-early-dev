@@ -2,8 +2,7 @@ import * as operator from "../../constants/urlQueryOperatorsOrmTranslator.js";
 import { Op } from "sequelize";
 
 const filterProcessor = async (ctx, next) => {
-  {
-    /*
+  /*
   Execute url querys that would have been translated by the middleware utlQueryTranslator
   import translated query from request as
 
@@ -17,7 +16,7 @@ const filterProcessor = async (ctx, next) => {
     Optional filters should be preceded with '!' of the operator.
       filter[address.state[!END_WITH]="town"]
 */
-  }
+
   const urlQuery = ctx.state.urlQuery;
   // Construct ORM (sequelize) path for filtering, which is equivalent 'where' in ORM.
   // Model.findAll
@@ -33,7 +32,7 @@ const filterProcessor = async (ctx, next) => {
       let filterCondition = "EQUAL_TO";
       let filterTargetHolder = filterSplit[0].split("filter[")[1];
       if (filterTargetHolder.includes("[")) {
-        filterTargetHolderSplit = filterTargetHolder.split("[");
+        let filterTargetHolderSplit = filterTargetHolder.split("[");
         filterTarget = filterTargetHolderSplit[0];
         filterCondition = filterTargetHolderSplit[1]
           .split("]")[0]

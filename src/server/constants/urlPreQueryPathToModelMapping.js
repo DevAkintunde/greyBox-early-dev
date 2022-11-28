@@ -10,5 +10,6 @@ export const image = "Image";
 export const video = "Video";
 export const images = "Image";
 export const videos = "Video";
+export const media = ["Image", "Video"];
 //exports.purview = ["Page", "Blog"];
 //exports.managerial = ["Page", "Blog", "Account"];

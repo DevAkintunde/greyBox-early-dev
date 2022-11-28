@@ -35,7 +35,7 @@ export const PageForm = ({ setData, buttons, id }: any) => {
     {
       type: "image",
       weight: 2,
-      id: "paraImage",
+      id: "31f2b002-efe0-4af1-8871-2a68449d27f1",
       //defaultValue: "31f2b002-efe0-4af1-8871-2a68449d27f1",
       defaultValue: {
         title: "image test here",
@@ -45,19 +45,18 @@ export const PageForm = ({ setData, buttons, id }: any) => {
     {
       type: "video",
       weight: 1,
-      //id: Math.random().toString(36).substring(2), //uuid from db when it's available
-      id: "hdiudhyyedioid",
+      id: "45f2b002-efe0-4af1-8871-2a68449d27f1",
       defaultValue: {
         title: "this is video title field",
         source: "youtube",
-        uuid: "http://mellywood.com/strnage-capo",
+        uuid: "45f2b002-efe0-4af1-8871-2a68449d27f1",
       },
     },
     {
       type: "text",
       weight: 3,
       //id: Math.random().toString(36).substring(2), //uuid from db when it's available
-      id: "tuwcvsxixnjnxs",
+      id: "92f2b002-efe0-4af1-8871-2a68449d27f1",
       defaultValue: "this is a test text field alone",
     },
   ];

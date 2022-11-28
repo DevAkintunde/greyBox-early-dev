@@ -1,6 +1,8 @@
 import path from "node:path";
 import fs from "node:fs";
 import sharp from "sharp";
+import Image from "../../models/entities/media/Image.model.js";
+import sequelize from "../../config/db.config.js";
 
 const __dirname = path.dirname("./");
 
@@ -8,6 +10,9 @@ const mediaUpload = async (ctx, next) => {
   let promises = [];
   let imageStyles = {};
   let mediaDumpDirFromFormidable = [];
+
+  //create image entities
+  let CreateNewImage = [];
 
   if (ctx.request.files && Object.keys(ctx.request.files).length > 0) {
     //mandatorily send files to private DIR if on the autoPrivatePath array
@@ -91,7 +96,43 @@ const mediaUpload = async (ctx, next) => {
                 //insert new path as filepath for server use
                 let thisNewPath = originalPath.split("public/")[1];
                 ctx.request.files[file].filepath = thisNewPath;
-                //console.log("get file name:", file);
+                let imageTitle;
+                let imageAlias;
+                console.log("get file name:", file);
+                //check if paragraph entity and extract image metadata
+                if (file.includes("body[")) {
+                  let formDataIdDepth = file.split("][")[0];
+                  let paragraphID = formDataIdDepth.split("body[")[1];
+                  console.log("paragraphID:", paragraphID);
+                  imageTitle =
+                    ctx.request.body["body"][paragraphID]["image"]["title"];
+                  console.log("imageTitle:", imageTitle);
+                  imageAlias =
+                    ctx.request.body["body"][paragraphID]["image"]["alias"];
+                } //check if other type of image field
+                else if (file.includes("image")) {
+                  imageTitle =
+                    ctx.request.body["file"] &&
+                    ctx.request.body["file"]["title"]
+                      ? ctx.request.body["file"]["title"]
+                      : null;
+                  imageAlias =
+                    ctx.request.body["file"] &&
+                    ctx.request.body["file"]["alias"]
+                      ? ctx.request.body["file"]["alias"]
+                      : null;
+                }
+
+                CreateNewImage.push({
+                  id: file,
+                  title: imageTitle
+                    ? imageTitle
+                    : ctx.request.files[file].newFilename,
+                  path: thisNewPath,
+                  alias: imageAlias
+                    ? imageAlias
+                    : ctx.request.files[file].newFilename,
+                });
               })
               .catch((err) => {
                 //console.error("lets clean original", err);
@@ -148,8 +189,59 @@ const mediaUpload = async (ctx, next) => {
           fs.unlinkSync(media);
         });
       });
-      //console.log("imageStyles", imageStyles);
+      console.log("imageStyles", imageStyles);
+
       ctx.request.body = { ...ctx.request.body, styles: imageStyles };
+    }
+  }
+  if (CreateNewImage && CreateNewImage.length > 0) {
+    try {
+      console.log("CreateNewImage", CreateNewImage);
+      //let createdImages =
+      await sequelize.transaction(async (t) => {
+        let batchCreatedImages = [];
+        let batchIDs = [];
+        /* CreateNewImage.forEach((image) => {
+          batchIDs.push(image.id);
+          batchCreatedImages.push(
+            Image.create(
+              {
+                title: image.title,
+                path: image.path,
+                alias: image.alias,
+                styles:
+                  imageStyles && imageStyles[image.id]
+                    ? imageStyles[image.id]
+                    : null,
+              },
+              {
+                transaction: t,
+              }
+            )
+          );
+        }); */
+        //ctx.throw(SERVICE_UNAVAILABLE, "Unable to create media");
+        console.log("222");
+        batchIDs = await Promise.all(batchCreatedImages);
+        let mediaGroup = {};
+        console.log("333", batchIDs);
+        batchIDs.forEach((media) => {
+          mediaGroup = {
+            ...mediaGroup,
+            [media]: media,
+          };
+        });
+        console.log("444", mediaGroup);
+        ctx.request.body = {
+          ...ctx.request.body,
+          media: mediaGroup,
+        };
+        return;
+      });
+    } catch (err) {
+      try {
+        return err;
+      } catch (e) {}
     }
   }
 

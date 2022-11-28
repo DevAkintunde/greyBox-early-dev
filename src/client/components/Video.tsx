@@ -1,15 +1,18 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 //display options: overlay|
 export const Video = ({
   src,
   alt,
   modal,
+  entityUrl,
   display,
 }: {
   src: string;
   alt: string;
   modal?: boolean;
+  entityUrl?: string;
   display?: string;
 }) => {
   return (
@@ -21,7 +24,13 @@ export const Video = ({
         title={alt}
         className="video-iframe"
       ></iframe>
-      <h6>{alt}</h6>
+      {entityUrl ? (
+        <Link to={entityUrl}>
+          <h6>{alt}</h6>
+        </Link>
+      ) : (
+        <h6>{alt}</h6>
+      )}
     </>
   );
 };

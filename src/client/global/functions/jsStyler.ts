@@ -7,8 +7,8 @@ const jsStyler = () => (event: any) => {
 
   let targetID =
     event && event.target && event.target.id ? event.target.id : null;
-  //vary the level where jsstyler class is
 
+  //check limited varying level where jsstyler class might be
   let parent =
     targetID &&
     event.target.parentElement &&
@@ -23,21 +23,34 @@ const jsStyler = () => (event: any) => {
       : null;
 
   if (parent && targetID) {
-    let elementListener = event.target.nodeName.toLowerCase();
-    //console.log("elementListener", elementListener);
-
-    //accordion... rework this
+    //accordion
+    /* <nav className="jsstyler accordion">
+      <button id="toggleElementId" onClick={jsStyler()}/>
+      <div
+        data-jsstyler-target="accordionElementId"
+      ></div>
+    </nav>
+    <nav className="jsstyler accordion">
+      <button id="toggleElementId" onClick={jsStyler()}/>
+      <div
+        data-jsstyler-target="accordionElementId"
+      ></div>
+    </nav>
+     */
     if (parent.classList.contains("accordion")) {
-      //parent.classList.add("accordion");
-      let groupContainer = parent.parentElement.querySelectorAll("ul");
-      for (let i = 0; i < groupContainer.length; i++) {
-        const item = groupContainer[i];
-        let thisButton = item.parentElement.querySelector(elementListener);
-        //console.log(thisButton);
+      let targetElements = document.querySelectorAll(
+        `[data-jsstyler-target=${targetID}]`
+      );
+      //trigger element
+      let triggerListener = event.target.nodeName.toLowerCase();
+      for (let i = 0; i < targetElements.length; i++) {
+        const item = targetElements[i];
+
+        let thisButton = item.parentElement?.querySelector(triggerListener);
         if (event.target === thisButton) {
           if (item.classList && item.classList.contains("show")) {
             item.classList.remove("show");
-          } else if (item && item.classList) {
+          } else if (item.classList) {
             item.classList.add("show");
           }
         } else if (item.classList && item.classList.contains("show")) {
@@ -50,12 +63,12 @@ const jsStyler = () => (event: any) => {
     /* <nav className="jsstyler toggle">
       <button id="toggleElementId" onClick={jsStyler()}/>
       <div
-        jsstyler-toggle="toggleElementId"
+        data-jsstyler-target="toggleElementId"
       ></div>
     </nav> */
     if (parent.classList.contains("toggle")) {
       let targetElement = document.querySelector(
-        `[jsstyler-toggle=${targetID}]`
+        `[data-jsstyler-target=${targetID}]`
       );
       if (targetElement && targetElement.classList) {
         if (targetElement.classList.contains("show")) {

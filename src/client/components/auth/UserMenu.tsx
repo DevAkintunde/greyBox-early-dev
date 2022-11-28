@@ -1,12 +1,12 @@
-import React, { useContext, useEffect } from "react";
+import React, { useEffect } from "react";
 import { FaGripLines } from "react-icons/fa";
 import { NavLink, useLocation } from "react-router-dom";
-import { TabMenu } from "../../global/AppFrame";
 import { AppSignOut } from "../../global/functions/AppSignOut";
 import { jsStyler } from "../../global/functions/jsStyler";
+import { motion } from "framer-motion";
+import { TabMenu } from "../../regions/nav/TabMenu";
 
 const UserMenu = () => {
-  const { tab }: any = useContext(TabMenu);
   const location = useLocation();
   const menuButton = (
     <>
@@ -28,7 +28,7 @@ const UserMenu = () => {
   useEffect(() => {
     if (location.pathname) {
       let targetElement = document.querySelector(
-        `[jsstyler-toggle=UserMenuButton]`
+        `[data-jsstyler-target=UserMenuButton]`
       );
       if (targetElement && targetElement.classList.contains("show")) {
         targetElement.classList.remove("show");
@@ -38,112 +38,204 @@ const UserMenu = () => {
 
   const closeModal = () => {
     let targetElement = document.querySelector(
-      `[jsstyler-toggle=UserMenuButton]`
+      `[data-jsstyler-target=UserMenuButton]`
     );
     if (targetElement && targetElement.classList.contains("show")) {
       targetElement.classList.remove("show");
     }
   };
+  //media menu
+  const mediaMenuItems = [
+    {
+      label: "All Media",
+      to: "auth/media",
+      title: "Browse media files",
+    },
+    {
+      label: "Upload Media",
+      to: "auth/media/add",
+      title: "Add new media",
+    },
+    {
+      label: "Images",
+      to: "auth/media/images",
+      title: "Browse images",
+    },
+  ];
+  //pages links
+  const pagesMenuItems = [
+    {
+      label: "Pages",
+      to: "auth/pages",
+      title: "Manage pages",
+    },
+    {
+      label: "Upload Media",
+      to: "auth/pages/create",
+      title: "Create new page",
+    },
+  ];
+  //profile links
+  const profileMenuItems = [
+    {
+      label: "Update Profile",
+      to: "auth/update",
+      title: "Update Profile",
+    },
+    {
+      label: "Update Password",
+      to: "auth/update-password",
+      title: "Update your Password",
+    },
+    {
+      label: "Create new Account",
+      to: "auth/create-account",
+      title: "Create new user Account",
+    },
+  ];
+
   return (
     <nav className="jsstyler toggle fixed z-50 right-5 bottom-5 bg-color-def">
       <button id="UserMenuButton" className="p-1 relative" onClick={jsStyler()}>
         {menuButton}
       </button>
 
-      <div
-        className="absolute bottom-10 px-4 py-10 bg-color-ter shadow-sm"
+      <aside
+        className="absolute bottom-10 py-4 bg-color-ter shadow-sm"
         //tabIndex={-1}
-        jsstyler-toggle="UserMenuButton"
+        data-jsstyler-target="UserMenuButton"
       >
-        {/* Import per entity menu through context */}
-        {tab && Object.keys(tab).length > 0
-          ? Object.keys(tab).map((thisMenu) => {
-              return (
-                <li>
-                  <NavLink
-                    to={tab[thisMenu]}
-                    className={({ isActive }) =>
-                      "border-b-2 block p-3 text-center hover:text-yellow-900 hover:bg-amber-300 hover:border-r-4" +
-                      (isActive
-                        ? " text-color-ter bg-amber-300 border-r-4"
-                        : " text-color-sec")
-                    }
-                    title={thisMenu}
-                  >
-                    {thisMenu}
-                  </NavLink>
-                </li>
-              );
-            })
-          : null}
+        {/* Import per entity tab menu */}
+        <TabMenu />
+        <hr className="w-full h-1 bg-color-pri" />
         <ul>
-          <li>
+          <motion.li whileHover={{ scale: 1.1 }}>
             <NavLink
               to="dashboard"
               className={({ isActive }) =>
-                "border-b-2 block p-3 text-center hover:text-yellow-900 hover:bg-amber-300 hover:border-r-4" +
-                (isActive
-                  ? " text-color-ter bg-amber-300 border-r-4"
-                  : " text-color-sec")
+                "border-b-2 block p-3 text-center hover:text-yellow-900 hover:bg-amber-300" +
+                (isActive ? " text-color-ter bg-amber-300" : " text-color-def")
               }
               title="Dashboard"
             >
               Dashboard
             </NavLink>
-          </li>
-          <li>
-            <NavLink to="auth/pages/create">New Page</NavLink>
-          </li>
-          <li>
-            <NavLink to="auth/media">Media</NavLink>
-          </li>
-          <li>
-            <NavLink to="auth/media/images">Images</NavLink>
-          </li>
-          <li>
-            <NavLink to="auth/media/add">Upload Media</NavLink>
-          </li>
+          </motion.li>
+
           <nav className="relative group jsstyler accordion">
-            <button
+            <motion.button
+              whileHover={{ scale: 1.1 }}
               className={
-                "w-full relative border-b-2 p-3 group-hover:border-r-4 group-hover:text-yellow-900 hover:bg-amber-300 group-hover:bg-amber-300 active:bg-amber-300 text-color-sec transition duration-150 ease-in-out items-center whitespace-nowrap"
+                "w-full relative border-b-2 p-3 group-hover:text-yellow-900 hover:bg-amber-300 group-hover:bg-amber-300 active:bg-amber-300 text-color-def items-center"
               }
               type="button"
-              aria-expanded="false"
+              id="userMenuAccordions"
+              onClick={jsStyler()}
+            >
+              Pages
+              <FaGripLines className="absolute right-4 top-0 bottom-0 h-full" />
+            </motion.button>
+            <ul data-jsstyler-target="userMenuAccordions">
+              {pagesMenuItems.map((item, index) => {
+                return (
+                  <motion.li whileHover={{ scale: 1.02 }} key={index}>
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      className={({ isActive }) =>
+                        "border-b-2 block p-3 pl-6 w-full text-color-def hover:bg-color-pri/50 text-center" +
+                        (isActive ? " bg-color-pri/80" : "")
+                      }
+                      title={item.title}
+                    >
+                      {item.label}
+                    </NavLink>
+                  </motion.li>
+                );
+              })}
+            </ul>
+          </nav>
+
+          <nav className="relative group jsstyler accordion">
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              className={
+                "w-full relative border-b-2 p-3 group-hover:text-yellow-900 hover:bg-amber-300 group-hover:bg-amber-300 active:bg-amber-300 text-color-def items-center"
+              }
+              type="button"
+              id="userMenuAccordions"
+              onClick={jsStyler()}
+            >
+              Media
+              <FaGripLines className="absolute right-4 top-0 bottom-0 h-full" />
+            </motion.button>
+            <ul data-jsstyler-target="userMenuAccordions">
+              {mediaMenuItems.map((item, index) => {
+                return (
+                  <motion.li whileHover={{ scale: 1.02 }} key={index}>
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      className={({ isActive }) =>
+                        "border-b-2 block p-3 pl-6 w-full text-color-def hover:bg-color-pri/50 text-center" +
+                        (isActive ? " bg-color-pri/80" : "")
+                      }
+                      title={item.title}
+                    >
+                      {item.label}
+                    </NavLink>
+                  </motion.li>
+                );
+              })}
+            </ul>
+          </nav>
+
+          <nav className="relative group jsstyler accordion">
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              className={
+                "w-full relative border-b-2 p-3 group-hover:text-yellow-900 hover:bg-amber-300 group-hover:bg-amber-300 active:bg-amber-300 text-color-def items-center"
+              }
+              type="button"
+              id="userMenuAccordions"
               onClick={jsStyler()}
             >
               Profile
               <FaGripLines className="absolute right-4 top-0 bottom-0 h-full" />
-            </button>
-            <ul>
-              <li>
-                <NavLink
-                  to="auth/update"
-                  className={({ isActive }) =>
-                    "border-b-2 block p-3 pl-6 w-full whitespace-nowrap text-color-def hover:bg-color-pri/50" +
-                    (isActive ? " bg-color-pri/80" : "")
-                  }
-                  title="Browse all scopes"
-                >
-                  Update Profile
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="auth/update-password">Update Password</NavLink>
-              </li>
+            </motion.button>
+            <ul data-jsstyler-target="userMenuAccordions">
+              {profileMenuItems.map((item, index) => {
+                return (
+                  <motion.li whileHover={{ scale: 1.02 }} key={index}>
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      className={({ isActive }) =>
+                        "border-b-2 block p-3 pl-6 w-full text-color-def hover:bg-color-pri/50 text-center" +
+                        (isActive ? " bg-color-pri/80" : "")
+                      }
+                      title={item.title}
+                    >
+                      {item.label}
+                    </NavLink>
+                  </motion.li>
+                );
+              })}
             </ul>
           </nav>
 
-          <li>
-            <NavLink to="auth/create-account">Create an Account</NavLink>
-          </li>
-          <li>
-            <span className="nav-link" onClick={AppSignOut}>
-              Sign Out
-            </span>
-          </li>
+          <motion.li
+            whileHover={{ scale: 1.1 }}
+            className={
+              "border-b-2 block p-3 text-center hover:text-yellow-900 hover:bg-amber-300 text-color-def"
+            }
+            title="Sign out account"
+            onClick={AppSignOut}
+          >
+            Sign Out
+          </motion.li>
         </ul>
-      </div>
+      </aside>
     </nav>
   );
 };

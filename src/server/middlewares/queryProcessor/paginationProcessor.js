@@ -2,9 +2,6 @@ import * as operator from "../../constants/urlQueryOperatorsOrmTranslator.js";
 import { Op } from "sequelize";
 
 const paginationProcessor = async (ctx, next) => {
-  {
-    /* hello */
-  }
   const urlQuery = ctx.state.urlQuery;
   // Construct ORM (sequelize) path.
   // Model.findAll

@@ -14,7 +14,7 @@ export const VideoUi = ({
   formData,
   handleInputData,
 }: {
-  defaultValue: any;
+  defaultValue?: any;
   id: string;
   name: string;
   required: boolean;
@@ -25,31 +25,32 @@ export const VideoUi = ({
 
   useEffect(() => {
     let isMounted = true;
-    let defaultImported;
-    if (typeof defaultValue === "string") {
-      defaultImported = defaultValue;
-    } else {
-      defaultImported = defaultValue.uuid;
-    }
+    if (defaultValue) {
+      let defaultImported;
+      if (typeof defaultValue === "string") {
+        defaultImported = defaultValue;
+      } else {
+        defaultImported = defaultValue.uuid;
+      }
 
-    if (isMounted && defaultImported)
-      ServerHandler("/auth/media/videos/" + defaultImported).then((res) => {
-        console.log("res", res);
-        if (res && res.status === 200) {
-          if (res.data.source !== "hosted") {
-            setPreviewVideo({
-              path: res.data.path,
-              mediaTitle: res.data.title,
-            });
-          } else {
-            setPreviewVideo({
-              path: APP_ADDRESS + "/" + res.data.path,
-              mediaTitle: res.data.title,
-            });
+      if (isMounted && defaultImported)
+        ServerHandler("/auth/media/videos/" + defaultImported).then((res) => {
+          console.log("res", res);
+          if (res && res.status === 200) {
+            if (res.data.source !== "hosted") {
+              setPreviewVideo({
+                path: res.data.path,
+                mediaTitle: res.data.title,
+              });
+            } else {
+              setPreviewVideo({
+                path: APP_ADDRESS + "/" + res.data.path,
+                mediaTitle: res.data.title,
+              });
+            }
           }
-        }
-      });
-
+        });
+    }
     return () => {
       isMounted = false;
     };

@@ -38,7 +38,7 @@ const MainNav = ({ routes }: any) => {
   useEffect(() => {
     if (location.pathname) {
       let targetElement = document.querySelector(
-        `[jsstyler-toggle=menuButton]`
+        `[data-jsstyler-target=menuButton]`
       );
       if (targetElement && targetElement.classList.contains("show")) {
         targetElement.classList.remove("show");
@@ -47,7 +47,9 @@ const MainNav = ({ routes }: any) => {
   }, [location.pathname]);
 
   const closeMenu = () => {
-    let targetElement = document.querySelector(`[jsstyler-toggle=menuButton]`);
+    let targetElement = document.querySelector(
+      `[data-jsstyler-target=menuButton]`
+    );
     if (targetElement && targetElement.classList.contains("show")) {
       targetElement.classList.remove("show");
     }
@@ -66,7 +68,7 @@ const MainNav = ({ routes }: any) => {
       <div
         className="fixed z-10 bottom-0 flex flex-col bg-color-pri bg-clip-padding shadow-sm top-0 left-0 right-0 mx-auto border-none w-96"
         //tabIndex={-1}
-        jsstyler-toggle="menuButton"
+        data-jsstyler-target="menuButton"
       >
         <div className="flex items-center justify-between p-4">
           <div className="text-color-ter text-xl mb-0 font-semibold">Menu</div>
