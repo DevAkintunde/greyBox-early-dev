@@ -56,6 +56,7 @@ router.post(
   },
   //mediaUpload,
   aliasInjector,
+  mediaFormValidator.uploadVideo,
   async (ctx, next) => {
     if (
       ctx.request.body &&

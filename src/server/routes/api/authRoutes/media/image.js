@@ -46,15 +46,15 @@ router.post(
   "/upload",
   async (ctx, next) => {
     ctx.state.entityType = "Image";
-    console.log("review header", ctx.header);
-    await next();
-  },
-  mediaUpload,
-  async (ctx, next) => {
-    console.log("check if styles exist", ctx.request.body);
+    if (ctx.request.body.public) {
+      ctx.state.mediaPath = "public";
+      delete ctx.request.body.public;
+    }
     await next();
   },
   aliasInjector,
+  mediaFormValidator.uploadImage,
+  mediaUpload,
   mediaController.upload,
   (ctx) => {
     if (ctx.state.error) {
@@ -107,20 +107,41 @@ router.patch(
   "/:alias/update",
   async (ctx, next) => {
     ctx.state.entityType = "Image";
-    if (UUID4Validator(ctx.params.alias)) {
-      ctx.request.body = {
-        ...ctx.request.body,
-        uuid: ctx.params.alias,
-      };
-    } else {
-      ctx.request.body = {
-        ...ctx.request.body,
-        alias: ctx.params.alias,
-      };
+    ctx.state.entityUpdate = true;
+    if (ctx.request.body.public) {
+      ctx.state.mediaPath = "public";
+      delete ctx.request.body.public;
     }
+    if (ctx.request.body && ctx.request.body.alias) {
+      if (UUID4Validator(ctx.params.alias)) {
+        ctx.request.body = {
+          ...ctx.request.body,
+          uuid: ctx.params.alias,
+        };
+      } else {
+        ctx.request.body = {
+          ...ctx.request.body,
+          currentAlias: ctx.params.alias,
+        };
+      }
+    } else {
+      if (UUID4Validator(ctx.params.alias)) {
+        ctx.request.body = {
+          ...ctx.request.body,
+          uuid: ctx.params.alias,
+        };
+      } else {
+        ctx.request.body = {
+          ...ctx.request.body,
+          alias: ctx.params.alias,
+        };
+      }
+    }
+    console.log("bodt check", ctx.request.body);
     await next();
   },
-  mediaFormValidator.uploadImage,
+  aliasInjector,
+  mediaFormValidator.updateImage,
   mediaUpload,
   mediaController.updateItem,
   async (ctx, next) => {

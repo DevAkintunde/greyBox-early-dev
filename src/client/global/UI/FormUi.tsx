@@ -1,6 +1,7 @@
 import React, { ReactElement, useEffect, useState } from "react";
 import validator from "validator";
 import { APP_ADDRESS } from "../../utils/app.config";
+import { dependentField } from "./dependentFieldFunction";
 import { ImageUi } from "./ImageUi";
 import { ParagraphUI } from "./ParagraphUI";
 
@@ -26,6 +27,12 @@ interface Fields {
   defaultValue?: number | string | any;
   styling?: string;
   options?: string[] | object[];
+  dependent?: {
+    id: string; //referenced controller field
+    value: any; //value of controller field
+    attribute: string; //required/visible/checked/empty/select
+  };
+  dependentController: string[];
   description?: { before: string } | { after: string } | string; // use as field description text
   extraElement?: ReactElement | null; // Extra react component that can be inserted along with each field
 }
@@ -62,6 +69,19 @@ interface FormProps {
 const labelStyling = "ml-5 text-xl border-b-4 border-color-sec";
 const inputStyling = "px-2 rounded-full block w-full"; */
 
+//typical fields
+/* {
+      type: "text",
+      weight: 5,
+      id: "alias",
+      label: "Alias",
+      dependent: {
+        id: 'autoAlias',
+        value: 'true'
+        attribute: required/visible/checked/empty
+      }
+    } */
+
 export const FormUi = ({
   id,
   containers,
@@ -74,12 +94,42 @@ export const FormUi = ({
   nested,
 }: FormProps) => {
   const [thisFormData, setThisFormData]: FormData | any = useState();
+  //dependent fields processor
+
+  //re-render initial form field values if form default changes...
+  //like on entity edit form where field values may be imported from server.
+  const [rerenderInitialValues, setRerenderInitialValues]: boolean | any =
+    useState();
+
   //set initial form values
   useEffect(() => {
-    if (!thisFormData) {
+    if (!thisFormData || rerenderInitialValues) {
+      setRerenderInitialValues();
       if (fields && fields.length > 0) {
         let importedData: FormData = new FormData();
         fields.forEach((field, index) => {
+          // check per dependency condition on another field
+          //dependentCondition = { attribute: boolean.toString() }
+          /* let dependentCondition: any = field["dependent" as keyof typeof field]
+            ? dependentField(fields, field, "defaultValue")
+            : null; */
+          // check If a Dependent field
+          field["dependent" as keyof typeof field] &&
+            fields.forEach((checkController) => {
+              if (
+                field.dependent &&
+                field.dependent.id &&
+                field.dependent.id === checkController.id
+              )
+                if (!checkController.dependentController) {
+                  checkController.dependentController = [field.id];
+                } else if (
+                  !checkController.dependentController.includes(field.id)
+                ) {
+                  checkController.dependentController.push(field.id);
+                }
+            });
+
           if (field.defaultValue) {
             if (
               field.type !== "file" &&
@@ -112,10 +162,24 @@ export const FormUi = ({
         setThisFormData(new FormData());
       }
     }
-  }, [fields, thisFormData]);
+  }, [fields, rerenderInitialValues, thisFormData]);
+  //monitor field changes
+  useEffect(() => {
+    let isMounted = true;
+    if (isMounted) setRerenderInitialValues(true);
+    return () => {
+      isMounted = false;
+    };
+  }, [fields]);
 
   const handleInputData =
-    (input: { name: string; id: string; type: string; value?: string }) =>
+    (input: {
+      name: string;
+      id: string;
+      type: string;
+      value?: string;
+      dependentController?: string[];
+    }) =>
     (e: { target: { value: string } | any }) => {
       //console.log("input", input);
       // input value from the form
@@ -153,6 +217,22 @@ export const FormUi = ({
       if (submitButton && submitButton["disabled"])
         submitButton["disabled"] = false;
       // console.log(submitButton);
+
+      if (input.dependentController && input.dependentController.length > 0) {
+        fields.forEach((checkDependent) => {
+          console.log("checkDependent", checkDependent);
+          console.log("input.dependentController", input.dependentController);
+          if (
+            checkDependent.dependent &&
+            checkDependent.dependent.id &&
+            input.dependentController?.includes(checkDependent.id)
+          ) {
+            dependentField(fields, checkDependent, {
+              handleInputData: checkDependent.dependent.attribute,
+            });
+          }
+        });
+      }
 
       let importedData: FormData = thisFormData;
       let checkBoxValues: string[] | any;
@@ -206,7 +286,7 @@ export const FormUi = ({
         console.log("thisFormData Looped", { [key]: val });
       }
     };
-
+  console.log("thisFormData Looped", fields);
   /*   const callbackAction = () => (e: any) => {
     e.preventDefault();
     let fetchForm: any = document.getElementById(id);
@@ -236,11 +316,6 @@ export const FormUi = ({
   fields &&
     fields.length > 0 &&
     fields.forEach((field: Fields) => {
-      /*     if (field.defaultValue)
-      formFieldsDefault = {
-        ...formFieldsDefault,
-        [field.id]: field.defaultValue,
-      }; */
       if (field.container) {
         if (containersWithDefault[field["container"]]) {
           if (!containersWithDefault[field["container"]].fields)
@@ -312,8 +387,24 @@ export const FormUi = ({
         className={container.styling ? container.styling : ""}
       >
         {container.fields.map((field: Fields, index: number) => {
+          // check per dependency condition on another field
+          //dependentCondition = { attribute: boolean.toString() }
+          let dependentCondition: any = field["dependent" as keyof typeof field]
+            ? dependentField(fields, field)
+            : null;
+
           return (
-            <React.Fragment key={index}>
+            <div
+              id={"form-item-container-" + field.id}
+              className={
+                dependentCondition &&
+                dependentCondition.visible &&
+                dependentCondition.visible !== "true"
+                  ? "hidden"
+                  : ""
+              }
+              key={index}
+            >
               {field.description &&
               field.description["before" as keyof typeof field.description] ? (
                 <div
@@ -361,6 +452,9 @@ export const FormUi = ({
                       id: field.id,
                       name: field.id,
                       type: field.type,
+                      dependentController: field.dependentController
+                        ? field.dependentController
+                        : undefined,
                     })}
                     className={
                       "form-input" +
@@ -368,8 +462,24 @@ export const FormUi = ({
                       (inputStyling ? " " + inputStyling : "")
                     }
                     type={field.type}
-                    defaultValue={field.defaultValue ? field.defaultValue : ""}
-                    required={field.required ? true : false}
+                    defaultValue={
+                      dependentCondition &&
+                      dependentCondition.empty &&
+                      dependentCondition.empty === "true"
+                        ? ""
+                        : field.defaultValue
+                        ? field.defaultValue
+                        : ""
+                    }
+                    required={
+                      dependentCondition &&
+                      dependentCondition.required &&
+                      dependentCondition.required === "true"
+                        ? true
+                        : field.required
+                        ? true
+                        : false
+                    }
                   />
                 ) : field.type && field.type === "file" ? (
                   <>
@@ -393,6 +503,9 @@ export const FormUi = ({
                         id: field.id,
                         name: field.id,
                         type: field.type,
+                        dependentController: field.dependentController
+                          ? field.dependentController
+                          : undefined,
                       })}
                       className={
                         "form-input" +
@@ -422,14 +535,33 @@ export const FormUi = ({
                       id: field.id,
                       name: field.id,
                       type: field.type,
+                      dependentController: field.dependentController
+                        ? field.dependentController
+                        : undefined,
                     })}
                     className={
                       "form-input" +
                       (field.styling ? " " + field.styling : "") +
                       (inputStyling ? " " + inputStyling : "")
                     }
-                    defaultValue={field.defaultValue ? field.defaultValue : ""}
-                    required={field.required ? true : false}
+                    defaultValue={
+                      dependentCondition &&
+                      dependentCondition.empty &&
+                      dependentCondition.empty === "true"
+                        ? ""
+                        : field.defaultValue
+                        ? field.defaultValue
+                        : ""
+                    }
+                    required={
+                      dependentCondition &&
+                      dependentCondition.required &&
+                      dependentCondition.required === "true"
+                        ? true
+                        : field.required
+                        ? true
+                        : false
+                    }
                   />
                 ) : field.type && field.type === "boolean" ? (
                   field.options && field.options.length > 0 ? (
@@ -450,6 +582,9 @@ export const FormUi = ({
                                 id: field.id,
                                 name: field.id,
                                 type: field.type,
+                                dependentController: field.dependentController
+                                  ? field.dependentController
+                                  : undefined,
                               })}
                               className={
                                 "form-input" +
@@ -464,17 +599,27 @@ export const FormUi = ({
                                   : undefined
                               }
                               defaultChecked={
-                                field.defaultValue &&
-                                (typeof option === "string"
-                                  ? option.toString()
-                                  : option["key" as keyof typeof option]
-                                  ? option["key" as keyof typeof option]
-                                  : false)
+                                dependentCondition &&
+                                dependentCondition.checked &&
+                                dependentCondition.checked === "true"
+                                  ? true
+                                  : field.defaultValue &&
+                                    (typeof option === "string"
+                                      ? option.toString()
+                                      : option["key" as keyof typeof option]
+                                      ? option["key" as keyof typeof option]
+                                      : false)
                                   ? true
                                   : false
                               }
                               required={
-                                field.required && index === 0 ? true : false
+                                dependentCondition &&
+                                dependentCondition.required &&
+                                dependentCondition.required === "true"
+                                  ? true
+                                  : field.required && index === 0
+                                  ? true
+                                  : false
                               }
                             />
                             <label htmlFor={index.toString()}>
@@ -496,6 +641,9 @@ export const FormUi = ({
                           id: field.id,
                           name: field.id,
                           type: field.type,
+                          dependentController: field.dependentController
+                            ? field.dependentController
+                            : undefined,
                         })}
                         className={
                           "form-input" +
@@ -503,8 +651,24 @@ export const FormUi = ({
                         }
                         type={"radio"}
                         value={"Yes"}
-                        defaultChecked={field.defaultValue ? true : false}
-                        required={field.required && index === 0 ? true : false}
+                        defaultChecked={
+                          dependentCondition &&
+                          dependentCondition.checked &&
+                          dependentCondition.checked === "true"
+                            ? true
+                            : field.defaultValue
+                            ? true
+                            : false
+                        }
+                        required={
+                          dependentCondition &&
+                          dependentCondition.required &&
+                          dependentCondition.required === "true"
+                            ? true
+                            : field.required && index === 0
+                            ? true
+                            : false
+                        }
                       />
                       <label htmlFor={field.id}>{"Yes"}</label>
                       <input
@@ -513,6 +677,9 @@ export const FormUi = ({
                           name: field.id,
                           id: field.id,
                           type: field.type,
+                          dependentController: field.dependentController
+                            ? field.dependentController
+                            : undefined,
                         })}
                         className={
                           "form-input" +
@@ -520,8 +687,24 @@ export const FormUi = ({
                         }
                         type={"radio"}
                         value={"No"}
-                        defaultChecked={field.defaultValue ? true : false}
-                        required={field.required && index === 0 ? true : false}
+                        defaultChecked={
+                          dependentCondition &&
+                          dependentCondition.checked &&
+                          dependentCondition.checked === "true"
+                            ? true
+                            : field.defaultValue
+                            ? true
+                            : false
+                        }
+                        required={
+                          dependentCondition &&
+                          dependentCondition.required &&
+                          dependentCondition.required === "true"
+                            ? true
+                            : field.required && index === 0
+                            ? true
+                            : false
+                        }
                       />
                       <label htmlFor={field.id}>{"No"}</label>
                     </span>
@@ -548,14 +731,33 @@ export const FormUi = ({
                       id: field.id,
                       name: field.id,
                       type: field.type,
+                      dependentController: field.dependentController
+                        ? field.dependentController
+                        : undefined,
                     })}
                     className={
                       "form-input" +
                       (field.styling ? " " + field.styling : "") +
                       (inputStyling ? " " + inputStyling : "")
                     }
-                    defaultValue={field.defaultValue ? field.defaultValue : ""}
-                    required={field.required ? true : false}
+                    defaultValue={
+                      dependentCondition &&
+                      dependentCondition.select &&
+                      dependentCondition.select === "true"
+                        ? true
+                        : field.defaultValue
+                        ? field.defaultValue
+                        : ""
+                    }
+                    required={
+                      dependentCondition &&
+                      dependentCondition.required &&
+                      dependentCondition.required === "true"
+                        ? true
+                        : field.required
+                        ? true
+                        : false
+                    }
                   >
                     {field.options && field.options.length ? (
                       field.options.map((option: string | object, index) => {
@@ -602,6 +804,9 @@ export const FormUi = ({
                                 id: field.id,
                                 name: field.id,
                                 type: field.type,
+                                dependentController: field.dependentController
+                                  ? field.dependentController
+                                  : undefined,
                               })}
                               className={
                                 "form-input" +
@@ -617,12 +822,33 @@ export const FormUi = ({
                               }
                               defaultChecked={
                                 field.defaultValue &&
-                                (typeof option === "string"
-                                  ? option.toString()
-                                  : option["key" as keyof typeof option]
-                                  ? option["key" as keyof typeof option]
-                                  : false)
+                                typeof option === "string" &&
+                                field.defaultValue === option &&
+                                dependentCondition &&
+                                dependentCondition.checked &&
+                                dependentCondition.checked === "true"
                                   ? true
+                                  : typeof option !== "string" &&
+                                    option["key" as keyof typeof option] &&
+                                    field.defaultValue ===
+                                      option["key" as keyof typeof option] &&
+                                    dependentCondition &&
+                                    dependentCondition.checked &&
+                                    dependentCondition.checked === "true"
+                                  ? true
+                                  : !dependentCondition ||
+                                    (dependentCondition &&
+                                      !dependentCondition.checked)
+                                  ? field.defaultValue &&
+                                    typeof option === "string"
+                                    ? field.defaultValue === option
+                                      ? true
+                                      : typeof option !== "string" &&
+                                        option["key" as keyof typeof option]
+                                    : field.defaultValue ===
+                                      option["key" as keyof typeof option]
+                                    ? true
+                                    : false
                                   : false
                               }
                               required={
@@ -648,6 +874,9 @@ export const FormUi = ({
                       id: field.id,
                       name: field.id,
                       type: field.type,
+                      dependentController: field.dependentController
+                        ? field.dependentController
+                        : undefined,
                     })}
                     className={
                       "form-input" +
@@ -655,8 +884,24 @@ export const FormUi = ({
                       (inputStyling ? " " + inputStyling : "")
                     }
                     type="text"
-                    defaultValue={field.defaultValue ? field.defaultValue : ""}
-                    required={field.required ? true : false}
+                    defaultValue={
+                      dependentCondition &&
+                      dependentCondition.empty &&
+                      dependentCondition.empty === "true"
+                        ? ""
+                        : field.defaultValue
+                        ? field.defaultValue
+                        : ""
+                    }
+                    required={
+                      dependentCondition &&
+                      dependentCondition.required &&
+                      dependentCondition.required === "true"
+                        ? true
+                        : field.required
+                        ? true
+                        : false
+                    }
                   />
                 )}
                 <div
@@ -681,7 +926,7 @@ export const FormUi = ({
               ) : typeof field.description === "string" ? (
                 field.description
               ) : null}
-            </React.Fragment>
+            </div>
           );
         })}
       </div>

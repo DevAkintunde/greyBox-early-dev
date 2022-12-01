@@ -12,9 +12,9 @@ const mediaUpload = async (ctx, next) => {
   if (ctx.request.files && Object.keys(ctx.request.files).length > 0) {
     //mandatorily send files to private DIR if on the autoPrivatePath array
     const autoPrivatePaths = ["account"];
-    //check if public boolean exist on request body
+    //check if 'media as public' declaration exists in ctx.state
     let placeInPublic;
-    if (ctx.request.body.public) {
+    if (ctx.state.mediaPath === "public") {
       placeInPublic = true;
       for (let i = 0; i < autoPrivatePaths.length; i++) {
         if (ctx.originalUrl.includes("/" + autoPrivatePaths[i] + "/")) {
@@ -22,7 +22,6 @@ const mediaUpload = async (ctx, next) => {
           break;
         }
       }
-      delete ctx.request.body.public;
     }
 
     let imageAddOnSizes = [
@@ -117,17 +116,11 @@ const mediaUpload = async (ctx, next) => {
                 .toFile(thisPath)
                 .then((res) => {
                   //console.log("done addOn! " + thisPath, res);
-                  if (imageStyles[file]) {
-                    imageStyles[file] = {
-                      ...imageStyles[file],
-                      [style.name]: thisPath.split("public/")[1],
-                    };
-                  } else {
-                    imageStyles = {
-                      ...imageStyles,
-                      [file]: { [style.name]: thisPath.split("public/")[1] },
-                    };
-                  }
+
+                  imageStyles = {
+                    ...imageStyles,
+                    [style.name]: thisPath.split("public/")[1],
+                  };
                 })
                 .catch((err) => {
                   //console.error("lets clean this up", err);
@@ -148,7 +141,7 @@ const mediaUpload = async (ctx, next) => {
           fs.unlinkSync(media);
         });
       });
-      //console.log("imageStyles", imageStyles);
+      console.log("imageStyles", imageStyles);
       ctx.request.body = { ...ctx.request.body, styles: imageStyles };
     }
   }

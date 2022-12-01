@@ -26,7 +26,7 @@ router
             part.mimetype.includes("image/webp")
           );
         },
-        uploadDir: path.join(__dirname, process.env.privatePath),
+        uploadDir: path.join(__dirname, process.env.tempFolder),
         keepExtensions: true,
         filename: (name, ext, form) => {
           return (

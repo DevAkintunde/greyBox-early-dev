@@ -8,6 +8,7 @@ import {
 import { logger } from "../utils/logger.js";
 import fs from "node:fs";
 import path from "node:path";
+import Image from "../models/entities/media/Image.model.js";
 
 const resolve = (p) => path.join("public", p);
 
@@ -60,53 +61,59 @@ export const viewItem = async (ctx, next) => {
 
 export const updateItem = async (ctx, next) => {
   try {
-    let searchKey = ctx.request.body.uuid ? "uuid" : "alias";
+    let searchKey = ctx.request.body.uuid ? "uuid" : "currentAlias";
     let updatedMedia = await sequelize.transaction(async (t) => {
       let thisMedia = await sequelize.models[ctx.state.entityType].findOne({
         where: {
-          [searchKey]: ctx.request.body[searchKey],
+          [searchKey === "currentAlias" ? "alias" : searchKey]:
+            ctx.request.body[searchKey],
         },
       });
 
-      if (
-        ctx.request.files &&
-        ctx.request.files[0] &&
-        ctx.request.files[0].filepath
-      ) {
-        if (ctx.request.files[0].filepath !== resolve(thisMedia.path)) {
-          let promises = [];
+      if (thisMedia instanceof Image) {
+        delete ctx.request.body[searchKey];
 
-          promises.push(
-            fs.unlinkSync(resolve(thisMedia.path), (err) => {
-              if (err) ctx.throw(500, err);
-            })
-          );
-          let styles = Object.keys(thisMedia.styles).map((stylePath) => {
-            return fs.unlinkSync(resolve(stylePath.path), (err) => {
-              if (err) ctx.throw(500, err);
+        if (
+          ctx.request.files &&
+          ctx.request.files.path &&
+          ctx.request.files.path.filepath
+        ) {
+          if (ctx.request.files.path.filepath !== resolve(thisMedia.path)) {
+            let promises = [];
+
+            promises.push(fs.unlinkSync(resolve(thisMedia.path)));
+            let styles = Object.keys(thisMedia.styles).map((stylePath) => {
+              return fs.unlinkSync(resolve(thisMedia.styles[stylePath]));
             });
-          });
-          promises.push(styles);
-          try {
-            Promise.all(promises);
-          } catch (err) {
-            logger.error(err);
-            ctx.state.error = err;
-          }
+            promises.push(styles);
+            try {
+              Promise.all(promises);
+            } catch (err) {
+              logger.error(err);
+            }
 
-          thisMedia.update({
-            ...ctx.request.body,
-            path: ctx.request.files[0].filepath,
-          });
+            thisMedia.update({
+              ...ctx.request.body,
+              path: ctx.request.files.path.filepath,
+            });
+          }
+        } else {
+          thisMedia.update(ctx.request.body);
         }
+        return thisMedia;
       }
     });
-
-    console.log("updatedMedia.toJSON()", updatedMedia.toJSON());
-    ctx.state.data = updatedMedia.toJSON();
+    if (updatedMedia) {
+      //console.log("updatedMedia.toJSON()", updatedMedia.toJSON());
+      ctx.state.data = updatedMedia.toJSON();
+    }
   } catch (err) {
     logger.error(err);
-    ctx.state.error = err;
+    console.error(err);
+    ctx.state.error = {
+      status: SERVER_ERROR,
+      statusText: "Unable to remove previous media from server",
+    };
   }
   await next();
 };

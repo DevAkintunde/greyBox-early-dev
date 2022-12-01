@@ -12,6 +12,7 @@ const submit = async (ctx, next) => {
     alias: Joi.string().trim().max(100),
     status: Joi.string().trim(),
     revisionNote: Joi.string().trim(),
+    autoAlias: Joi.boolean(),
     uuid: Joi.string().guid({ version: ["uuidv4"] }),
     //UUID is mere placeholder during creation but needed during entity update.
   });
@@ -47,6 +48,7 @@ const uuid = async (ctx, next) => {
 const alias = async (ctx, next) => {
   const schema = Joi.object().keys({
     alias: Joi.string().trim().max(100).required(),
+    autoAlias: Joi.boolean(),
   });
   await validatorHandler(ctx, next, schema);
 };

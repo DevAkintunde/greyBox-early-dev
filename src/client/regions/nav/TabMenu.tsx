@@ -31,13 +31,17 @@ export const TabMenu = ({ entity }: any) => {
     Object.keys(tab).length > 0 &&
     Object.keys(tab).map((item: any, index: number) => {
       return (
-        <motion.li whileHover={{ scale: 1.02 }} key={index}>
+        <motion.li
+          className="list-none"
+          whileHover={{ scale: 1.1 }}
+          key={index}
+        >
           <NavLink
             key={tab[item].to}
             to={tab[item].to}
             className={({ isActive }) =>
-              "border-b-2 block p-3 pl-6 w-full text-color-def hover:bg-color-pri/50 text-center" +
-              (isActive ? " bg-color-pri/80" : "")
+              "border-b-2 block p-3 text-center hover:text-yellow-900 hover:bg-amber-300" +
+              (isActive ? " text-color-ter bg-amber-300" : " text-color-def")
             }
             title={tab[item].title}
           >

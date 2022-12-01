@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { jsStyler } from "../../global/functions/jsStyler";
 import { ContactForm } from "./ContactForm";
 //import { FaGripLines } from "react-icons/fa";
@@ -25,7 +25,7 @@ const ContactButton = () => {
   useEffect(() => {
     if (location.pathname) {
       let targetElement = document.querySelector(
-        `[jsstyler-toggle=contactButton]`
+        `[data-jsstyler-target=contactButton]`
       );
       if (targetElement && targetElement.classList.contains("show")) {
         targetElement.classList.remove("show");
@@ -35,7 +35,7 @@ const ContactButton = () => {
 
   const closeModal = () => {
     let targetElement = document.querySelector(
-      `[jsstyler-toggle=contactButton]`
+      `[data-jsstyler-target=contactButton]`
     );
     if (targetElement && targetElement.classList.contains("show")) {
       targetElement.classList.remove("show");
@@ -51,7 +51,7 @@ const ContactButton = () => {
       <div
         className="fixed bg-color-pri/70 border-8 border-color-ter shadow-sm top-5 left-5 right-5 bottom-5 mx-auto w-[50%]"
         //tabIndex={-1}
-        jsstyler-toggle="contactButton"
+        data-jsstyler-target="contactButton"
       >
         <div className="flex items-center justify-between p-4">
           <div className="text-color-ter text-xl mb-0 font-semibold">

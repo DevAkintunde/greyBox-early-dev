@@ -24,6 +24,11 @@ Service.init(
       allowNull: false,
       unique: true,
     },
+    autoAlias: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+      field: "auto_alias",
+    },
     /* featuredImageUrl: {
       type: DataTypes.STRING,
       field: "featured_image_url",

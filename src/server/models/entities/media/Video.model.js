@@ -27,6 +27,11 @@ Video.init(
       allowNull: false,
       unique: true,
     },
+    autoAlias: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+      field: "auto_alias",
+    },
     path: {
       type: DataTypes.STRING,
       allowNull: false,

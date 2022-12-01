@@ -62,6 +62,7 @@ const ViewAllMedia = () => {
       console.log("res", res);
       if (res.status !== 200) {
         console.log(res);
+        //setEntities([res.statusText]);
       } else {
         if (isMounted) setEntities(res.data);
       }
@@ -126,35 +127,49 @@ const ViewTypeMedia = ({ type }: { type: string }) => {
         accept: "application/json",
       },
     }).then((res) => {
-      if (isMounted && res.status === 200) setEntities(res.data[type]);
+      console.log("res", res);
+      if (res.status !== 200) {
+        console.log(res);
+        //setEntities([res.statusText]);
+      } else {
+        if (isMounted) setEntities(res.data[type]);
+      }
     });
     return () => {
       isMounted = false;
     };
   }, [type]);
 
+  console.log(entities);
   return (
     <>
       <PageTitle title={type + "s"} />
       {entities ? (
         <>
-          <div className="grid grid-cols-4">
-            {entities.map((entity: any) => {
-              return type === "image" ? (
-                <Image
-                  src={entity.path}
-                  alt={entity.title}
-                  entityUrl={entity.alias}
-                />
-              ) : (
-                <Video
-                  src={entity.path}
-                  alt={entity.title}
-                  entityUrl={entity.alias}
-                />
-              );
-            })}
-          </div>
+          {entities.length !== 0 ? (
+            <div className="grid grid-cols-4">
+              {entities.map((entity: any) => {
+                return type === "image" ? (
+                  <Image
+                    src={entity.path}
+                    alt={entity.title}
+                    entityUrl={entity.alias}
+                  />
+                ) : (
+                  <Video
+                    src={entity.path}
+                    alt={entity.title}
+                    entityUrl={entity.alias}
+                  />
+                );
+              })}
+            </div>
+          ) : (
+            <div>
+              <div>No media file</div>
+              <Link to="/auth/media/add">Create New</Link>
+            </div>
+          )}
         </>
       ) : (
         <Throbber />

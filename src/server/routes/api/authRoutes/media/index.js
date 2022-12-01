@@ -38,7 +38,7 @@ router.get(
   },
   urlQueryTranslator,
   (ctx) => {
-    console.log("response", ctx.state.data);
+    //console.log("response", ctx.state.data);
     if (ctx.state.data) {
       ctx.status = OK;
       ctx.body = {

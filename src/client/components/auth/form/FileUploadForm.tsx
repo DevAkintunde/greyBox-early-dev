@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { FormUi } from "../../../global/UI/FormUi";
 import { ServerHandler } from "../../../global/functions/ServerHandler";
 
@@ -15,7 +15,6 @@ const FileUploadForm = ({
   updateForm,
   callback,
 }: ComponentData) => {
-  const navigate = useNavigate();
   let location = useLocation();
 
   //fields
@@ -34,6 +33,27 @@ const FileUploadForm = ({
       weight: 1,
       id: "title",
       label: "Title",
+    },
+    {
+      type: "text",
+      weight: 2,
+      id: "autoAlias",
+      label: "Auto Alias",
+      defaultValue: "true",
+      options: ["yes", "no"],
+    },
+    {
+      type: "text",
+      weight: 5,
+      id: "alias",
+      label: "Alias",
+      dependent: {
+        id: "autoAlias",
+        value: "false",
+        attribute: "visible", //required/visible/checked/empty/select
+      },
+      options: ["true", "false"],
+      defaultValue: "true",
     },
   ]);
   //console.log(location);
@@ -77,8 +97,10 @@ const FileUploadForm = ({
 
     data.append("public", "true");
     ServerHandler({
-      endpoint: `/auth/media/${type}s/upload`,
-      method: "post",
+      endpoint: updateForm
+        ? isUpdateForm + "/update"
+        : `/auth/media/${type}s/upload`,
+      method: updateForm ? "patch" : "post",
       headers: {
         //accept: "application/json",
         "content-type": "multipart/form-data",
@@ -114,7 +136,7 @@ const FileUploadForm = ({
       action: doUpload,
     },
   ];
-
+  console.log("fiels", fields);
   return (
     <div>
       <FormUi
