@@ -12,7 +12,7 @@ import logger from "koa-logger";
 import cron from "node-cron";
 import cors from "@koa/cors";
 import passport from "koa-passport";
-import { logger as appLogger } from "./src/server/utils/logger.js";
+import { logger as appLogger } from "./src/server/cms/utils/logger.js";
 //const { jobScheduler } = require("./cron/job");
 //const { httpLogStream } = require("./utils/logger");
 
@@ -20,9 +20,9 @@ import { logger as appLogger } from "./src/server/utils/logger.js";
 //cron.schedule("0 1 * * *", jobScheduler);
 
 //file imports
-import router from "./src/server/routes/api.route.js";
+import router from "./src/server/cms/routes/api.route.js";
 // authentication
-import { passportConfig } from "./src/server/middlewares/authorization/auth.js";
+import { passportConfig } from "./src/server/cms/middlewares/authorization/auth.js";
 passportConfig(passport);
 
 // The App

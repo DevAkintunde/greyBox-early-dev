@@ -1,9 +1,9 @@
 import { Route, Routes } from "react-router-dom";
-import MainNav from "./client/regions/nav/MainNav";
-import { Router } from "./client/routes/Router";
-import AppFrame from "./client/global/AppFrame";
+import MainNav from "./client/cms/regions/nav/MainNav";
+import { Router } from "./client/cms/routes/Router";
+import AppFrame from "./client/cms/global/AppFrame";
 import bgImage from "./assets/lens-contour2.png";
-import QuickButtons from "./client/regions/nav/QuickButtons";
+import QuickButtons from "./client/cms/regions/nav/QuickButtons";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -11,7 +11,7 @@ import "react-toastify/dist/ReactToastify.css";
 //import.meta.env.SSR
 
 const PagePathsWithComponents: object = import.meta.glob(
-  "./client/routes/public/*.tsx",
+  "./client/cms/routes/public/*.tsx",
   { eager: true }
 );
 
@@ -23,7 +23,9 @@ interface ThisRoute {
 }
 let routes: ThisRoute[] = Object.keys(PagePathsWithComponents).map(
   (path: string) => {
-    let nameHolder = path.match(/\.\/client\/routes\/public\/(.*)\.tsx$/)![1];
+    let nameHolder = path.match(
+      /\.\/client\/cms\/routes\/public\/(.*)\.tsx$/
+    )![1];
     let nameWeight = nameHolder.split("_");
     let thisPath =
       nameWeight[0] === "Home" ? undefined : nameWeight[0].toLowerCase();
