@@ -53,12 +53,15 @@ const aliasInjector = async (ctx, next) => {
       }
 
       if (
-        ctx.state.entityUpdate &&
+        (ctx.state.entityUpdate || ctx.path.endsWith("/update")) &&
         !ctx.request.body.currentAlias &&
         ctx.request.body.alias
       ) {
         ctx.request.body.currentAlias = ctx.request.body.alias;
-      } else if (!ctx.state.entityUpdate && ctx.request.body.currentAlias) {
+      } else if (
+        (!ctx.state.entityUpdate || !ctx.path.endsWith("/update")) &&
+        ctx.request.body.currentAlias
+      ) {
         delete ctx.request.body.currentAlias;
       }
 

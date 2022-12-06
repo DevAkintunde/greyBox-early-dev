@@ -37,7 +37,7 @@ const addNewImage: Function = (
         </div>
         <ImageUi
           id={paragraphName}
-          name={paragraphName + "][uuid]"}
+          name={paragraphName + "[image]"}
           formData={formData}
           handleInputData={handleInputData}
           required={true}

@@ -38,7 +38,7 @@ export const ImageUi = ({
           //console.log("res", res);
           if (res && res.status === 200)
             setPreviewImage({
-              path: APP_ADDRESS + "/" + res.data.styles.path.small,
+              path: APP_ADDRESS + "/" + res.data.styles.small,
               mediaTitle: res.data.title,
             });
         });
@@ -229,7 +229,7 @@ const ImageLibrary = ({
   const onSelect = () => {
     if (imageChoice && imageChoice.uuid) {
       setPreviewImage({
-        path: APP_ADDRESS + "/" + imageChoice.styles.path.small,
+        path: APP_ADDRESS + "/" + imageChoice.styles.small,
         mediaTitle: imageChoice.title,
       });
     } else {
@@ -265,7 +265,13 @@ const ImageLibrary = ({
             <span key={media.uuid} className="image-ui-library">
               <label htmlFor={media.uuid}>
                 <Image
-                  src={media.styles.path.small}
+                  src={
+                    media.styles && media.styles.small
+                      ? media.styles.small
+                      : media.path
+                      ? media.path
+                      : ""
+                  }
                   alt={media.title}
                   display="overlay"
                   //entityUrl={media.alias}
@@ -316,7 +322,7 @@ const ImageUpload = ({ setPreviewImage, handleInputData, name, id }: any) => {
     //console.log("the", res);
     if (res && res.data && res.data.path)
       setPreviewImage({
-        path: APP_ADDRESS + "/" + res.data.styles.path.small,
+        path: APP_ADDRESS + "/" + res.data.styles.small,
         mediaTitle: res.data.title,
       });
     handleInputData({

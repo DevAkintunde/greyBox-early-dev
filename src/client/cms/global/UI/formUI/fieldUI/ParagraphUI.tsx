@@ -49,6 +49,7 @@ export const ParagraphUI = ({
       //starting at -ve 1 to compensate for the speed difference between React SetState and variable update
       let defaultIndex = -1;
       defaultValue.forEach((paragraph: any) => {
+        console.log("defaul", paragraph);
         if (typeof paragraph.defaultValue === "string") {
           importedData.set(
             "body[" + paragraph.id + "][" + paragraph.type + "][value]",
@@ -76,7 +77,6 @@ export const ParagraphUI = ({
           );
         }
       });
-      setInitialParagraphValues(true);
       setFormData(importedData);
     }
   }, [defaultValue, formData, id, initialParagraphValues, setFormData]);
@@ -86,6 +86,8 @@ export const ParagraphUI = ({
   useEffect(() => {
     let isMounted = true;
     if (processHandleInputData && isMounted) {
+      //halt initialParagraphValues from re-rendering
+      setInitialParagraphValues(true);
       let thisHandleData = processHandleInputData;
       setProcessHandleInputData();
       // input value from the form
@@ -105,6 +107,7 @@ export const ParagraphUI = ({
       }
       //generate weights of paragraphs by their html element placement
       let paragraphElements = document.querySelectorAll(".paragraph-form-item");
+      console.log("paragraphElements", paragraphElements);
       paragraphElements.forEach((paragraph, index) => {
         if (importedData.has(name)) {
           importedData.set(paragraph.id + "[weight]", index.toString());
@@ -112,6 +115,7 @@ export const ParagraphUI = ({
           importedData.delete(paragraph.id + "[weight]");
         }
       });
+      //export to FormUI
       setFormData(importedData);
     }
 
@@ -153,7 +157,7 @@ export const ParagraphUI = ({
         if (submitButton && submitButton["disabled"])
           submitButton["disabled"] = false;
 
-        //export data
+        //export data for processing to FormUI
         setProcessHandleInputData({
           paragraphProps: paragraphProps,
           e: e,
@@ -241,7 +245,7 @@ export const ParagraphUI = ({
                         <ImageUi
                           id={"body[" + field.id + "][" + field.type + "]"}
                           name={
-                            "body[" + field.id + "][" + field.type + "][uuid]"
+                            "body[" + field.id + "][" + field.type + "][image]"
                           }
                           defaultValue={
                             field.defaultValue ? field.defaultValue : null
@@ -254,7 +258,7 @@ export const ParagraphUI = ({
                         <VideoUi
                           id={"body[" + field.id + "][" + field.type + "]"}
                           name={
-                            "body[" + field.id + "][" + field.type + "][uuid]"
+                            "body[" + field.id + "][" + field.type + "][video]"
                           }
                           defaultValue={
                             field.defaultValue ? field.defaultValue : null

@@ -3,6 +3,8 @@ import { FormUi } from "../../../global/UI/formUI/FormUi";
 import { ServerHandler } from "../../../global/functions/ServerHandler";
 import { useLocation } from "react-router-dom";
 import PageTitle from "../../blocks/PageTitle";
+import { ParagraphUI } from "../../../global/UI/formUI/fieldUI/ParagraphUI";
+import { FormFields } from "../../../global/UI/formUI/FormFields";
 
 interface ComponentData {
   id: string;
@@ -16,160 +18,128 @@ export const PageForm = ({
   callback,
   setTitle,
 }: ComponentData) => {
-  const [statusOptions, setStatusOptions] = useState();
   let location = useLocation();
   let formApiUrl = updateForm
     ? location.pathname
     : location.pathname.split("/update")[0];
-  //fields
+
   const [fields, setFields]: any = useState();
   const [formPageTitle, setFormPageTitle]: any = useState();
+  const [statuses, setStatuses] = useState();
 
   useEffect(() => {
     let isMounted = true;
     ServerHandler("/field/auth/statuses").then((res) => {
-      if (res.status === 200 && isMounted) setStatusOptions(res.options);
+      console.log("this status", res);
+      if (res.status === 200 && isMounted) return setStatuses(res.options);
     });
-
     return () => {
       isMounted = false;
     };
   }, []);
 
-  const fromFields = {
-    //type: null,
-    weight: 1,
-    //styling: '',
-  };
-  const paragraphContainer = {
-    weight: 2,
-    indent: 2,
-    //styling: '',
-  };
-  const containers = {
-    paragraphContainer: paragraphContainer,
-    fromFields: fromFields,
-  };
-
-  /*  let paragraphs = [
-    {
-      type: "image",
-      weight: 2,
-      id: "31f2b002-efe0-4af1-8871-2a68449d27f1",
-      //defaultValue: "31f2b002-efe0-4af1-8871-2a68449d27f1",
-      defaultValue: {
-        title: "image test here",
-        uuid: "31f2b002-efe0-4af1-8871-2a68449d27f1",
-      },
-    },
-    {
-      type: "video",
-      weight: 1,
-      id: "45f2b002-efe0-4af1-8871-2a68449d27f1",
-      defaultValue: {
-        title: "this is video title field",
-        source: "youtube",
-        uuid: "45f2b002-efe0-4af1-8871-2a68449d27f1",
-      },
-    },
-    {
-      type: "text",
-      weight: 3,
-      //id: Math.random().toString(36).substring(2), //uuid from db when it's available
-      id: "92f2b002-efe0-4af1-8871-2a68449d27f1",
-      defaultValue: "this is a test text field alone",
-    },
-  ]; */
+  /* const formFields = {
+     //type: null,
+     weight: 1,
+     //styling: '',
+   };
+   const paragraphContainer = {
+     weight: 2,
+     indent: 2,
+     //styling: '',
+   };
+   const containers = {
+     paragraphContainer: paragraphContainer,
+     fromFields: formFields,
+   }; */
 
   //update form resolver
   useEffect(() => {
-    const formFields = [
-      {
-        type: "image",
-        weight: 0,
-        container: "fromFields",
-        label: "Featured Image",
-        id: "featuredImage",
-        /* defaultValue: {
-        uuid: "31f2b002-efe0-4af1-8871-2a68449d27f1",
-        title: "featured image title",
-      }, */
-        //defaultValue: "31f2b002-efe0-4af1-8871-2a68449d27f1",
-      },
-      {
-        type: "text",
-        weight: 0,
-        container: "fromFields",
-        label: "Title",
-        id: "title",
-        required: true,
-      },
+    const statusesField = [
       {
         type: "radio",
-        weight: 0,
-        container: "fromFields",
+        weight: 99,
+        //container: "formField",
         label: "Status",
         id: "status",
-        options: statusOptions,
-      },
-      {
-        type: "textarea",
-        weight: 0,
-        container: "fromFields",
-        label: "summary",
-        id: "summary",
-      },
-      {
-        type: "textarea",
-        weight: 0,
-        container: "fromFields",
-        label: "Revision",
-        id: "revisionNote",
-      },
-      {
-        type: "boolean",
-        weight: 2,
-        id: "autoAlias",
-        label: "Auto Alias",
-        defaultValue: true,
-      },
-      {
-        type: "text",
-        weight: 5,
-        id: "alias",
-        label: "Alias",
-        dependent: {
-          id: "autoAlias",
-          value: true,
-          attribute: ["!visible", "empty"], //required/visible/checked/empty/select
-        },
-      },
-      {
-        type: "paragraph",
-        weight: 0,
-        container: "fromFields",
-        label: "Body",
-        id: "body",
-        //defaultValue: paragraphs,
+        options: statuses,
       },
     ];
+    const formFields = FormFields({ filter: "full", custom: statusesField });
     if (updateForm) {
-      ServerHandler({
-        endpoint: location.pathname.split("/update")[0],
-        method: "get",
-        headers: {
-          accept: "application/json",
-        },
-      }).then((res) => {
+      ServerHandler(location.pathname.split("/update")[0]).then((res) => {
         if (res.status === 200) {
+          console.log(res);
+          let checkIfBodyField = false;
           let updatedFields = formFields.map((field: any) => {
-            return res.data && res.data[field.id] !== undefined
-              ? {
+            let thisField;
+            if (res.data && res.data[field.id] !== undefined) {
+              if (field.id !== "body") {
+                thisField = {
                   ...field,
                   defaultValue: res.data[field.id],
+                };
+              } else if (field.id === "body") {
+                checkIfBodyField = true;
+                if (res.relations.body && res.relations.body.length > 0) {
+                  let paragraphImported: any = [];
+                  res.relations.body.forEach((paragraph: any) => {
+                    paragraphImported.push({
+                      type: paragraph.type,
+                      weight: paragraph.data.weight,
+                      id: paragraph.data.uuid,
+                      defaultValue:
+                        paragraph.type !== "text"
+                          ? {
+                              title: paragraph.data.title,
+                              [paragraph.type]: paragraph.data[paragraph.type],
+                            }
+                          : paragraph.data.value,
+                    });
+                  });
+                  thisField = {
+                    ...field,
+                    type: "paragraph",
+                    //container: "fromFields",
+                    defaultValue: paragraphImported,
+                  };
                 }
-              : field;
+              }
+            } else {
+              return field;
+            }
+            return thisField;
           });
+          if (
+            !checkIfBodyField &&
+            res.relations.body &&
+            res.relations.body.length > 0
+          ) {
+            let paragraphImported: any = [];
+            res.relations.body.forEach((paragraph: any) => {
+              paragraphImported.push({
+                type: paragraph.type,
+                weight: paragraph.data.weight,
+                id: paragraph.data.uuid,
+                defaultValue:
+                  paragraph.type !== "text"
+                    ? {
+                        title: paragraph.data.title,
+                        [paragraph.type]: paragraph.data[paragraph.type],
+                      }
+                    : paragraph.data.value,
+              });
+            });
+            updatedFields.push({
+              type: "paragraph",
+              weight: 99,
+              //container: "fromFields",
+              label: "Body",
+              id: "body",
+
+              defaultValue: paragraphImported,
+            });
+          }
           setFields(updatedFields);
           if (setTitle) setFormPageTitle("Update " + res.data.title);
         }
@@ -179,7 +149,7 @@ export const PageForm = ({
       if (setTitle) setFormPageTitle("Create a page");
     }
     return () => {};
-  }, [formApiUrl, setTitle, statusOptions, updateForm]);
+  }, [formApiUrl, location.pathname, setTitle, statuses, updateForm]);
 
   const sendToServer = (data: FormData) => (e: any) => {
     e.preventDefault();
@@ -234,7 +204,7 @@ export const PageForm = ({
     <>
       {setTitle ? <PageTitle title={formPageTitle} /> : null}
       <FormUi
-        containers={containers}
+        //containers={containers}
         id={id}
         fields={fields}
         buttons={buttons}

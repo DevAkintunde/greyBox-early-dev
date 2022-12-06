@@ -13,6 +13,9 @@ import {
 } from "../constants/statusCodes.js";
 import { markForDeletion } from "../functions/markForDeletion.js";
 import { logger } from "../utils/logger.js";
+import { UUID4Validator } from "../functions/UUID4Validator.js";
+import Image from "../models/entities/media/Image.model.js";
+import Video from "../models/entities/media/Video.model.js";
 
 export const createItem = async (ctx, next) => {
   try {
@@ -127,23 +130,22 @@ export const createItem = async (ctx, next) => {
   await next();
 };
 
-export const updateItem = async (ctx) => {
+export const updateItem = async (ctx, next) => {
   try {
-    let { state } = ctx.request.body;
-    const checkStatus = await Status.findByPk(state);
-    let modelAttributes = ctx.request.body;
-    if (!checkStatus) {
-      modelAttributes = {
-        ...modelAttributes,
-        state: "draft",
-        last_revisor: ctx.state.user.uuid,
-      };
+    let { status } = ctx.request.body;
+    let checkStatus;
+    if (status) {
+      checkStatus = await Status.findByPk(status);
     }
+    let modelAttributes = ctx.request.body;
+    console.log("checkStatus", checkStatus);
+    if (!checkStatus || !checkStatus.dataValues)
+      modelAttributes.status = "draft";
+    if (status === "published") modelAttributes.state = true;
+    modelAttributes.last_revisor = ctx.state.user.email;
+
     if (modelAttributes.body) {
-      if (
-        Array.isArray(modelAttributes.body) &&
-        modelAttributes.body.length > 0
-      ) {
+      if (Object.keys(modelAttributes.body).length > 0) {
         let updatePaged = await sequelize.transaction(async (t) => {
           let page = await StaticPage.findOne(
             { where: { alias: modelAttributes.alias } },
@@ -162,22 +164,43 @@ export const updateItem = async (ctx) => {
             }
             let paragraphsBundle = [];
             let paragraphsID = [];
-            modelAttributes.body.forEach((paragraph, index) => {
-              if (paragraph.validated) {
-                let thisType = paragraph.type;
-                let thisModelType =
-                  "P" +
-                  thisType.substring(1, 0).toUpperCase() +
-                  thisType.substring(1);
-                //exclude type value from been forwarded to ORM
-                delete paragraph.type;
+            Object.keys(modelAttributes.body).forEach((paragraphId) => {
+              let thisType;
+              let thisModelType;
+              let paragraph;
+              if (
+                modelAttributes.body[paragraphId]["text"] &&
+                modelAttributes.body[paragraphId]["text"].validated
+              ) {
+                thisType = "text";
+                thisModelType = "Ptext";
                 //remove validation checker from validator.
-                delete paragraph.validated;
-
+                delete modelAttributes.body[paragraphId]["text"].validated;
+                paragraph = modelAttributes.body[paragraphId]["text"];
+                if (UUID4Validator(paragraphId)) paragraph.uuid = paragraphId;
+              } else if (
+                modelAttributes.body[paragraphId]["image"] &&
+                modelAttributes.body[paragraphId]["image"].validated
+              ) {
+                thisType = "image";
+                thisModelType = "Pimage";
+                delete modelAttributes.body[paragraphId]["image"].validated;
+                paragraph = modelAttributes.body[paragraphId]["image"];
+                if (UUID4Validator(paragraphId)) paragraph.uuid = paragraphId;
+              } else if (
+                modelAttributes.body[paragraphId]["video"] &&
+                modelAttributes.body[paragraphId]["video"].validated
+              ) {
+                thisType = "video";
+                thisModelType = "Pvideo";
+                delete modelAttributes.body[paragraphId]["video"].validated;
+                paragraph = modelAttributes.body[paragraphId]["video"];
+                if (UUID4Validator(paragraphId)) paragraph.uuid = paragraphId;
+              }
+              if (thisType && thisModelType && paragraph) {
                 const paragraphData = {
                   ...paragraph,
                   parent: parentParagraph,
-                  weight: index,
                 };
                 if (!paragraph.uuid) {
                   paragraphsBundle.push(
@@ -194,7 +217,8 @@ export const updateItem = async (ctx) => {
                         { where: { uuid: paragraph.uuid } },
                         { transaction: t }
                       )
-                      .then(() => {
+                      .then((res) => {
+                        console.log("updated P resource", res);
                         return sequelize.models[thisModelType].findByPk(
                           paragraph.uuid
                         );
@@ -212,11 +236,17 @@ export const updateItem = async (ctx) => {
                 type: paragraphsID[i],
               });
             }
-            if (modelAttributes.body && modelAttributes.body.length > 0) {
+            if (
+              modelAttributes.body &&
+              Object.keys(modelAttributes.body).length > 0
+            ) {
               modelAttributes.body = parentParagraph;
             } else {
               delete modelAttributes.body;
             }
+
+            console.log("pageParagraphs", pageParagraphs);
+            console.log("paragraphRelations", paragraphRelations);
 
             page.set(modelAttributes, {
               transaction: t,
@@ -224,7 +254,7 @@ export const updateItem = async (ctx) => {
             page.changed("updated", true);
             page.save();
             return {
-              ...page.toJSON(),
+              data: page.toJSON(),
               type: "page",
               relations: { body: paragraphRelations },
             };
@@ -238,12 +268,12 @@ export const updateItem = async (ctx) => {
             message: "The page you are looking for does not exist.",
           });
         }
-        return (ctx.state.page = updatePaged);
+        ctx.state.data = updatePaged;
       } else {
-        return (ctx.state.error = {
+        ctx.state.error = {
           status: BAD_REQUEST,
-          message: "Paragraphs must be an array in the expected view order.",
-        });
+          message: "Unable to identify paragraph body type as object.",
+        };
       }
     } else {
       try {
@@ -259,24 +289,25 @@ export const updateItem = async (ctx) => {
           });
           page.changed("updated", true);
           page.save();
-          return { ...page, type: "page" };
+          return { data: page, type: "page" };
         });
-        return (ctx.state.page = updatePaged);
+        ctx.state.data = updatePaged;
       } catch (err) {
         logger.error("Page Controller", err);
-        return (ctx.state.error = {
+        ctx.state.error = {
           status: SERVER_ERROR,
           message: err.parent ? err.parent.detail : err.message,
-        });
+        };
       }
     }
   } catch (err) {
     logger.error("Page Controller", err);
-    return (ctx.state.error = {
+    ctx.state.error = {
       status: SERVER_ERROR,
       message: err.parent ? err.parent.detail : err.message,
-    });
+    };
   }
+  await next();
 };
 
 export const updateAlias = async (ctx) => {
@@ -367,6 +398,9 @@ export const viewItem = async (ctx, next) => {
             { transaction: t }
           ),
         ]);
+        //media relations of paragraphs
+        let imagesMedia = [];
+        let videosMedia = [];
         let getParagraphs = [text, image, video];
         let paragraphIds = ["text", "image", "video"];
         for (let i = 0; i < getParagraphs.length; i++) {
@@ -374,22 +408,78 @@ export const viewItem = async (ctx, next) => {
           paragraphArray.forEach((paragraph) => {
             if (paragraph) {
               pageRelations.push({
-                ...paragraph.toJSON(),
+                data: paragraph.toJSON(),
                 type: paragraphIds[i],
               });
+            }
+            if (
+              paragraph.dataValues &&
+              paragraph.dataValues[paragraphIds[i]] &&
+              UUID4Validator(paragraph.dataValues[paragraphIds[i]])
+            ) {
+              if (paragraphIds[i] === "image")
+                imagesMedia.push(paragraph.dataValues[paragraphIds[i]]);
+              if (paragraphIds[i] === "video")
+                videosMedia.push(paragraph.dataValues[paragraphIds[i]]);
             }
           });
         }
         pageRelations.sort((a, b) => a.weight - b.weight);
+        let mediaFetcher = [];
+        if (imagesMedia.length > 0) {
+          let imageGroup = imagesMedia.map((image) => {
+            return Image.findAll(
+              { where: { uuid: image } },
+              { transaction: t }
+            );
+          });
+          await Promise.all(imageGroup).then((res) => {
+            //findAll returns nested arrays. Open that up here
+            let thisImages = [];
+            res.forEach((array) => {
+              thisImages = [...thisImages, ...array];
+            });
+            thisImages.forEach((image) => {
+              mediaFetcher = [
+                ...mediaFetcher,
+                { data: image.toJSON(), type: "image" },
+              ];
+            });
+          });
+        }
+        if (videosMedia.length > 0) {
+          let videoGroup = videosMedia.map((video) => {
+            return Video.findAll(
+              { where: { uuid: video } },
+              { transaction: t }
+            );
+          });
+          await Promise.all(videoGroup).then((res) => {
+            //findAll returns nested arrays. Open that up here
+            let thisVideos = [];
+            res.forEach((array) => {
+              thisVideos = [...thisVideos, ...array];
+            });
+            thisVideos.forEach((video) => {
+              mediaFetcher = [
+                ...mediaFetcher,
+                { data: video.toJSON(), type: "video" },
+              ];
+            });
+          });
+        }
+
+        let relations =
+          mediaFetcher.length > 0
+            ? { body: pageRelations, media: mediaFetcher }
+            : { body: pageRelations };
         return {
-          ...thisPage.toJSON(),
+          data: thisPage.toJSON(),
           type: "page",
-          relations: { body: pageRelations },
+          relations: relations,
         };
-      } else if (!thisPage || !thisPage.dataValues.uuid) {
-        await next();
       }
-      return { ...thisPage.toJSON(), type: "page" };
+      return { data: thisPage.toJSON(), type: "page" };
     });
     ctx.status = OK;
     ctx.state.data = page;

@@ -139,11 +139,11 @@ export const FormUi = ({
               importedData.append(field.id, field.defaultValue);
             } else if (field.type === "image") {
               if (typeof field.defaultValue === "string") {
-                importedData.append(field.id + "[uuid]", field.defaultValue);
+                importedData.append(field.id + "[image]", field.defaultValue);
               } else {
                 if (field.defaultValue.uuid)
                   importedData.append(
-                    field.id + "[uuid]",
+                    field.id + "[image]",
                     field.defaultValue.uuid
                   );
                 if (field.defaultValue.title)
@@ -289,7 +289,7 @@ export const FormUi = ({
           importedData.set(input.name, value);
         } else if (!value && importedData.has(input.name)) {
           if (input.type === "image") {
-            let imageFieldName = input.name.split("[uuid]")[0];
+            let imageFieldName = input.name.split("[image]")[0];
             if (importedData.has(imageFieldName + "[title]"))
               importedData.delete(imageFieldName + "[title]");
           }
@@ -924,6 +924,11 @@ export const FormUi = ({
 
     FormFields.push(thisContent);
   });
+
+  /*   if (thisFormData)
+    for (let [key, val] of thisFormData.entries()) {
+      console.log("default datassss", { [key]: val });
+    } */
 
   let returnOutput = (
     <React.Fragment>

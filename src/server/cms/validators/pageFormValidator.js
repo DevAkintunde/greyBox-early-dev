@@ -3,6 +3,7 @@ import validatorHandler from "../middlewares/validatorHandler.js";
 import paragraphImageValidator from "./paragraph/imageValidator.js";
 import paragraphVideoValidator from "./paragraph/videoValidator.js";
 import paragraphTextValidator from "./paragraph/textValidator.js";
+import { logger } from "../utils/logger.js";
 
 const submit = async (ctx, next) => {
   const schema = Joi.object().keys({
@@ -22,19 +23,51 @@ const submit = async (ctx, next) => {
     ctx.request.body.body &&
     Object.keys(ctx.request.body.body).length > 0
   ) {
+    let promises = [];
     // set validation boolean as true for each paragraph type checked to ensure only validated paragraphs are processes by ORM to server.
-    Object.keys(ctx.request.body.body).forEach((paragraph) => {
-      if (ctx.request.body.body["paragraph"]["type"] === "image") {
-        paragraphImageValidator(ctx, paragraph);
-        ctx.request.body.body["paragraph"].validated = true;
-      } else if (ctx.request.body.body["paragraph"]["type"] === "video") {
-        paragraphVideoValidator(ctx, paragraph);
-        ctx.request.body.body["paragraph"].validated = true;
-      } else if (ctx.request.body.body["paragraph"]["type"] === "text") {
-        paragraphTextValidator(ctx, paragraph);
-        ctx.request.body.body["paragraph"].validated = true;
+    Object.keys(ctx.request.body.body).forEach((paragraphId) => {
+      if (ctx.request.body.body[paragraphId]["image"]) {
+        ctx.request.body.body[paragraphId]["image"].weight =
+          ctx.request.body.body[paragraphId]["image"].weight * 1;
+        promises.push(
+          paragraphImageValidator(
+            ctx,
+            ctx.request.body.body[paragraphId]["image"]
+          )
+        );
+        ctx.request.body.body[paragraphId]["image"].validated = true;
+      } else if (ctx.request.body.body[paragraphId]["video"]) {
+        ctx.request.body.body[paragraphId]["video"].weight =
+          ctx.request.body.body[paragraphId]["video"].weight * 1;
+        promises.push(
+          paragraphVideoValidator(
+            ctx,
+            ctx.request.body.body[paragraphId]["video"]
+          )
+        );
+        ctx.request.body.body[paragraphId]["video"].validated = true;
+      } else if (ctx.request.body.body[paragraphId]["text"]) {
+        ctx.request.body.body[paragraphId]["text"].weight =
+          ctx.request.body.body[paragraphId]["text"].weight * 1;
+        promises.push(
+          paragraphTextValidator(
+            ctx,
+            ctx.request.body.body[paragraphId]["text"]
+          )
+        );
+        ctx.request.body.body[paragraphId]["text"].validated = true;
       }
     });
+    try {
+      Promise.all(promises);
+    } catch (err) {
+      logger.error("paragraph validation error: ", err);
+      ctx.body = {
+        status: err.status,
+        statusText: err.statusText,
+      };
+      return;
+    }
   }
   await validatorHandler(ctx, next, schema);
 };

@@ -56,31 +56,6 @@ router.get(
   }
 );
 
-router.post(
-  "/create",
-  async (ctx, next) => {
-    ctx.state.entityType = "Page";
-    console.log("page data", JSON.stringify(ctx.request.body, null, 2));
-    await next();
-  },
-  aliasInjector,
-  formValidator.submit,
-  pageController.createItem,
-  (ctx) => {
-    if (ctx.state.error) {
-      ctx.status = SERVER_ERROR;
-      ctx.message = ctx.state.error.statusText;
-      return;
-    }
-    ctx.status = OK;
-    ctx.body = {
-      status: OK,
-      data: ctx.state.data,
-    };
-    return;
-  }
-);
-
 router.get(
   "/:alias",
   async (ctx, next) => {
@@ -105,7 +80,7 @@ router.get(
     ctx.status = OK;
     ctx.body = {
       status: OK,
-      data: ctx.state.data,
+      ...ctx.state.data,
     };
     return;
   }
@@ -114,7 +89,15 @@ router.get(
 router.patch(
   "/:alias/update",
   async (ctx, next) => {
-    ctx.state.entityUpdate = true;
+    console.log("path: ", ctx.path);
+    console.log("url: ", ctx.url);
+    console.log("origin: ", ctx.origin);
+    console.log("href: ", ctx.href);
+    console.log("host: ", ctx.host);
+    console.log("body: ", ctx.request.body);
+    console.log("body P: ", JSON.stringify(ctx.request.body.body, null, 2));
+    ctx.state.entityType = "Page";
+    //ctx.state.entityUpdate = true;
     if (ctx.request.body && ctx.request.body.alias) {
       if (UUID4Validator(ctx.params.alias)) {
         ctx.request.body = {
@@ -159,7 +142,7 @@ router.patch(
     ctx.status = OK;
     ctx.body = {
       status: OK,
-      data: ctx.state.data,
+      ...ctx.state.data,
     };
     return;
   }
@@ -231,6 +214,31 @@ router.patch(
     return ctx.body;
   },
   pageController.updateStatus
+);
+
+router.post(
+  "/create",
+  async (ctx, next) => {
+    ctx.state.entityType = "Page";
+    console.log("page data", JSON.stringify(ctx.request.body, null, 2));
+    await next();
+  },
+  aliasInjector,
+  formValidator.submit,
+  pageController.createItem,
+  (ctx) => {
+    if (ctx.state.error) {
+      ctx.status = SERVER_ERROR;
+      ctx.message = ctx.state.error.statusText;
+      return;
+    }
+    ctx.status = OK;
+    ctx.body = {
+      status: OK,
+      data: ctx.state.data,
+    };
+    return;
+  }
 );
 
 export default router;

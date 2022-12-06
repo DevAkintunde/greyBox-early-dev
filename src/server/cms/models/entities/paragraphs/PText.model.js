@@ -10,9 +10,10 @@ PText.init(
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-    text: {
+    value: {
       type: DataTypes.TEXT,
       allowNull: false,
+      field: "text",
     },
     weight: DataTypes.INTEGER,
   },

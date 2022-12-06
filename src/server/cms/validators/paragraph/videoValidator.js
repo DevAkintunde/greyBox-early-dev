@@ -3,16 +3,12 @@ import Joi from "joi";
 const videoValidator = (ctx, paragraph) => {
   const schema = Joi.object().keys({
     title: Joi.string().trim().min(3).max(250),
-    alt: Joi.string().trim().min(3).max(250).required(),
-    type: Joi.string(),
+    weight: Joi.number().required(),
+    video: Joi.string().guid({ version: ["uuidv4"] }),
   });
   const { error } = schema.validate(paragraph);
   if (error) {
-    ctx.status = 406;
-    return (ctx.body = {
-      status: "error",
-      message: error.details[0].message.replace("/[^a-zA-Z0-9 ]/g", ""),
-    });
+    ctx.throw(406, error.details[0].message.replace("/[^a-zA-Z0-9 ]/g", ""));
   }
   return;
 };

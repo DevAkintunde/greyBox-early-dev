@@ -162,7 +162,7 @@ const PerPageUpdate = () => {
   const navigate = useNavigate();
 
   const callbackAction = (res: any) => {
-    navigate("/auth/pages" + res.data.alias);
+    navigate("/auth/pages/" + res.data.alias);
   };
 
   return (
