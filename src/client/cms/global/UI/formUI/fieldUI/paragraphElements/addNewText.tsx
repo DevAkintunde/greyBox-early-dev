@@ -29,7 +29,12 @@ const addNewText: Function = (
               <input
                 type="button"
                 value="Confirm Delete"
-                onClick={() => setDeleteParagraphFromBody(newParagraphID)}
+                onClick={() =>
+                  setDeleteParagraphFromBody({
+                    uuid: newParagraphID,
+                    type: "text",
+                  })
+                }
               />
             </div>
           </span>

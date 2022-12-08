@@ -3,7 +3,6 @@ import { FormUi } from "../../../global/UI/formUI/FormUi";
 import { ServerHandler } from "../../../global/functions/ServerHandler";
 import { useLocation } from "react-router-dom";
 import PageTitle from "../../blocks/PageTitle";
-import { ParagraphUI } from "../../../global/UI/formUI/fieldUI/ParagraphUI";
 import { FormFields } from "../../../global/UI/formUI/FormFields";
 
 interface ComponentData {
@@ -103,6 +102,8 @@ export const PageForm = ({
                     //container: "fromFields",
                     defaultValue: paragraphImported,
                   };
+                } else {
+                  return field;
                 }
               }
             } else {
@@ -136,7 +137,7 @@ export const PageForm = ({
               //container: "fromFields",
               label: "Body",
               id: "body",
-
+              //name: res.data.body, //paragraph parent ID
               defaultValue: paragraphImported,
             });
           }

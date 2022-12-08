@@ -13,6 +13,7 @@ export const ImageUi = ({
   required,
   formData,
   handleInputData,
+  uuidIdentifier,
 }: {
   defaultValue?: any;
   id: string;
@@ -20,6 +21,7 @@ export const ImageUi = ({
   required: boolean;
   formData: FormData;
   handleInputData: Function;
+  uuidIdentifier?: string;
 }) => {
   const [previewImage, setPreviewImage]: any = useState(null);
 
@@ -30,7 +32,8 @@ export const ImageUi = ({
       if (typeof defaultValue === "string") {
         defaultImported = defaultValue;
       } else {
-        defaultImported = defaultValue.uuid;
+        defaultImported =
+          defaultValue[uuidIdentifier ? uuidIdentifier : "uuid"];
       }
 
       if (isMounted && defaultImported)
@@ -46,7 +49,7 @@ export const ImageUi = ({
     return () => {
       isMounted = false;
     };
-  }, [defaultValue]);
+  }, [defaultValue, uuidIdentifier]);
 
   const [view, setView]: any = useState(
     <ImagePreview
@@ -134,13 +137,15 @@ const ImagePreview = ({
   id,
   defaultValue,
   setPreviewImage,
-}: {
+}: //uuidIdentifier,
+{
   handleInputData: any;
   media: { path: string; mediaTitle?: string };
   name: string;
   id: string;
   defaultValue: { uuid: string; title?: string };
   setPreviewImage?: any;
+  //uuidIdentifier:string
 }) => {
   const imageRemover = () => {
     setPreviewImage();

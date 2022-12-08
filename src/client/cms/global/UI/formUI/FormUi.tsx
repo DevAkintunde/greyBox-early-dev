@@ -646,6 +646,7 @@ export const FormUi = ({
                   ) : (
                     <span className={field.type + "-option"} key={index}>
                       <input
+                        id={field.id}
                         name={field.id}
                         onChange={handleInputData({
                           id: field.id,

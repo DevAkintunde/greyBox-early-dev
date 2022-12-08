@@ -1,6 +1,8 @@
 import React, { ReactElement, useCallback, useEffect, useState } from "react";
+import { toast } from "react-toastify";
 import validator from "validator";
 import { jsStyler } from "../../../functions/jsStyler";
+import { ServerHandler } from "../../../functions/ServerHandler";
 import { ImageUi } from "./ImageUi";
 import { addNewImage } from "./paragraphElements/addNewImage";
 import { addNewText } from "./paragraphElements/addNewText";
@@ -107,7 +109,7 @@ export const ParagraphUI = ({
       }
       //generate weights of paragraphs by their html element placement
       let paragraphElements = document.querySelectorAll(".paragraph-form-item");
-      console.log("paragraphElements", paragraphElements);
+      //console.log("paragraphElements", paragraphElements);
       paragraphElements.forEach((paragraph, index) => {
         if (importedData.has(name)) {
           importedData.set(paragraph.id + "[weight]", index.toString());
@@ -170,7 +172,10 @@ export const ParagraphUI = ({
   const [bodyConstruct, setBodyConstruct]: any[] = useState([]);
 
   //set paragraph remover/deleter ID
-  const [deleteParagraphFromBody, setDeleteParagraphFromBody]: any = useState();
+  const [deleteParagraphFromBody, setDeleteParagraphFromBody]: [
+    { uuid: string; type: string } | undefined,
+    any
+  ] = useState();
 
   /* process imported paragraphs from server when editing entities and sort by weight */
   const [paragraphDefaults, setParagraphDefaults]: any[] = useState([]);
@@ -235,7 +240,10 @@ export const ParagraphUI = ({
                               type="button"
                               value="Confirm Delete"
                               onClick={() =>
-                                setDeleteParagraphFromBody(field.id)
+                                setDeleteParagraphFromBody({
+                                  uuid: field.id,
+                                  type: field.type,
+                                })
                               }
                             />
                           </div>
@@ -243,6 +251,7 @@ export const ParagraphUI = ({
                       </div>
                       {field.type && field.type === "image" ? (
                         <ImageUi
+                          uuidIdentifier="image"
                           id={"body[" + field.id + "][" + field.type + "]"}
                           name={
                             "body[" + field.id + "][" + field.type + "][image]"
@@ -298,7 +307,8 @@ export const ParagraphUI = ({
               }
             )
           : [];
-      if (ParagraphFields && isMounted) setParagraphDefaults(ParagraphFields);
+      if (ParagraphFields && ParagraphFields.length > 0 && isMounted)
+        setParagraphDefaults(ParagraphFields);
     }
     return () => {
       isMounted = false;
@@ -311,21 +321,68 @@ export const ParagraphUI = ({
     handleInputData,
   ]);
 
-  //process paragraph remover
+  /* process paragraph remover */
+  //trigger for paragraph deletion from formData
+  const [removeParagraphFromFormData, setRemoveParagraphFromFormData]: any =
+    useState();
+  //remove paragraph from formData
+  useEffect(() => {
+    let isMounted = true;
+    if (removeParagraphFromFormData && isMounted) {
+      let paragraghID = removeParagraphFromFormData;
+      setRemoveParagraphFromFormData();
+      let importedData: FormData = formData;
+      let paragraphData = [];
+      for (let [key] of importedData) {
+        if (key.includes(paragraghID)) {
+          paragraphData.push(key);
+        }
+      }
+      paragraphData.forEach((data) => {
+        importedData.delete(data);
+      });
+      setFormData(importedData);
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [formData, removeParagraphFromFormData, setFormData]);
+
   useEffect(() => {
     let isMounted = true;
     //console.log("deleteParagraphFromBody ID", deleteParagraphFromBody);
-    if (deleteParagraphFromBody && isMounted) {
-      let thisID = deleteParagraphFromBody;
+    if (deleteParagraphFromBody && deleteParagraphFromBody.uuid && isMounted) {
+      let thisID = deleteParagraphFromBody.uuid;
+      let thisType = deleteParagraphFromBody.type;
+      // define endpoint based on availability of paragraph type.
+      // when undefined, take uuid as the paragraphs parent itself
+      let endpoint =
+        !deleteParagraphFromBody.type ||
+        deleteParagraphFromBody.type !== "parent"
+          ? `/auth/paragraphs/${thisType}/${thisID}/delete`
+          : `/auth/paragraphs/${thisID}/delete`;
       setDeleteParagraphFromBody();
       if (validator.isUUID(thisID)) {
         //delete from DB && remove html element
-        let importedBodyConstruct: any[] = [];
-        paragraphDefaults.forEach((thisParagraph: any) => {
-          if (thisParagraph.id !== thisID)
-            importedBodyConstruct.push(thisParagraph);
+        ServerHandler({
+          endpoint: endpoint,
+          method: "delete",
+        }).then((res) => {
+          if (res.status === 200) {
+            toast(`${thisType} deleted`);
+            //remove html element on successfull remover
+            let importedBodyConstruct: any[] = [];
+            paragraphDefaults.forEach((thisParagraph: any) => {
+              if (thisParagraph.id !== thisID)
+                importedBodyConstruct.push(thisParagraph);
+            });
+            setParagraphDefaults(importedBodyConstruct);
+            //update formData
+            setRemoveParagraphFromFormData(thisID);
+          } else {
+            toast(`Unable to remove paragraph ${thisType}`);
+          }
         });
-        setParagraphDefaults(importedBodyConstruct);
       } else {
         //remove html element
         let importedBodyConstruct: any[] = [];
@@ -341,8 +398,8 @@ export const ParagraphUI = ({
     };
   }, [bodyConstruct, deleteParagraphFromBody, paragraphDefaults]);
 
-  console.log("bodyConstruct", bodyConstruct);
-  //console.log("paragraphDefaults", paragraphDefaults);
+  //console.log("bodyConstruct", bodyConstruct);
+  console.log("paragraphDefaults", paragraphDefaults);
 
   return (
     <>
@@ -396,6 +453,11 @@ export const ParagraphUI = ({
         value="Add Image"
       />
       <input type="button" value="Add Video" />
+      <input
+        onClick={() => setDeleteParagraphFromBody({ uuid: "", type: "parent" })}
+        type="button"
+        value="Delete All"
+      />
     </>
   );
 };

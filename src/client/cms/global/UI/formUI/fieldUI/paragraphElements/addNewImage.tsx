@@ -30,7 +30,12 @@ const addNewImage: Function = (
               <input
                 type="button"
                 value="Confirm Delete"
-                onClick={() => setDeleteParagraphFromBody(newParagraphID)}
+                onClick={() =>
+                  setDeleteParagraphFromBody({
+                    uuid: newParagraphID,
+                    type: "image",
+                  })
+                }
               />
             </div>
           </span>

@@ -218,7 +218,6 @@ export const updateItem = async (ctx, next) => {
                         { transaction: t }
                       )
                       .then((res) => {
-                        console.log("updated P resource", res);
                         return sequelize.models[thisModelType].findByPk(
                           paragraph.uuid
                         );
