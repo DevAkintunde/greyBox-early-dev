@@ -139,7 +139,7 @@ export const FormUi = ({
               importedData.append(field.id, field.defaultValue);
             } else if (field.type === "image") {
               if (typeof field.defaultValue === "string") {
-                importedData.append(field.id + "[image]", field.defaultValue);
+                importedData.append(field.id, field.defaultValue);
               } else {
                 if (field.defaultValue.uuid)
                   importedData.append(
@@ -537,7 +537,8 @@ export const FormUi = ({
                 ) : field.type && field.type === "image" ? (
                   <ImageUi
                     id={field.id}
-                    name={field.id + "[uuid]"}
+                    //name={field.id + "[uuid]"}
+                    name={field.id}
                     defaultValue={
                       field.defaultValue ? field.defaultValue : null
                     }

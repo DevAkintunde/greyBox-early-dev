@@ -9,6 +9,7 @@ import { Profile as UserProfile } from "../../global/AppFrame";
 import { Accounts } from "./users/Accounts";
 import { Dashboard } from "./users/Dashboard";
 import { Profile } from "./users/Profile";
+import Bin from "./entities/Bin";
 
 export const AuthRouter = () => {
   const { profile }: any = useContext(UserProfile);
@@ -26,6 +27,7 @@ export const AuthRouter = () => {
       <Route path="services/*" element={<Services />} />
       <Route path="media/*" element={<Media />} />
       <Route path="pages/*" element={<Pages />} />
+      <Route path="bin/*" element={<Bin />} />
       <Route path="staffs/*" element={<Staffs />} />
       <Route path="send-mail" element={<MailForm />} />
     </Routes>

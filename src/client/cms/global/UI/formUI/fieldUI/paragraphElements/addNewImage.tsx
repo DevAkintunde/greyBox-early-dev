@@ -46,6 +46,7 @@ const addNewImage: Function = (
           formData={formData}
           handleInputData={handleInputData}
           required={true}
+          titleField={true}
         />
         <div
           id={"form-item-notice-" + newParagraphID}

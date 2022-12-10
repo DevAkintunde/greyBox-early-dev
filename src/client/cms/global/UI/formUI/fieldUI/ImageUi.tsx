@@ -14,6 +14,7 @@ export const ImageUi = ({
   formData,
   handleInputData,
   uuidIdentifier,
+  titleField,
 }: {
   defaultValue?: any;
   id: string;
@@ -21,6 +22,7 @@ export const ImageUi = ({
   required: boolean;
   formData: FormData;
   handleInputData: Function;
+  titleField?: boolean;
   uuidIdentifier?: string;
 }) => {
   const [previewImage, setPreviewImage]: any = useState(null);
@@ -59,6 +61,7 @@ export const ImageUi = ({
       id={id}
       defaultValue={defaultValue}
       setPreviewImage={setPreviewImage}
+      titleField={titleField}
     />
   );
 
@@ -71,6 +74,7 @@ export const ImageUi = ({
         id={id}
         defaultValue={defaultValue}
         setPreviewImage={setPreviewImage}
+        titleField={titleField}
       />
     );
   };
@@ -86,12 +90,13 @@ export const ImageUi = ({
           id={id}
           defaultValue={defaultValue}
           setPreviewImage={setPreviewImage}
+          titleField={titleField}
         />
       );
     return () => {
       isMounted = false;
     };
-  }, [defaultValue, handleInputData, id, name, previewImage]);
+  }, [defaultValue, handleInputData, id, name, previewImage, titleField]);
 
   const switchToUploadNew = () => {
     setView(
@@ -137,6 +142,7 @@ const ImagePreview = ({
   id,
   defaultValue,
   setPreviewImage,
+  titleField,
 }: //uuidIdentifier,
 {
   handleInputData: any;
@@ -145,6 +151,7 @@ const ImagePreview = ({
   id: string;
   defaultValue: { uuid: string; title?: string };
   setPreviewImage?: any;
+  titleField?: boolean;
   //uuidIdentifier:string
 }) => {
   const imageRemover = () => {
@@ -176,27 +183,29 @@ const ImagePreview = ({
           onClick={imageRemover}
         />
       </span>
-      <div className="image-ui-title">
-        <label htmlFor={id + "-image-title"}>Title|</label>
-        <input
-          type="text"
-          id={id + "-image-title"}
-          name={id + "[title]"}
-          onChange={(e: any) => {
-            handleInputData({
-              name: id + "[title]",
-              id: id,
-              type: "image",
-              value: e.target.value,
-            })();
-          }}
-          placeholder="(optional)"
-          defaultValue={
-            defaultValue && defaultValue.title ? defaultValue.title : ""
-          }
-          //required={true}
-        />
-      </div>
+      {titleField ? (
+        <div className="image-ui-title">
+          <label htmlFor={id + "-image-title"}>Title|</label>
+          <input
+            type="text"
+            id={id + "-image-title"}
+            name={id + "[title]"}
+            onChange={(e: any) => {
+              handleInputData({
+                name: id + "[title]",
+                id: id,
+                type: "image",
+                value: e.target.value,
+              })();
+            }}
+            placeholder="(optional)"
+            defaultValue={
+              defaultValue && defaultValue.title ? defaultValue.title : ""
+            }
+            //required={true}
+          />
+        </div>
+      ) : null}
     </>
   ) : (
     <span id={"image-previewer"}>Add an Image</span>

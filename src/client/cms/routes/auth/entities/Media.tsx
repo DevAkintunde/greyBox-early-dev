@@ -14,6 +14,7 @@ import { ServerHandler } from "../../../global/functions/ServerHandler";
 import FileUploadForm from "../../../components/auth/form/FileUploadForm";
 import { Video } from "../../../components/Video";
 import { FormUi } from "../../../global/UI/formUI/FormUi";
+import { DeleteEntity } from "../../../components/auth/functionComponents/DeleteEntity";
 
 //view all page entities
 
@@ -313,61 +314,13 @@ const PerMediaAliasUpdate = ({ type }: { type: string }) => {
 };
 
 const PerMediaDelete = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
   const params = useParams();
   let type = params.type;
-
-  const doDelete = (e: any) => {
-    e.preventDefault();
-    e.target.disabled = true;
-    if (e.target.classList && !e.target.classList.contains("bounce"))
-      e.target.classList.add("bounce");
-
-    ServerHandler({
-      endpoint: location.pathname,
-      method: "delete",
-    }).then((res) => {
-      if (res.status !== 200) {
-        let submitNotice = document.getElementById("form-actions-notice");
-        if (submitNotice)
-          submitNotice.textContent = res.statusText
-            ? res.statusText
-            : "Oops! There was a problem somewhere. Please try again";
-        let button: any = document.querySelector("input.submit");
-        if (button) {
-          if (button.classList && button.classList.contains("bounce"))
-            button.classList.remove("bounce");
-          /* if (button["disabled"] && button["disabled"] === true)
-            button["disabled"] = false; */
-        }
-      } else {
-        navigate("/auth/media/" + type);
-      }
-    });
-  };
-  const backAway = () => {
-    window.history.back();
-  };
-
   return (
-    <div className="text-center p-5">
-      <div>Confirm you want to delete this item?</div>
-      <div>
-        <input
-          className={"form-button button-pri"}
-          type="button"
-          value="No"
-          onClick={backAway}
-        />
-        <input
-          className={"form-button submit button-sec"}
-          type="submit"
-          value="Delete Now"
-          onClick={doDelete}
-        />
-      </div>
-    </div>
+    <DeleteEntity
+      destination={"/auth/media/" + type}
+      toastText={type?.substring(0, type.length - 1) + " deleted"}
+    />
   );
 };
 

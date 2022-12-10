@@ -12,6 +12,9 @@ import { ServerHandler } from "../../../global/functions/ServerHandler";
 import Loading from "../../../utils/Loading";
 import { dateFormatter } from "../../../global/functions/dateFormatter";
 import { Image } from "../../../components/Image";
+import { DeleteEntity } from "../../../components/auth/functionComponents/DeleteEntity";
+import { UpdateEntityAlias } from "../../../components/auth/functionComponents/UpdateEntityAlias";
+import { UpdateEntityStatus } from "../../../components/auth/functionComponents/UpdateEntityStatus";
 
 //view all page entities
 
@@ -22,30 +25,45 @@ const Pages = () => {
       <Route path="create" element={<CreatePage />} />
       <Route path=":page" element={<ViewPage />} />
       <Route path=":page/update" element={<PerPageUpdate />} />
-      <Route path=":page/update/alias" element={<PerPageAliasUpdate />} />
-      <Route path=":page/delete" element={<DeletePage />} />
+      <Route path=":page/update/alias" element={<UpdateEntityAlias />} />
+      <Route path=":page/update/status" element={<UpdateEntityStatus />} />
+      <Route
+        path=":page/delete"
+        element={
+          <DeleteEntity
+            toastText="Page content deleted"
+            destination="/auth/pages"
+          />
+        }
+      />
     </Routes>
   );
 };
 
 const ViewPages = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [entities, setEntities]: any = useState({});
+  const [notOkResponse, setNotOkResponse] = useState();
   useEffect(() => {
     let isMounted = true;
     ServerHandler(location.pathname).then((res) => {
-      //console.log("res", res);
-      if (res.status !== 200) {
-        console.log(res);
-        //setEntities([res.statusText]);
+      if (isMounted && res) {
+        if (res.status === 200) {
+          setEntities(res.data);
+        } else if (res.status === 404) {
+          navigate("/404");
+        } else {
+          setNotOkResponse(res.statusText);
+        }
       } else {
-        if (isMounted) setEntities(res.data);
+        navigate("/404");
       }
     });
     return () => {
       isMounted = false;
     };
-  }, [location.pathname]);
+  }, [location.pathname, navigate]);
 
   return (
     <>
@@ -111,7 +129,10 @@ const ViewPages = () => {
           )}
         </div>
       ) : (
-        <Loading />
+        <Loading
+          message={notOkResponse}
+          disableTimeout={notOkResponse ? true : false}
+        />
       )}
     </>
   );
@@ -120,6 +141,7 @@ const ViewPages = () => {
 const CreatePage = () => {
   const navigate = useNavigate();
   const callbackAction = (res: any) => {
+    console.log("creation", res);
     navigate("/auth/pages/" + res.data.alias);
   };
 
@@ -137,25 +159,47 @@ const CreatePage = () => {
 };
 const ViewPage = () => {
   let location = useLocation();
+  const navigate = useNavigate();
+  const [notOkResponse, setNotOkResponse] = useState();
 
   const [entity, setEntity]: any = useState();
   useEffect(() => {
     let isMounted = true;
     ServerHandler(location.pathname).then((res) => {
-      console.log("res", res);
-      if (isMounted && res.status === 200) setEntity(res.data);
+      if (isMounted && res) {
+        if (res.status === 200) {
+          setEntity(res.data);
+        } else if (res.status === 404) {
+          navigate("/404");
+        } else {
+          setNotOkResponse(res.statusText);
+        }
+      } else {
+        navigate("/404");
+      }
     });
     return () => {
       isMounted = false;
     };
-  }, [location.pathname]);
+  }, [location.pathname, navigate]);
 
   return entity ? (
     <>
-      <PageTitle title={entity.title} />
-      <div>{entity.alias}</div>
+      {entity && entity.uuid ? (
+        <>
+          <PageTitle title={entity.title} />
+          <div>{entity.alias}</div>
+        </>
+      ) : (
+        <Loading
+          message={notOkResponse}
+          disableTimeout={notOkResponse ? true : false}
+        />
+      )}
     </>
-  ) : null;
+  ) : (
+    <Loading disableTimeout={true} />
+  );
 };
 
 const PerPageUpdate = () => {
@@ -175,13 +219,6 @@ const PerPageUpdate = () => {
       />
     </>
   );
-};
-
-const PerPageAliasUpdate = () => {
-  return <></>;
-};
-const DeletePage = () => {
-  return <></>;
 };
 
 export default Pages;

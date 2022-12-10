@@ -4,6 +4,7 @@ import { default as pages } from "./pages.js";
 import { default as account } from "./account.js";
 import { default as authMedia } from "./media/index.js";
 import { default as misc } from "./misc/index.js";
+import { default as bin } from "./bin.route.js";
 
 import Router from "@koa/router";
 const router = new Router({
@@ -52,6 +53,8 @@ router.use(account.routes());
 router.use(authMedia.routes());
 //miscellaneous routes
 router.use(misc.routes());
+//recycle bin routes
+router.use(bin.routes());
 
 // Entity creation endpoints for dev purposes
 /* import { default as entityCreate } from "./createEndpoints";

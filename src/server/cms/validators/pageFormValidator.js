@@ -8,7 +8,7 @@ import { logger } from "../utils/logger.js";
 const submit = async (ctx, next) => {
   const schema = Joi.object().keys({
     title: Joi.string().trim().min(3).max(250).required(),
-    featuredImage: Joi.string().trim().uri().min(3).max(250),
+    featuredImage: Joi.string().guid({ version: ["uuidv4"] }),
     summary: Joi.string().trim(),
     body: Joi.any(),
     alias: Joi.string().trim().max(100),
@@ -71,20 +71,13 @@ const submit = async (ctx, next) => {
   }
   await validatorHandler(ctx, next, schema);
 };
-/*
-const uuid = async (ctx, next) => {
-  const schema = Joi.object().keys({
-    uuid: Joi.string()
-      .guid({ version: ['uuidv4']})
-      .required(),
-  });
-  await validatorHandler(ctx, next, schema);
-};
-*/
+
 const alias = async (ctx, next) => {
   const schema = Joi.object().keys({
     alias: Joi.string().trim().max(100).required(),
+    uuid: Joi.string().guid({ version: ["uuidv4"] }),
     autoAlias: Joi.boolean(),
+    currentAlias: Joi.string().trim(),
   });
   await validatorHandler(ctx, next, schema);
 };

@@ -12,8 +12,8 @@
     "generate": "vite build --outDir dist/static && npm run build:server && node prerender",
     "serve": "cross-env NODE_ENV=production node server",
     "debug": "node --inspect server",
-    "db:sync": "node src/server/database/scripts/tablesDBsync.js",
-    "db:tup": "node src/server/database/scripts/defaultTablesUp",
+    "db:sync": "node src/server/cms/database/scripts/tablesDBsync.js",
+    "db:tup": "node src/server/cms/database/scripts/defaultTablesUp",
     "db:init": "npm run db:sync && npm run db:tup",
     "email:debug": "NODE_DEBUG=email-templates node email.js"
   },

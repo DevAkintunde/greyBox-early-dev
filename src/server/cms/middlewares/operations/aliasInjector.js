@@ -51,15 +51,18 @@ const aliasInjector = async (ctx, next) => {
           ctx.throw(BAD_REQUEST, "Entity type not identifiable");
         }
       }
-
       if (
-        (ctx.state.entityUpdate || ctx.path.endsWith("/update")) &&
+        (ctx.state.entityUpdate ||
+          ctx.path.includes("/update/") ||
+          ctx.path.endsWith("/update")) &&
         !ctx.request.body.currentAlias &&
         ctx.request.body.alias
       ) {
         ctx.request.body.currentAlias = ctx.request.body.alias;
       } else if (
-        (!ctx.state.entityUpdate || !ctx.path.endsWith("/update")) &&
+        !ctx.state.entityUpdate &&
+        !ctx.path.includes("/update/") &&
+        !ctx.path.endsWith("/update") &&
         ctx.request.body.currentAlias
       ) {
         delete ctx.request.body.currentAlias;

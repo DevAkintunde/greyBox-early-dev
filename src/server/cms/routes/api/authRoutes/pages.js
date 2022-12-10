@@ -128,8 +128,7 @@ router.patch(
   aliasInjector,
   formValidator.submit,
   pageController.updateItem,
-  async (ctx, next) => {
-    await next();
+  async (ctx) => {
     if (ctx.state.error) {
       ctx.status = ctx.state.error.status;
       ctx.message = ctx.state.error.statusText;
@@ -151,76 +150,113 @@ router.patch(
 router.delete(
   "/:alias/delete",
   async (ctx, next) => {
-    ctx.request.body = { alias: ctx.params.alias };
+    if (UUID4Validator(ctx.params.alias)) {
+      ctx.request.body = { uuid: ctx.params.alias };
+    } else {
+      ctx.request.body = { alias: ctx.params.alias };
+    }
     await next();
+  },
+  pageController.deleteItem,
+  (ctx) => {
     if (ctx.state.error) {
       ctx.status = ctx.state.error.status;
-      return (ctx.body = {
-        status: ctx.state.error.status,
-        message: ctx.state.error.message,
-      });
+      ctx.message = ctx.state.error.statusText;
+      return;
     }
     ctx.status = OK;
-    return ctx.body;
-  },
-  pageController.deleteItem
+    ctx.body = {
+      status: OK,
+      statusText: "Deleted",
+    };
+    return;
+  }
 );
 
 router.patch(
   "/:alias/update/alias",
   async (ctx, next) => {
-    ctx.request.body = {
-      ...ctx.request.body,
-      currentAlias: ctx.params.alias,
-    };
+    ctx.state.entityType = "Page";
+    let { alias } = ctx.request.body;
+    if (UUID4Validator(ctx.params.alias)) {
+      ctx.request.body = {
+        alias: alias.split(" ").join("-").toLowerCase(),
+        uuid: ctx.params.alias,
+      };
+    } else {
+      ctx.request.body = {
+        alias: alias.split(" ").join("-").toLowerCase(),
+        currentAlias: ctx.params.alias,
+      };
+    }
     await next();
   },
+  aliasInjector,
   formValidator.alias,
-  async (ctx, next) => {
-    await next();
+  pageController.updateAlias,
+  (ctx) => {
     if (ctx.state.error) {
-      ctx.status = ctx.state.error.status;
-      return (ctx.body = {
-        status: ctx.state.error.status,
-        message: ctx.state.error.message,
-      });
+      ctx.status = ctx.state.error.status
+        ? ctx.state.error.status
+        : SERVER_ERROR;
+      ctx.message = ctx.state.error.statusText
+        ? ctx.state.error.statusText
+        : "Page not found";
+      return;
     }
     ctx.status = OK;
-    return ctx.body;
-  },
-  pageController.updateAlias
+    ctx.body = {
+      status: OK,
+      data: ctx.state.data,
+    };
+    return;
+  }
 );
 
 router.patch(
   "/:alias/update/status",
-  async (ctx, next) => {
-    ctx.request.body = {
-      ...ctx.request.body,
-      alias: ctx.params.alias,
-    };
-    await next();
-  },
   formValidator.status,
   async (ctx, next) => {
+    ctx.state.entityType = "Page";
+    let { status } = ctx.request.body;
+    if (UUID4Validator(ctx.params.alias)) {
+      ctx.request.body = {
+        status: status,
+        uuid: ctx.params.alias,
+      };
+    } else {
+      ctx.request.body = {
+        status: status,
+        alias: ctx.params.alias,
+      };
+    }
     await next();
+  },
+  aliasInjector,
+  pageController.updateStatus,
+  (ctx) => {
     if (ctx.state.error) {
-      ctx.status = ctx.state.error.status;
-      return (ctx.body = {
-        status: ctx.state.error.status,
-        message: ctx.state.error.message,
-      });
+      ctx.status = ctx.state.error.status
+        ? ctx.state.error.status
+        : SERVER_ERROR;
+      ctx.message = ctx.state.error.statusText
+        ? ctx.state.error.statusText
+        : "Page not found";
+      return;
     }
     ctx.status = OK;
-    return ctx.body;
-  },
-  pageController.updateStatus
+    ctx.body = {
+      status: OK,
+      data: ctx.state.data,
+    };
+    return;
+  }
 );
 
 router.post(
   "/create",
   async (ctx, next) => {
     ctx.state.entityType = "Page";
-    console.log("page data", JSON.stringify(ctx.request.body, null, 2));
     await next();
   },
   aliasInjector,
@@ -228,14 +264,16 @@ router.post(
   pageController.createItem,
   (ctx) => {
     if (ctx.state.error) {
-      ctx.status = SERVER_ERROR;
+      ctx.status = ctx.state.error.status
+        ? ctx.state.error.status
+        : SERVER_ERROR;
       ctx.message = ctx.state.error.statusText;
       return;
     }
     ctx.status = OK;
     ctx.body = {
       status: OK,
-      data: ctx.state.data,
+      ...ctx.state.data,
     };
     return;
   }

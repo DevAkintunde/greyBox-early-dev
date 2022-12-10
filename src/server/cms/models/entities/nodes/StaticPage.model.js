@@ -68,9 +68,7 @@ Page.init(
   },
   {
     defaultScope: {
-      attributes: {
-        exclude: ["markForDeletionBy"],
-      },
+      attributes: {},
     },
     scopes: {
       middleware: {
@@ -84,6 +82,8 @@ Page.init(
     timestamps: true,
     createdAt: "created",
     updatedAt: "updated",
+    paranoid: true,
+    deletedAt: "deleted",
     sequelize, // We need to pass the connection instance
     modelName: "Page", // We need to choose the model name
   }
@@ -96,7 +96,7 @@ Admin.hasMany(Page, {
     allowNull: false,
   },
   onDelete: "RESTRICT",
-  onUpdate: "RESTRICT",
+  onUpdate: "CASCADE",
 });
 Page.belongsTo(Admin, {
   targetKey: "email",
@@ -112,8 +112,8 @@ Admin.hasMany(Page, {
     type: DataTypes.STRING,
     name: "last_revisor",
   },
-  onDelete: "RESTRICT",
-  onUpdate: "RESTRICT",
+  onDelete: "SET NULL",
+  onUpdate: "CASCADE",
 });
 Page.belongsTo(Admin, {
   targetKey: "email",
@@ -128,14 +128,16 @@ Paragraph.hasOne(Page, {
   foreignKey: {
     type: DataTypes.UUID,
     name: "body",
+    allowNull: true,
   },
-  onDelete: "CASCADE",
+  onDelete: "SET NULL",
   onUpdate: "CASCADE",
 });
 Page.belongsTo(Paragraph, {
   foreignKey: {
     type: DataTypes.UUID,
     name: "body",
+    allowNull: true,
   },
 });
 
@@ -144,6 +146,7 @@ Image.hasMany(Page, {
   foreignKey: {
     type: DataTypes.UUID,
     name: "featuredImage",
+    allowNull: true,
   },
   onDelete: "RESTRICT",
   onUpdate: "RESTRICT",
@@ -152,6 +155,7 @@ Page.belongsTo(Image, {
   foreignKey: {
     type: DataTypes.UUID,
     name: "featuredImage",
+    allowNull: true,
   },
 });
 

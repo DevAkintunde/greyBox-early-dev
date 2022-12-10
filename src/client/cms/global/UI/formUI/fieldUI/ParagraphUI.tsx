@@ -252,6 +252,7 @@ export const ParagraphUI = ({
                       {field.type && field.type === "image" ? (
                         <ImageUi
                           uuidIdentifier="image"
+                          titleField={true}
                           id={"body[" + field.id + "][" + field.type + "]"}
                           name={
                             "body[" + field.id + "][" + field.type + "][image]"
@@ -351,34 +352,45 @@ export const ParagraphUI = ({
   useEffect(() => {
     let isMounted = true;
     //console.log("deleteParagraphFromBody ID", deleteParagraphFromBody);
-    if (deleteParagraphFromBody && deleteParagraphFromBody.uuid && isMounted) {
+    if (
+      deleteParagraphFromBody &&
+      deleteParagraphFromBody.uuid &&
+      deleteParagraphFromBody.type &&
+      isMounted
+    ) {
       let thisID = deleteParagraphFromBody.uuid;
       let thisType = deleteParagraphFromBody.type;
       // define endpoint based on availability of paragraph type.
       // when undefined, take uuid as the paragraphs parent itself
-      let endpoint =
-        !deleteParagraphFromBody.type ||
-        deleteParagraphFromBody.type !== "parent"
-          ? `/auth/paragraphs/${thisType}/${thisID}/delete`
-          : `/auth/paragraphs/${thisID}/delete`;
       setDeleteParagraphFromBody();
       if (validator.isUUID(thisID)) {
         //delete from DB && remove html element
         ServerHandler({
-          endpoint: endpoint,
+          endpoint:
+            deleteParagraphFromBody.type === "parent"
+              ? `/auth/paragraphs/${thisID}/delete`
+              : `/auth/paragraphs/${thisType}/${thisID}/delete`,
           method: "delete",
         }).then((res) => {
           if (res.status === 200) {
-            toast(`${thisType} deleted`);
+            toast(
+              `${thisType !== "parent" ? thisType : "Body of content"} deleted`
+            );
             //remove html element on successfull remover
             let importedBodyConstruct: any[] = [];
-            paragraphDefaults.forEach((thisParagraph: any) => {
-              if (thisParagraph.id !== thisID)
-                importedBodyConstruct.push(thisParagraph);
-            });
+            if (thisType !== "parent") {
+              paragraphDefaults.forEach((thisParagraph: any) => {
+                if (thisParagraph.id !== thisID)
+                  importedBodyConstruct.push(thisParagraph);
+              });
+              //update formData
+              setRemoveParagraphFromFormData(thisID);
+            } else {
+              setParagraphDefaults([]);
+              //update formData by removing every 'body[' ref id for paragraphs
+              setRemoveParagraphFromFormData("body[");
+            }
             setParagraphDefaults(importedBodyConstruct);
-            //update formData
-            setRemoveParagraphFromFormData(thisID);
           } else {
             toast(`Unable to remove paragraph ${thisType}`);
           }

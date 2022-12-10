@@ -10,36 +10,27 @@ import {
   SERVER_ERROR,
   OK,
   NOT_FOUND,
+  SERVICE_UNAVAILABLE,
 } from "../constants/statusCodes.js";
 import { markForDeletion } from "../functions/markForDeletion.js";
 import { logger } from "../utils/logger.js";
 import { UUID4Validator } from "../functions/UUID4Validator.js";
 import Image from "../models/entities/media/Image.model.js";
 import Video from "../models/entities/media/Video.model.js";
+import Page from "../models/entities/nodes/StaticPage.model.js";
 
 export const createItem = async (ctx, next) => {
   try {
     let { status } = ctx.request.body;
-    const checkStatus = await Status.findByPk(status);
-    let modelAttributes = ctx.request.body;
-    if (!checkStatus) {
-      modelAttributes = {
-        ...modelAttributes,
-        status: "draft",
-        author: ctx.state.user.email,
-      };
-    } else if (status.toLowerCase() === "publish") {
-      modelAttributes = {
-        ...modelAttributes,
-        state: true,
-        author: ctx.state.user.email,
-      };
-    } else {
-      modelAttributes = {
-        ...modelAttributes,
-        author: ctx.state.user.email,
-      };
+    let checkStatus;
+    if (status) {
+      checkStatus = await Status.findByPk(status);
     }
+    let modelAttributes = ctx.request.body;
+    if (!checkStatus || !checkStatus.dataValues)
+      modelAttributes.status = "draft";
+    if (status === "published") modelAttributes.state = true;
+    modelAttributes.author = ctx.state.user.email;
 
     if (modelAttributes.body) {
       if (Object.keys(modelAttributes.body).length > 0) {
@@ -48,19 +39,40 @@ export const createItem = async (ctx, next) => {
           let parentParagraph = newParagraph.dataValues.uuid;
           let paragraphsBundle = [];
           let paragraphsID = [];
-          Object.keys(modelAttributes.body).forEach((paragraph, index) => {
-            if (modelAttributes.body["paragraph"].validated) {
-              let thisType = modelAttributes.body["paragraph"].type;
-              let thisModelType = "P" + thisType.toLowerCase();
-              //exclude type value from been forwarded to ORM
-              delete modelAttributes.body["paragraph"].type;
+          Object.keys(modelAttributes.body).forEach((paragraphId, index) => {
+            let thisType;
+            let thisModelType;
+            let paragraph;
+            if (
+              modelAttributes.body[paragraphId]["text"] &&
+              modelAttributes.body[paragraphId]["text"].validated
+            ) {
+              thisType = "text";
+              thisModelType = "Ptext";
               //remove validation checker from validator.
-              delete modelAttributes.body["paragraph"].validated;
-
+              delete modelAttributes.body[paragraphId]["text"].validated;
+              paragraph = modelAttributes.body[paragraphId]["text"];
+            } else if (
+              modelAttributes.body[paragraphId]["image"] &&
+              modelAttributes.body[paragraphId]["image"].validated
+            ) {
+              thisType = "image";
+              thisModelType = "Pimage";
+              delete modelAttributes.body[paragraphId]["image"].validated;
+              paragraph = modelAttributes.body[paragraphId]["image"];
+            } else if (
+              modelAttributes.body[paragraphId]["video"] &&
+              modelAttributes.body[paragraphId]["video"].validated
+            ) {
+              thisType = "video";
+              thisModelType = "Pvideo";
+              delete modelAttributes.body[paragraphId]["video"].validated;
+              paragraph = modelAttributes.body[paragraphId]["video"];
+            }
+            if (thisType && thisModelType && paragraph) {
               const paragraphData = {
-                ...modelAttributes.body["paragraph"],
+                ...paragraph,
                 parent: parentParagraph,
-                weight: index,
               };
               paragraphsBundle.push(
                 sequelize.models[thisModelType].create(paragraphData, {
@@ -78,19 +90,21 @@ export const createItem = async (ctx, next) => {
               type: paragraphsID[i],
             });
           }
-          //delete modelAttributes.body;
+          if (
+            modelAttributes.body &&
+            Object.keys(modelAttributes.body).length > 0 &&
+            parentParagraph
+          ) {
+            modelAttributes.body = parentParagraph;
+          } else {
+            delete modelAttributes.body;
+          }
 
-          const page = await StaticPage.create(
-            {
-              ...modelAttributes,
-              body: parentParagraph,
-            },
-            {
-              transaction: t,
-            }
-          );
+          const page = await StaticPage.create(modelAttributes, {
+            transaction: t,
+          });
           return {
-            ...page.toJSON(),
+            data: page.toJSON(),
             type: "page",
             relations: { body: paragraphRelations },
           };
@@ -98,20 +112,20 @@ export const createItem = async (ctx, next) => {
         ctx.state.data = createdPage;
       } else {
         logger.info(
-          "Page Controller",
-          "Paragraphs must be an array in the expected view order."
+          "Page Controller:",
+          "Unable to identify paragraph body type as object."
         );
         ctx.state.error = {
           status: BAD_REQUEST,
-          statusText: "Paragraphs must be an array in the expected view order.",
+          statusText: "Unable to identify paragraph body type as object.",
         };
       }
     } else {
       try {
         const page = await StaticPage.create(modelAttributes);
-        ctx.state.data = { ...page.toJSON(), type: "page" };
+        ctx.state.data = { data: page.toJSON(), type: "page" };
       } catch (err) {
-        logger.error("Page Controller", err);
+        logger.error("Page Controller:", err);
         ctx.state.error = {
           status: SERVER_ERROR,
           statusText: err.parent ? err.parent.detail : err.message,
@@ -119,9 +133,7 @@ export const createItem = async (ctx, next) => {
       }
     }
   } catch (err) {
-    logger.error("Page Controller", err);
-
-    console.log("Page 222::", JSON.stringify(err, null, 2));
+    logger.error("Page Controller:", err);
     ctx.state.error = {
       status: SERVER_ERROR,
       statusText: err.parent ? err.parent.detail : err.message,
@@ -138,7 +150,6 @@ export const updateItem = async (ctx, next) => {
       checkStatus = await Status.findByPk(status);
     }
     let modelAttributes = ctx.request.body;
-    console.log("checkStatus", checkStatus);
     if (!checkStatus || !checkStatus.dataValues)
       modelAttributes.status = "draft";
     if (status === "published") modelAttributes.state = true;
@@ -237,7 +248,8 @@ export const updateItem = async (ctx, next) => {
             }
             if (
               modelAttributes.body &&
-              Object.keys(modelAttributes.body).length > 0
+              Object.keys(modelAttributes.body).length > 0 &&
+              parentParagraph
             ) {
               modelAttributes.body = parentParagraph;
             } else {
@@ -283,6 +295,16 @@ export const updateItem = async (ctx, next) => {
               transaction: t,
             }
           );
+          if (page.dataValues.body) {
+            try {
+              await Paragraph.destroy(
+                { where: { uuid: page.dataValues.body } },
+                { transaction: t }
+              );
+            } catch (err) {
+              logger.error("Page Controller deleting paragraph error:", err);
+            }
+          }
           page.set(modelAttributes, {
             transaction: t,
           });
@@ -292,7 +314,7 @@ export const updateItem = async (ctx, next) => {
         });
         ctx.state.data = updatePaged;
       } catch (err) {
-        logger.error("Page Controller", err);
+        logger.error("Page Controller:", err);
         ctx.state.error = {
           status: SERVER_ERROR,
           message: err.parent ? err.parent.detail : err.message,
@@ -300,7 +322,7 @@ export const updateItem = async (ctx, next) => {
       }
     }
   } catch (err) {
-    logger.error("Page Controller", err);
+    logger.error("Page Controller:", err);
     ctx.state.error = {
       status: SERVER_ERROR,
       message: err.parent ? err.parent.detail : err.message,
@@ -309,68 +331,98 @@ export const updateItem = async (ctx, next) => {
   await next();
 };
 
-export const updateAlias = async (ctx) => {
-  let { alias, currentAlias } = ctx.request.body;
+export const updateAlias = async (ctx, next) => {
   try {
-    return sequelize.transaction(async (t) => {
-      await StaticPage.update(
-        { alias: alias },
-        { where: { alias: currentAlias } },
-        { transaction: t }
-      ).then((res) => {
-        let [updateRes] = res;
-        return (ctx.body = updateRes);
+    let searchKey = ctx.request.body.uuid ? "uuid" : "currentAlias";
+    let thisPage = await sequelize.models[ctx.state.entityType].findOne({
+      where: {
+        [searchKey === "currentAlias" ? "alias" : searchKey]:
+          ctx.request.body[searchKey],
+      },
+    });
+    if (thisPage instanceof Page) {
+      thisPage.update({
+        alias: ctx.request.body.alias,
+        autoAlias: false,
+        last_revisor: ctx.state.user.email,
       });
-    });
+      ctx.status = OK;
+      ctx.state.data = thisPage.toJSON();
+    } else {
+      ctx.state.error = {
+        status: NOT_FOUND,
+        statusText: "The page to be updated does not seem to exist",
+      };
+    }
   } catch (err) {
-    return (ctx.state.error = {
-      status: BAD_REQUEST,
-      message: err.parent ? err.parent.detail : err.message,
-    });
+    logger.error("Page Controller", err);
+    ctx.state.error = {
+      status: SERVER_ERROR,
+      statusText: "Unable to update page alias",
+    };
   }
+  await next();
 };
 
-export const updateStatus = async (ctx) => {
-  let { alias, state } = ctx.request.body;
+export const updateStatus = async (ctx, next) => {
   try {
-    return sequelize.transaction(async (t) => {
-      await StaticPage.update(
-        { state: state },
-        { where: { alias: alias } },
-        { transaction: t }
-      ).then((res) => {
-        let [updateRes] = res;
-        return (ctx.body = updateRes);
+    let { status } = ctx.request.body;
+    let checkStatus;
+    if (status) {
+      checkStatus = await Status.findByPk(status);
+    }
+    if (!checkStatus || !checkStatus.dataValues)
+      ctx.request.body.status = "draft";
+
+    let searchKey = ctx.request.body.uuid ? "uuid" : "currentAlias";
+    let thisPage = await sequelize.models[ctx.state.entityType].findOne({
+      where: {
+        [searchKey === "currentAlias" ? "alias" : searchKey]:
+          ctx.request.body[searchKey],
+      },
+    });
+    if (thisPage instanceof Page) {
+      thisPage.update({
+        status: ctx.request.body.status,
+        state: status === "published" ? true : false,
+        last_revisor: ctx.state.user.email,
       });
-    });
+      ctx.status = OK;
+      ctx.state.data = thisPage.toJSON();
+    } else {
+      ctx.state.error = {
+        status: NOT_FOUND,
+        statusText: "The page to be updated does not seem to exist",
+      };
+    }
   } catch (err) {
-    return (ctx.state.error = {
-      status: BAD_REQUEST,
-      message: err.parent ? err.parent.detail : err.message,
-    });
+    logger.error("Page Controller", err);
+    ctx.state.error = {
+      status: SERVER_ERROR,
+      statusText: "Unable to update page status",
+    };
   }
+  await next();
 };
 
-export const deleteItem = async (ctx) => {
-  let { alias } = ctx.request.body;
+//soft delete page using paranoid approach
+//it will be permanently deleted by cron after 30 days.
+export const deleteItem = async (ctx, next) => {
   try {
-    let deletionDate = markForDeletion(30);
-    return sequelize.transaction(async (t) => {
-      await StaticPage.update(
-        { markForDeletionBy: deletionDate, state: "deleted" },
-        { where: { alias: alias } },
-        { transaction: t }
-      ).then((res) => {
-        let [updateRes] = res;
-        return (ctx.body = updateRes);
-      });
-    });
+    let deletionCall = await StaticPage.destroy({ where: ctx.request.body });
+    if (!deletionCall) {
+      ctx.state.error = {
+        status: SERVICE_UNAVAILABLE,
+        statusText: "Unable to delete page entity",
+      };
+    }
   } catch (err) {
-    return (ctx.state.error = {
+    ctx.state.error = {
       status: BAD_REQUEST,
       message: err.parent ? err.parent.detail : err.message,
-    });
+    };
   }
+  await next();
 };
 
 // Page entity view
@@ -478,7 +530,9 @@ export const viewItem = async (ctx, next) => {
           relations: relations,
         };
       }
-      return { data: thisPage.toJSON(), type: "page" };
+      if (thisPage && thisPage.dataValues)
+        return { data: thisPage.toJSON(), type: "page" };
+      return null;
     });
     ctx.status = OK;
     ctx.state.data = page;

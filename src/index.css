@@ -101,10 +101,12 @@
     @apply cursor-pointer disabled:text-gray-600 p-2 border-4 rounded-lg mx-2;
   }
 
-  .button-pri {
+  .button-pri,
+  .form-ui input[type="submit"].button-pri {
     @apply cursor-pointer bg-color-pri text-color-sec p-2 inline-block border-4 rounded-lg m-2 text-center;
   }
-  .button-sec {
+  .button-sec,
+  .form-ui input[type="submit"].button-sec {
     @apply cursor-pointer bg-color-ter text-color-def p-2 inline-block border-4 rounded-lg m-2 text-center;
   }
   /*  textarea {

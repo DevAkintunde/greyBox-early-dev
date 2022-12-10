@@ -255,6 +255,18 @@ const UserMenu = () => {
                   })}
                 </ul>
               </nav>
+              <motion.li whileHover={{ scale: 1.02 }}>
+                <NavLink
+                  to="auth/bin"
+                  className={({ isActive }) =>
+                    "border-b-2 block p-3 pl-6 w-full text-color-def hover:bg-color-pri/50 text-center" +
+                    (isActive ? " bg-color-pri/80" : "")
+                  }
+                  title="Delete items"
+                >
+                  {"Bin"}
+                </NavLink>
+              </motion.li>
             </ul>
           </nav>
 

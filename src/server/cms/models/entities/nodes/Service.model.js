@@ -64,9 +64,7 @@ Service.init(
   },
   {
     defaultScope: {
-      attributes: {
-        exclude: ["markForDeletionBy"],
-      },
+      attributes: {},
     },
     scopes: {
       middleware: {
@@ -80,6 +78,8 @@ Service.init(
     timestamps: true,
     createdAt: "created",
     updatedAt: "updated",
+    paranoid: true,
+    deletedAt: "deleted",
     sequelize, // We need to pass the connection instance
     modelName: "Service", // We need to choose the model name
   }
@@ -124,15 +124,19 @@ Paragraph.hasOne(Service, {
   foreignKey: {
     type: DataTypes.UUID,
     name: "body",
+    allowNull: true,
   },
-  onDelete: "CASCADE",
+  onDelete: "SET NULL",
   onUpdate: "CASCADE",
 });
 Service.belongsTo(Paragraph, {
   foreignKey: {
     type: DataTypes.UUID,
     name: "body",
+    allowNull: true,
   },
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 
 Image.hasMany(Service, {
@@ -140,6 +144,7 @@ Image.hasMany(Service, {
   foreignKey: {
     type: DataTypes.UUID,
     name: "featuredImage",
+    allowNull: true,
   },
   onDelete: "RESTRICT",
   onUpdate: "RESTRICT",
@@ -148,6 +153,7 @@ Service.belongsTo(Image, {
   foreignKey: {
     type: DataTypes.UUID,
     name: "featuredImage",
+    allowNull: true,
   },
 });
 

@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { FormUi } from "../../../global/UI/formUI/FormUi";
 import { ServerHandler } from "../../../global/functions/ServerHandler";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import PageTitle from "../../blocks/PageTitle";
 import { FormFields } from "../../../global/UI/formUI/FormFields";
+import Loading from "../../../utils/Loading";
 
 interface ComponentData {
   id: string;
@@ -18,6 +19,7 @@ export const PageForm = ({
   setTitle,
 }: ComponentData) => {
   let location = useLocation();
+  let navigate = useNavigate();
   let formApiUrl = updateForm
     ? location.pathname
     : location.pathname.split("/update")[0];
@@ -25,11 +27,11 @@ export const PageForm = ({
   const [fields, setFields]: any = useState();
   const [formPageTitle, setFormPageTitle]: any = useState();
   const [statuses, setStatuses] = useState();
+  const [notOkResponse, setNotOkResponse] = useState();
 
   useEffect(() => {
     let isMounted = true;
     ServerHandler("/field/auth/statuses").then((res) => {
-      console.log("this status", res);
       if (res.status === 200 && isMounted) return setStatuses(res.options);
     });
     return () => {
@@ -68,7 +70,7 @@ export const PageForm = ({
     if (updateForm) {
       ServerHandler(location.pathname.split("/update")[0]).then((res) => {
         if (res.status === 200) {
-          console.log(res);
+          //console.log(res);
           let checkIfBodyField = false;
           let updatedFields = formFields.map((field: any) => {
             let thisField;
@@ -80,7 +82,11 @@ export const PageForm = ({
                 };
               } else if (field.id === "body") {
                 checkIfBodyField = true;
-                if (res.relations.body && res.relations.body.length > 0) {
+                if (
+                  res.relations &&
+                  res.relations.body &&
+                  res.relations.body.length > 0
+                ) {
                   let paragraphImported: any = [];
                   res.relations.body.forEach((paragraph: any) => {
                     paragraphImported.push({
@@ -143,6 +149,10 @@ export const PageForm = ({
           }
           setFields(updatedFields);
           if (setTitle) setFormPageTitle("Update " + res.data.title);
+        } else if (res.status === 404) {
+          navigate("/404");
+        } else {
+          setNotOkResponse(res.statusText);
         }
       });
     } else {
@@ -150,15 +160,14 @@ export const PageForm = ({
       if (setTitle) setFormPageTitle("Create a page");
     }
     return () => {};
-  }, [formApiUrl, location.pathname, setTitle, statuses, updateForm]);
+  }, [formApiUrl, location.pathname, navigate, setTitle, statuses, updateForm]);
 
   const sendToServer = (data: FormData) => (e: any) => {
     e.preventDefault();
     e.target.disabled = true;
-    console.log("data", data);
-    for (let [key, val] of data.entries()) {
+    /* for (let [key, val] of data.entries()) {
       console.log("fetchForm", [key, val]);
-    }
+    } */
     if (e.target.classList && !e.target.classList.contains("bounce"))
       e.target.classList.add("bounce");
 
@@ -166,7 +175,6 @@ export const PageForm = ({
       endpoint: formApiUrl,
       method: updateForm ? "patch" : "post",
       headers: {
-        //accept: "application/json",
         "content-type": "multipart/form-data",
       },
       body: data,
@@ -203,13 +211,22 @@ export const PageForm = ({
 
   return (
     <>
-      {setTitle ? <PageTitle title={formPageTitle} /> : null}
-      <FormUi
-        //containers={containers}
-        id={id}
-        fields={fields}
-        buttons={buttons}
-      />
+      {fields && fields.length > 0 ? (
+        <>
+          {setTitle ? <PageTitle title={formPageTitle} /> : null}
+          <FormUi
+            //containers={containers}
+            id={id}
+            fields={fields}
+            buttons={buttons}
+          />
+        </>
+      ) : (
+        <Loading
+          message={notOkResponse}
+          disableTimeout={notOkResponse ? true : false}
+        />
+      )}
     </>
   );
 };

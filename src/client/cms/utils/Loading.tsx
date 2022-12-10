@@ -4,9 +4,9 @@ import { useLocation } from "react-router-dom";
 
 //animation styles. Ripple is default.
 const ripple = (
-  <div className="lds-ripple">
+  <div className="lds-ripple text-5xl">
     <div className="border-color-pri/10 border-solid border-r-[40px]"></div>
-    <div></div>
+    <div>Loading...</div>
   </div>
 );
 const pulse = (
@@ -27,7 +27,15 @@ const pulse = (
   </div>
 );
 
-const Loading = (props) => {
+const Loading = (props: {
+  animation?: string;
+  styling?: string;
+  message?: string;
+  disableTimeout?: boolean;
+  instantMessage?: string;
+  refresh?: boolean;
+  refreshTrigger?: any;
+}) => {
   const location = useLocation();
   let animation = props.animation === "pulse" ? pulse : ripple;
 
@@ -43,7 +51,7 @@ const Loading = (props) => {
   let instantMessage = props.instantMessage;
   //refresh boolean for out of Ops async operations
   const refresher = props.refresh;
-  const [content, setContent] = useState();
+  const [content, setContent]: any = useState();
 
   useEffect(() => {
     let isMounted = true;
