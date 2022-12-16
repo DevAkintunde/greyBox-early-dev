@@ -1,5 +1,5 @@
 import * as operator from "../../constants/urlQueryOperatorsOrmTranslator.js";
-import * as pathToModel from "../../constants/urlPreQueryPathToModelMapping.js";
+import {ModelMapper} from "../../constants/ModelMapper.js";
 
 const sortProcessor = async (ctx, next) => {
   const urlQuery = ctx.state.urlQuery;
@@ -18,7 +18,7 @@ const sortProcessor = async (ctx, next) => {
         let sortTargetHolderSplit = sortTargetHolder.split("[");
         sortTarget = sortTargetHolderSplit[0];
         foreignTargetModel =
-          pathToModel[sortTargetHolderSplit[1].split("]")[0]];
+          ModelMapper[sortTargetHolderSplit[1].split("]")[0]];
       } else {
         sortTarget = sortTargetHolder;
       }

@@ -157,9 +157,13 @@ export const updateItem = async (ctx, next) => {
 
     if (modelAttributes.body) {
       if (Object.keys(modelAttributes.body).length > 0) {
+        let searchKey = ctx.request.body.uuid ? "uuid" : "currentAlias";
         let updatePaged = await sequelize.transaction(async (t) => {
           let page = await StaticPage.findOne(
-            { where: { alias: modelAttributes.alias } },
+            {where: {
+              [searchKey === "currentAlias" ? "alias" : searchKey]:
+              modelAttributes[searchKey],
+            },},
             {
               transaction: t,
             }
@@ -289,8 +293,14 @@ export const updateItem = async (ctx, next) => {
     } else {
       try {
         let updatePaged = await sequelize.transaction(async (t) => {
+          let searchKey = ctx.request.body.uuid ? "uuid" : "currentAlias";
           let page = await StaticPage.findOne(
-            { where: { alias: ctx.request.body.alias } },
+            {
+              where: {
+                [searchKey === "currentAlias" ? "alias" : searchKey]:
+                  ctx.request.body[searchKey],
+              },
+            },
             {
               transaction: t,
             }

@@ -36,12 +36,13 @@ const modelsSync = async () => {
     await Paragraph.sync({ force: true });
 
     //dependents
+    await Image.sync({ force: true });
+    await Video.sync({ force: true });
+    //paragraphs dependents
     await PImage.sync({ force: true });
     await PText.sync({ force: true });
     await PVideo.sync({ force: true });
 
-    await Video.sync({ force: true });
-    await Image.sync({ force: true });
     await Page.sync({ force: true });
     await Service.sync({ force: true });
 

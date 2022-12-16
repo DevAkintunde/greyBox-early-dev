@@ -1,7 +1,7 @@
 // query caller/processors
 import compose from "koa-compose";
 // Always remember to map modelToPath each time urlQueryTranslator is added to a new path pattern
-import * as pathToModel from "../constants/urlPreQueryPathToModelMapping.js";
+import {ModelMapper} from "../constants/ModelMapper.js";
 import { filterProcessor } from "./queryProcessor/filterProcessor.js";
 import { includeTranslator } from "./queryProcessor/includeTranslator.js";
 import { paginationProcessor } from "./queryProcessor/paginationProcessor.js";
@@ -92,10 +92,10 @@ structure is contructed as:
           //condition carters for trailing slash that may be in url
           if (modelFromPathSplit[modelFromPathSplit.length - 1]) {
             model =
-              pathToModel[modelFromPathSplit[modelFromPathSplit.length - 1]];
+              ModelMapper[modelFromPathSplit[modelFromPathSplit.length - 1]];
           } else {
             model =
-              pathToModel[modelFromPathSplit[modelFromPathSplit.length - 2]];
+              ModelMapper[modelFromPathSplit[modelFromPathSplit.length - 2]];
           }
         } else {
           let modelFromPathRightTrim = ctx.path.split(
@@ -103,7 +103,7 @@ structure is contructed as:
           )[0];
           let modelFromPathLeftSplit = modelFromPathRightTrim.split("/");
           model =
-            pathToModel[
+            ModelMapper[
               modelFromPathLeftSplit[modelFromPathLeftSplit.length - 1]
             ];
         }

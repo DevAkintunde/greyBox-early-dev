@@ -88,6 +88,7 @@ router.get(
 
 router.patch(
   "/:alias/update",
+  formValidator.submit,
   async (ctx, next) => {
     console.log("path: ", ctx.path);
     console.log("url: ", ctx.url);
@@ -126,7 +127,6 @@ router.patch(
     await next();
   },
   aliasInjector,
-  formValidator.submit,
   pageController.updateItem,
   async (ctx) => {
     if (ctx.state.error) {

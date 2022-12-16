@@ -1,9 +1,18 @@
 import sequelize from "../../config/db.config.js";
+import { ModelMapper } from "../../constants/ModelMapper.js";
 import { BAD_REQUEST, NOT_ACCEPTABLE } from "../../constants/statusCodes.js";
 
 const aliasInjector = async (ctx, next) => {
   if (ctx.request.body && Object.keys(ctx.request.body).length > 0) {
-    if (ctx.state.entityType) {
+    let entityType = ctx.state.entityType;
+    if (
+      !entityType &&
+      (ctx.path.includes("/update/") || ctx.path.endsWith("/update"))
+    ) {
+      let modelExtractFromPath = ctx.path.split("/")[4];
+      if (ModelMapper[modelExtractFromPath]) entityType = modelExtractFromPath;
+    }
+    if (entityType) {
       let thisAlias =
         ctx.request.body.autoAlias && ctx.request.body.autoAlias === "true"
           ? ctx.request.body.title
@@ -18,7 +27,7 @@ const aliasInjector = async (ctx, next) => {
         checkEntityId = ctx.request.body.uuid;
       } else if (ctx.request.body.currentAlias) {
         try {
-          await sequelize.models[ctx.state.entityType]
+          await sequelize.models[entityType]
             .findOne({
               where: {
                 alias: ctx.request.body.currentAlias,
@@ -35,11 +44,9 @@ const aliasInjector = async (ctx, next) => {
 
       if (checkEntityId) {
         try {
-          let thisEntity = await sequelize.models[ctx.state.entityType].findOne(
-            {
-              where: { alias: thisAlias },
-            }
-          );
+          let thisEntity = await sequelize.models[entityType].findOne({
+            where: { alias: thisAlias },
+          });
           if (
             thisEntity &&
             thisEntity.toJSON().uuid &&
