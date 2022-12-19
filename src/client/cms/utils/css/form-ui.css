@@ -72,45 +72,45 @@
   }
 
   /*Image UI*/
-  #image-ui {
+  #image-ui, #video-ui {
     @apply mx-auto p-3 bg-color-pri/80;
   }
-  #image-ui #viewer {
+  #image-ui #viewer, #video-ui #viewer {
     @apply w-fit mx-auto flex mb-4;
   }
-  #image-ui-buttons {
+  #image-ui-buttons , #video-ui-buttons {
     @apply w-fit mx-auto;
   }
-  #image-ui .image-previewer-container {
+  #image-ui .image-previewer-container, #video-ui .image-previewer-container {
     @apply relative inline-block mx-auto;
   }
-  #image-ui .image-previewer-title {
+  #image-ui .image-previewer-title, #video-ui .image-previewer-title {
     @apply absolute -bottom-2 text-center bg-color-def/50;
   }
-  #image-ui #image-selected-remover,
-  #image-ui-library-delete-button {
+  #image-ui #image-selected-remover, #video-ui #image-selected-remover,
+  #image-ui-library-delete-button , #video-ui-library-delete-button {
     @apply absolute top-0 right-0 bg-color-ter text-color-def border-0 rounded-none m-0;
   }
-  #image-ui .image-ui-title {
+  #image-ui .image-ui-title, #video-ui .image-ui-title {
     @apply relative mt-2 px-5 flex items-center;
   }
-  #image-ui .image-ui-title label {
+  #image-ui .image-ui-title label , #video-ui .image-ui-title label {
     @apply absolute left-1 z-10;
   }
-  #image-ui .image-ui-title input {
+  #image-ui .image-ui-title input, #video-ui .image-ui-title input {
     @apply pl-8 rounded-full;
   }
 
-  .image-ui-library {
+  .image-ui-library, .video-ui-library {
     @apply relative;
   }
-  .image-ui-library label {
+  .image-ui-library label, .video-ui-library label {
     @apply cursor-pointer;
   }
-  .image-ui-library input[type="radio"] {
+  .image-ui-library input[type="radio"], .video-ui-library input[type="radio"] {
     @apply absolute left-0 top-0 m-2 cursor-pointer;
   }
-  #image-ui-select-button {
+  #image-ui-select-button, #video-ui-select-button {
     @apply bg-color-def;
   }
 }

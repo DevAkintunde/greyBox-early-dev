@@ -10,6 +10,7 @@ import { APP_ADDRESS } from "../../../utils/app.config";
 import { dependentField } from "./dependentFieldFunction";
 import { ImageUi } from "./fieldUI/ImageUi";
 import { ParagraphUI } from "./fieldUI/ParagraphUI";
+import { VideoUi } from "./fieldUI/VideoUi";
 
 interface FormButtons {
   value?: string;
@@ -119,7 +120,7 @@ export const FormUi = ({
           // check per dependency condition on another field
           //dependentCondition = { attribute: boolean.toString() }
           /* let dependentCondition: any = field["dependent" as keyof typeof field]
-            ? dependentField(fields, field, "defaultValue")
+            ? dependentField(id, fields, field, "defaultValue")
             : null; */
           // check if field is a Dependent field
           field["dependent" as keyof typeof field] &&
@@ -142,16 +143,17 @@ export const FormUi = ({
             if (
               field.type !== "file" &&
               field.type !== "image" &&
+              field.type !== "video" &&
               field.type !== "paragraph"
             ) {
               importedData.append(field.id, field.defaultValue);
-            } else if (field.type === "image") {
+            } else if (field.type === "image" || field.type === "video") {
               if (typeof field.defaultValue === "string") {
                 importedData.append(field.id, field.defaultValue);
               } else {
                 if (field.defaultValue.uuid)
                   importedData.append(
-                    field.id + "[image]",
+                    field.id + `[${field.type}]`,
                     field.defaultValue.uuid
                   );
                 if (field.defaultValue.title)
@@ -191,7 +193,10 @@ export const FormUi = ({
     (e: { target: { value: string } | any }) => {
       //console.log("input", input);
       // input value from the form
-      let { value } = input && input.type !== "image" ? e.target : input;
+      let { value } =
+        input && input.type !== "image" && input.type !== "video"
+          ? e.target
+          : input;
       //e && e.target ? e.target : input && input.value ? input.value : null;
 
       //process validation
@@ -229,15 +234,17 @@ export const FormUi = ({
       if (input.dependentController && input.dependentController.length > 0) {
         fields.forEach((checkDependent) => {
           /* console.log("checkDependent", checkDependent);
-          console.log("input.dependentController", input.dependentController); */
+          console.log("input.dependentController", input.dependentController);
+          console.log("referencedField", e.target.id); */
           if (
             checkDependent.dependent &&
             checkDependent.dependent.id &&
             input.dependentController?.includes(checkDependent.id)
           ) {
             //console.log("eeeee", e);
-            //dependentField(fields, checkDependent, handleInputData, referencedField);
+            //dependentField(id, fields, checkDependent, handleInputData, referencedField);
             dependentField(
+              id, //parentFormId
               fields,
               checkDependent,
               handleInputData,
@@ -270,13 +277,13 @@ export const FormUi = ({
         const thisFile = e.target && e.target.files && e.target.files[0];
         //console.log("thisFile", thisFile);
         //console.log("thisFile", URL.createObjectURL(thisFile));
-        let imagePreview: Element | null | any = document.querySelector(
+        let filePreview: Element | null | any = document.querySelector(
           `#${input.id}-preview`
         );
         if (thisFile) {
-          if (imagePreview) {
+          if (filePreview) {
             let thisFilePreviewUrl = URL.createObjectURL(thisFile);
-            imagePreview["src"] = thisFilePreviewUrl;
+            filePreview["src"] = thisFilePreviewUrl;
           }
           importedData.set(input.name, thisFile);
         } else if (importedData.has(input.name)) {
@@ -296,10 +303,10 @@ export const FormUi = ({
         if (value) {
           importedData.set(input.name, value);
         } else if (!value && importedData.has(input.name)) {
-          if (input.type === "image") {
-            let imageFieldName = input.name.split("[image]")[0];
-            if (importedData.has(imageFieldName + "[title]"))
-              importedData.delete(imageFieldName + "[title]");
+          if (input.type === "image" || input.type === "video") {
+            let mediaFieldName = input.name.split(`[${input.type}]`)[0];
+            if (importedData.has(mediaFieldName + "[title]"))
+              importedData.delete(mediaFieldName + "[title]");
           }
           importedData.delete(input.name);
         }
@@ -416,18 +423,25 @@ export const FormUi = ({
           // check per dependency condition on another field
           //dependentCondition = { attribute: boolean.toString() }
           let dependentCondition: any = field["dependent"]
-            ? dependentField(fields, field)
+            ? dependentField(
+                id, //parentFormId
+                fields,
+                field
+              )
             : null;
           /* console.log("dependentCondition", dependentCondition); */
           return (
             <div
               id={"form-item-container-" + field.id}
               className={
-                dependentCondition &&
+                "parent-form-" +
+                id +
+                "-item" +
+                (dependentCondition &&
                 dependentCondition.visible &&
                 dependentCondition.visible !== "true"
-                  ? "hidden"
-                  : ""
+                  ? " hidden"
+                  : "")
               }
               key={index}
             >
@@ -454,7 +468,7 @@ export const FormUi = ({
                 className={"form-item form-item-" + field.type}
               >
                 <label
-                  htmlFor={field.id}
+                  //htmlFor={field.id}
                   className={
                     "form-label" + (labelStyling ? " " + inputStyling : "")
                   }
@@ -483,7 +497,8 @@ export const FormUi = ({
                         : undefined,
                     })}
                     className={
-                      "form-input" +
+                      "form-input parent-form-" +
+                      id +
                       (field.styling ? " " + field.styling : "") +
                       (inputStyling ? " " + inputStyling : "")
                     }
@@ -536,7 +551,8 @@ export const FormUi = ({
                           : undefined,
                       })}
                       className={
-                        "form-input" +
+                        "form-input parent-form-" +
+                        id +
                         (field.styling ? " " + field.styling : "") +
                         (inputStyling ? " " + inputStyling : "")
                       }
@@ -556,10 +572,22 @@ export const FormUi = ({
                     handleInputData={handleInputData}
                     required={field.required ? true : false}
                   />
+                ) : field.type && field.type === "video" ? (
+                  <VideoUi
+                    id={field.id}
+                    //name={field.id + "[uuid]"}
+                    name={field.id}
+                    defaultValue={
+                      field.defaultValue ? field.defaultValue : null
+                    }
+                    formData={thisFormData}
+                    handleInputData={handleInputData}
+                    required={field.required ? true : false}
+                  />
                 ) : field.type && field.type === "textarea" ? (
                   <textarea
                     id={field.id}
-                    name={field.id}
+                    //name={field.id}
                     onChange={handleInputData({
                       id: field.id,
                       name: field.id,
@@ -569,7 +597,8 @@ export const FormUi = ({
                         : undefined,
                     })}
                     className={
-                      "form-input" +
+                      "form-input parent-form-" +
+                      id +
                       (field.styling ? " " + field.styling : "") +
                       (inputStyling ? " " + inputStyling : "")
                     }
@@ -617,7 +646,8 @@ export const FormUi = ({
                                   : undefined,
                               })}
                               className={
-                                "form-input" +
+                                "form-input parent-form-" +
+                                id +
                                 (field.styling ? " " + field.styling : "")
                               }
                               type={"radio"}
@@ -668,7 +698,8 @@ export const FormUi = ({
                             : undefined,
                         })}
                         className={
-                          "form-input" +
+                          "form-input parent-form-" +
+                          id +
                           (field.styling ? " " + field.styling : "")
                         }
                         type={"checkbox"}
@@ -722,7 +753,8 @@ export const FormUi = ({
                         : undefined,
                     })}
                     className={
-                      "form-input" +
+                      "form-input parent-form-" +
+                      id +
                       (field.styling ? " " + field.styling : "") +
                       (inputStyling ? " " + inputStyling : "")
                     }
@@ -796,7 +828,8 @@ export const FormUi = ({
                                   : undefined,
                               })}
                               className={
-                                "form-input" +
+                                "form-input parent-form-" +
+                                id +
                                 (field.styling ? " " + field.styling : "")
                               }
                               type={field.type}
@@ -871,7 +904,8 @@ export const FormUi = ({
                         : undefined,
                     })}
                     className={
-                      "form-input" +
+                      "form-input parent-form-" +
+                      id +
                       (field.styling ? " " + field.styling : "") +
                       (inputStyling ? " " + inputStyling : "")
                     }
@@ -984,10 +1018,10 @@ export const FormUi = ({
   //to mitigate Form in Form nesting where possible
   return nested
     ? React.createElement(
-        "div",
+        "div", //div container as form auto indicates it as a nested form
         {
           id: id,
-          className: "form-ui" + (className ? " " + className : ""),
+          className: "form-ui nested-form" + (className ? " " + className : ""),
         },
         returnOutput
       )

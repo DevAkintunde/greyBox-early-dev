@@ -13,7 +13,6 @@ import {
 import * as formValidator from "../../../validators/pageFormValidator.js";
 import * as pageController from "../../../controllers/page.controller.js";
 import sequelize from "../../../config/db.config.js";
-import { mediaUpload } from "../../../middlewares/operations/mediaUpload.js";
 
 import Router from "@koa/router";
 import { aliasInjector } from "../../../middlewares/operations/aliasInjector.js";

@@ -4,7 +4,7 @@ import {
   OK,
   SERVER_ERROR,
 } from "../../../../constants/statusCodes.js";
-import { mediaUpload } from "../../../../middlewares/operations/mediaUpload.js";
+import { imageUpload } from "../../../../middlewares/operations/imageUpload.js";
 import { urlQueryTranslator } from "../../../../middlewares/urlQueryTranslator.js";
 import * as mediaController from "../../../../controllers/media.controller.js";
 import * as mediaFormValidator from "../../../../validators/mediaFormValidator.js";
@@ -51,7 +51,7 @@ router.post(
   },
   aliasInjector,
   mediaFormValidator.uploadImage,
-  mediaUpload,
+  imageUpload,
   mediaController.upload,
   (ctx) => {
     if (ctx.state.error) {
@@ -138,7 +138,7 @@ router.patch(
   },
   aliasInjector,
   mediaFormValidator.updateImage,
-  mediaUpload,
+  imageUpload,
   mediaController.updateItem,
   async (ctx, next) => {
     await next();

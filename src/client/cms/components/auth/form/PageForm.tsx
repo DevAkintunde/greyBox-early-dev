@@ -65,6 +65,12 @@ export const PageForm = ({
         id: "status",
         options: statuses,
       },
+      {
+        type: 'video',
+        label: "Video field test",
+        id: "video",
+        weight: 8,
+      },
     ];
     const formFields = FormFields({ filter: "full", custom: statusesField });
     if (updateForm) {

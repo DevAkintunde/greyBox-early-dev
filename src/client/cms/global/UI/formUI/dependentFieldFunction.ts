@@ -45,6 +45,7 @@ interface Fields {
 ]; */
 
 export const dependentField = (
+  parentFormId: string,
   fields: Fields[],
   field: any,
   handleInputData?: any,
@@ -69,9 +70,7 @@ export const dependentField = (
     if (referenceField) {
       let referenceCheckTrue: boolean;
       if (handleInputData) {
-        let referenceCurrentField = referencedField
-          ? document.querySelector(`#${referencedField}`)
-          : document.querySelector(`#form-item-${referenceField.id} input`);
+        let referenceCurrentField = document.querySelector(`#form-item-${referenceField.id} input.parent-form-${parentFormId}`);
         let referenceCurrentValue = referenceCurrentField?.[
           "value" as keyof typeof referenceCurrentField
         ]
@@ -96,7 +95,7 @@ export const dependentField = (
 
           if (attribute === "required" || attribute === "empty") {
             let dependentFieldHandler: any = document.querySelector(
-              `#form-item-${field.id} input`
+              `#form-item-${field.id} input.parent-form-${parentFormId}`
             );
             if (dependentFieldHandler) {
               let comparer =
@@ -134,7 +133,7 @@ export const dependentField = (
             }
           } else if (attribute === "visible") {
             let dependentFieldHandler = document.querySelector(
-              `#form-item-container-${field.id}`
+              `#form-item-container-${field.id}.parent-form-${parentFormId}-item`
             );
             let comparer =
               referenceCurrentValue === field.dependent.value.toString();
@@ -155,7 +154,7 @@ export const dependentField = (
             }
           } else if (attribute === "checked") {
             let dependentFieldHandler = document.querySelectorAll(
-              `#form-item-container-${field.id} input`
+              `#form-item-container-${field.id} input.parent-form-${parentFormId}`
             );
             let handleInputDataValue = "";
             dependentFieldHandler.forEach((inputValue: any) => {
@@ -189,7 +188,7 @@ export const dependentField = (
             });
           } else if (attribute === "select") {
             let dependentFieldHandler = document.querySelectorAll(
-              `#form-item-container-${field.id} select option`
+              `#form-item-container-${field.id} select.parent-form-${parentFormId} option`
             );
             let handleInputDataValue = "";
             dependentFieldHandler.forEach((selectOption: any) => {

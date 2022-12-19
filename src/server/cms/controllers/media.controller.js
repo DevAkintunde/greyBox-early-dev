@@ -10,6 +10,7 @@ import fs from "node:fs";
 import path from "node:path";
 import Image from "../models/entities/media/Image.model.js";
 import Video from "../models/entities/media/Video.model.js";
+import VideoSource from "../models/fields/VideoSource.model.js";
 
 const resolve = (p) => path.join("public", p);
 
@@ -33,7 +34,36 @@ export const upload = async (ctx, next) => {
       });
       ctx.state.data = newMedia;
     } catch (err) {
-      logger.error(err);
+      logger.error("Media Controller, file upload: ", err);
+      ctx.state.error = err;
+    }
+    await next();
+  } else if (
+    ctx.state.entityType &&
+    ctx.state.entityType === "Video" &&
+    ctx.request.body.source &&
+    ctx.request.body.source !== "hosted"
+  ) {
+    try {
+      let { source } = ctx.request.body;
+      let checkSource;
+      if (source) {
+        checkSource = await VideoSource.findByPk(source);
+      }
+      if (!checkSource || !checkSource.dataValues) {
+        let sourceFromUrl;
+        if (ctx.request.body.path.toLowerCase().includes("/youtube")) {
+          sourceFromUrl = "youtube";
+        } else if (ctx.request.body.path.toLowerCase().includes("/vimeo")) {
+          sourceFromUrl = "vimeo";
+        }
+        ctx.request.body.source = sourceFromUrl;
+      }
+
+      let thisVideo = await sequelize.models["Video"].create(ctx.request.body);
+      ctx.state.data = thisVideo;
+    } catch (err) {
+      logger.error("Media Controller, upload: ", err);
       ctx.state.error = err;
     }
     await next();
@@ -54,7 +84,7 @@ export const viewItem = async (ctx, next) => {
       ctx.state.data = thisMedia.toJSON();
     }
   } catch (err) {
-    logger.error("Media Controller", err);
+    logger.error("Media Controller, View: ", err);
     ctx.state.error = err;
   }
   await next();
@@ -112,7 +142,7 @@ export const updateItem = async (ctx, next) => {
       ctx.state.data = updatedMedia.toJSON();
     }
   } catch (err) {
-    logger.error("Media Controller", err);
+    logger.error("Media Controller, update: ", err);
     ctx.state.error = {
       status: SERVER_ERROR,
       statusText: "Unable to remove previous media from server",
@@ -129,7 +159,8 @@ export const deleteItem = async (ctx, next) => {
     if (
       thisMedia &&
       (ctx.state.entityType === "Image" ||
-        (ctx.state.entityType === "Video" && thisMedia.source === "hosted"))
+        (ctx.state.entityType === "Video" &&
+          thisMedia.dataValues.source === "hosted"))
     ) {
       let promises = [];
       promises.push(fs.unlinkSync(resolve(thisMedia.path)));
@@ -146,7 +177,7 @@ export const deleteItem = async (ctx, next) => {
     }
     thisMedia.destroy();
   } catch (err) {
-    logger.error("Media Controller", err);
+    logger.error("Media Controller, delete: ", err);
     ctx.state.error = {
       status: err && err.status ? err.status : SERVER_ERROR,
       statusText:
@@ -178,7 +209,7 @@ export const updateAlias = async (ctx, next) => {
       };
     }
   } catch (err) {
-    logger.error("Media Controller", err);
+    logger.error("Media Controller, alias: ", err);
     ctx.state.error = {
       status: SERVER_ERROR,
       statusText: "Unable to update media alias",

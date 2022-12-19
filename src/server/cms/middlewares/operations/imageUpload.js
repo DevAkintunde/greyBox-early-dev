@@ -5,7 +5,7 @@ import { imageSizes } from "../../config/imageSizes.config.js";
 
 const __dirname = path.dirname("./");
 
-const mediaUpload = async (ctx, next) => {
+const imageUpload = async (ctx, next) => {
   let promises = [];
   let imageStyles = {};
   let mediaDumpDirFromFormidable = [];
@@ -156,4 +156,4 @@ const avatarUpload = async (ctx, next) => {
   await next();
 };
 
-export { mediaUpload, avatarUpload };
+export { imageUpload, avatarUpload };

@@ -64,7 +64,7 @@ Image.hasMany(Video, {
   foreignKey: {
     type: DataTypes.UUID,
     name: "thumbnailImage",
-    allowNull: false,
+    allowNull: true,
   },
   onDelete: "RESTRICT",
   onUpdate: "RESTRICT",
@@ -73,7 +73,7 @@ Video.belongsTo(Image, {
   foreignKey: {
     type: DataTypes.UUID,
     name: "thumbnailImage",
-    allowNull: false,
+    allowNull: true,
   },
 });
 

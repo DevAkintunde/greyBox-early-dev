@@ -12,7 +12,7 @@ import checkAccount from "../../../middlewares/accounts/checkAccount.js";
 import * as accountController from "../../../controllers/account.controller.js";
 
 import Router from "@koa/router";
-import { avatarUpload } from "../../../middlewares/operations/mediaUpload.js";
+import { avatarUpload } from "../../../middlewares/operations/imageUpload.js";
 const router = new Router({
   prefix: "/account",
 });
