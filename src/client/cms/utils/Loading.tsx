@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
-//animation styles. Ripple is default.
+//animation styles. ripple is default.
 const ripple = (
   <div className="lds-ripple text-5xl">
     <div className="border-color-pri/10 border-solid border-r-[40px]"></div>
@@ -26,30 +26,37 @@ const pulse = (
     </div>
   </div>
 );
+const throbber = (
+  <div className="p-3 bg-color-pri w-[40px] h-[40px] mx-auto rounded-full animate-ping">
+    <div className="p-1 bg-color-ter/70 w-[10px] h-[10px] mx-auto rounded-full animate-ping" />
+  </div>
+);
 
 const Loading = (props: {
-  animation?: string;
-  styling?: string;
-  message?: string;
-  disableTimeout?: boolean;
-  instantMessage?: string;
-  refresh?: boolean;
+  animation?: "throbber" | "ripple" | "pulse";
+  styling?: string; //custom styling for the loader
+  message?: string; //the message content
+  timeout?: number; //optional timeOut value
+  infinitylyLoad?: boolean; //endlessly load without displaying message by disabling timeout
+  instantMessage?: boolean; //ignore timeout and instantly display loaded message
+  refresh?: boolean; //refresh boolean for out of Ops async operations
   refreshTrigger?: any;
 }) => {
   const location = useLocation();
-  let animation = props.animation === "pulse" ? pulse : ripple;
+  let animations: any = {
+    ripple: ripple,
+    pulse: pulse,
+    throbber: throbber,
+  };
+  let animation =
+    props.animation && animations[props.animation]
+      ? animations[props.animation]
+      : animations["ripple"];
 
-  //custom styling for the loader
   const styling = props.styling;
-  //the message content
   const message = props.message;
-  //endlessly load without displaying message by disabling timeout
-  //boolean
-  const disableTimeout = props.disableTimeout;
-  //ignore timeout and instantly display loaded message
-  //boolean
+  const infinitylyLoad = props.infinitylyLoad;
   let instantMessage = props.instantMessage;
-  //refresh boolean for out of Ops async operations
   const refresher = props.refresh;
   const [content, setContent]: any = useState();
 
@@ -63,53 +70,59 @@ const Loading = (props: {
     );
     setContent(<div className="text-center">{animation}</div>);
 
-    if (!disableTimeout) {
+    if (!infinitylyLoad) {
       if (message && !instantMessage) {
-        setTimeout(() => {
-          if (isMounted) {
-            setContent(
-              <div id="loadingMessage" className="m-2 p-6">
-                {ping}
-                {message}
-                {refresher ? (
-                  <div className="text-center mt-4">
-                    <input
-                      type="button"
-                      id="triggerAsyncRefresh"
-                      value="Refresh"
-                      className="uk-button uk-button-secondary"
-                      onClick={props.refreshTrigger}
-                    />
-                  </div>
-                ) : null}
-              </div>
-            );
-          }
-        }, 30000);
+        setTimeout(
+          () => {
+            if (isMounted) {
+              setContent(
+                <div id="loadingMessage" className="m-2 p-6">
+                  {ping}
+                  {message}
+                  {refresher ? (
+                    <div className="text-center mt-4">
+                      <input
+                        type="button"
+                        id="triggerAsyncRefresh"
+                        value="Refresh"
+                        className="uk-button uk-button-secondary"
+                        onClick={props.refreshTrigger}
+                      />
+                    </div>
+                  ) : null}
+                </div>
+              );
+            }
+          },
+          props.timeout ? props.timeout : 3000
+        );
       } else if (!instantMessage) {
-        setTimeout(() => {
-          if (isMounted) {
-            setContent(
-              <div id="loadingMessage" className="m-2 p-6">
-                {ping}
-                {
-                  "Oops! Taking longer than expected. Please refresh this page to try again"
-                }
-                {refresher ? (
-                  <div className="text-center mt-4">
-                    <input
-                      type="button"
-                      id="triggerAsyncRefresh"
-                      value="Refresh"
-                      className=""
-                      onClick={props.refreshTrigger}
-                    />
-                  </div>
-                ) : null}
-              </div>
-            );
-          }
-        }, 40000);
+        setTimeout(
+          () => {
+            if (isMounted) {
+              setContent(
+                <div id="loadingMessage" className="m-2 p-6">
+                  {ping}
+                  {
+                    "Oops! Taking longer than expected. Please refresh this page to try again"
+                  }
+                  {refresher ? (
+                    <div className="text-center mt-4">
+                      <input
+                        type="button"
+                        id="triggerAsyncRefresh"
+                        value="Refresh"
+                        className=""
+                        onClick={props.refreshTrigger}
+                      />
+                    </div>
+                  ) : null}
+                </div>
+              );
+            }
+          },
+          props.timeout ? props.timeout : 3000
+        );
       } else {
         setContent(
           <div id="loadingMessage" className="m-2 p-6">
@@ -140,7 +153,7 @@ const Loading = (props: {
     refresher,
     props.refreshTrigger,
     instantMessage,
-    disableTimeout,
+    infinitylyLoad,
     animation,
   ]);
 

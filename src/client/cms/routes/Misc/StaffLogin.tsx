@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useContext } from "react";
 import { Link, Route, Routes, useNavigate } from "react-router-dom";
 import PageTitle from "../../components/blocks/PageTitle";
 import { FormUi } from "../../global/UI/formUI/FormUi";
-import { ServerHandler } from "../../global/functions/ServerHandler";
 import { Profile } from "../../global/AppFrame";
 import { PasswordResetForm } from "./PasswordResetForm";
+import { FormSubmit } from "../../global/UI/formUI/FormSubmit";
 
 export const StaffLogin = () => {
   return (
@@ -18,7 +18,7 @@ export const StaffLogin = () => {
 const SignIn = () => {
   const navigate = useNavigate();
   const { profile, setProfile }: any = useContext(Profile);
-  // form data
+  // signIn form fields
   let fields = [
     {
       type: "email",
@@ -35,58 +35,28 @@ const SignIn = () => {
     },
   ];
 
-  const [data, setData]: any = useState();
+  //redirect to signed In dashboard is user is already authenticated
   useEffect(() => {
     if (profile && profile.uuid) navigate("/auth");
   }, [navigate, profile]);
 
-  //console.log("data", data);
-
-  useEffect(() => {
-    let isMounted = true;
-    const signIn = async () => {
-      ServerHandler({
+  //submit signIn data
+  const signIn = (data: FormData) => async (e: any) => {
+    e.preventDefault();
+    let response: null | { profile: object; status: number } = await FormSubmit(
+      {
+        e: e,
+        data: data,
         endpoint: "/account/sign-in",
-        method: "POST",
-        headers: {
+        header: {
           "x-requesttoken": "session",
           "content-type": "multipart/form-data",
         },
-        body: data,
-      }).then((res) => {
-        console.log("res", res);
-        if (res.status !== 200) {
-          let submitNotice = document.getElementById("form-actions-notice");
-          if (submitNotice)
-            submitNotice.textContent = res.statusText
-              ? res.statusText
-              : "Oops! There was a problem somewhere. Please try again";
-          let button: any = document.querySelector("input.submit");
-          if (button) {
-            if (button.classList && button.classList.contains("bounce"))
-              button.classList.remove("bounce");
-            if (button["disabled"] && button["disabled"] === true)
-              button["disabled"] = false;
-          }
-        } else {
-          setProfile(res.profile);
-        }
-      });
-    };
-
-    if (data && isMounted) {
-      let button: any = document.querySelector("input.submit");
-      if (button && button.classList) button.classList.add("bounce");
-      signIn();
-      /* else {
-        if (button["disabled"] && button["disabled"] === true)
-          button["disabled"] = false;
-      } */
-    }
-    return () => {
-      isMounted = false;
-    };
-  }, [data, setProfile]);
+      }
+    );
+    //console.log("returnValue", response);
+    if (response && response.profile) setProfile(response.profile);
+  };
 
   return (
     <>
@@ -95,16 +65,16 @@ const SignIn = () => {
         <FormUi
           id="staffLogin"
           fields={fields}
-          formData={(data: FormData) => setData(data)}
-          /* buttons={[
+          //retrieveFormData={(data: FormData) => setData(data)}
+          buttons={[
             {
-              value: "Upload",
+              value: "Sign In",
               weight: 1,
               styling: "p-3 mx-auto",
               submit: true,
-              action: () => setData(data),
+              action: signIn,
             },
-          ]} */
+          ]}
           className="max-w-screen-sm"
         />
         <Link

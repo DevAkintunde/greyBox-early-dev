@@ -18,7 +18,7 @@ export const AuthRouter = () => {
   useEffect(() => {
     if (profile && profile.status === false) navigate("/");
   }, [navigate, profile]);
-
+ 
   return (
     <Routes>
       <Route path={"/"} index element={<Dashboard />} />

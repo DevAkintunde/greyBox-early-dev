@@ -201,7 +201,7 @@ export const PageForm = ({
 
   let buttons = [
     {
-      value: "Upload",
+      value: "Submit",
       weight: 1,
       styling: "p-3 mx-auto",
       submit: true,
@@ -224,7 +224,7 @@ export const PageForm = ({
       ) : (
         <Loading
           message={notOkResponse}
-          disableTimeout={notOkResponse ? true : false}
+          infinitylyLoad={notOkResponse ? true : false}
         />
       )}
     </>

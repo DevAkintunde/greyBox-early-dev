@@ -1,4 +1,10 @@
-import React, { ReactElement, useEffect, useState } from "react";
+import React, {
+  ReactElement,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import validator from "validator";
 import { APP_ADDRESS } from "../../../utils/app.config";
 import { dependentField } from "./dependentFieldFunction";
@@ -40,12 +46,16 @@ interface Fields {
 // either as array strings or array objects. when using objects, 'key|value' keys must always be available
 //{"form-item-notice-" + field.id} can be used as per field error or extra description insert
 
+// - retrieveFormData function should only optionally be used for limited fields
+// -- except new field values are returned to form after initial submission.
+// -- Else previous values are not kept in states.
+
 interface FormProps {
   id: string;
   containers?: object;
   fields: Fields[];
-  formData?: Function; //this is ignored when there's a button on the form
-  buttons?: FormButtons[]; //either buttons or formData should be available to retrieve data
+  retrieveFormData?: Function; //this is ignored when there's a button on the form
+  buttons?: FormButtons[]; //either buttons or retrieveFormData should be available to retrieve data
   labelStyling?: string;
   inputStyling?: string;
   className?: string;
@@ -86,7 +96,7 @@ export const FormUi = ({
   id,
   containers,
   fields,
-  formData,
+  retrieveFormData,
   buttons,
   labelStyling,
   inputStyling,
@@ -94,8 +104,6 @@ export const FormUi = ({
   nested,
 }: FormProps) => {
   const [thisFormData, setThisFormData]: FormData | any = useState();
-  //dependent fields processor
-
   //re-render initial form field values if form default changes...
   //like on entity edit form where field values may be imported from server.
   const [rerenderInitialValues, setRerenderInitialValues]: boolean | any =
@@ -113,7 +121,7 @@ export const FormUi = ({
           /* let dependentCondition: any = field["dependent" as keyof typeof field]
             ? dependentField(fields, field, "defaultValue")
             : null; */
-          // check If a Dependent field
+          // check if field is a Dependent field
           field["dependent" as keyof typeof field] &&
             fields.forEach((checkController) => {
               if (
@@ -163,7 +171,7 @@ export const FormUi = ({
       }
     }
   }, [fields, rerenderInitialValues, thisFormData]);
-  //monitor field changes
+  //monitor field changes and activate re-render
   useEffect(() => {
     let isMounted = true;
     if (isMounted) setRerenderInitialValues(true);
@@ -355,11 +363,11 @@ export const FormUi = ({
       }
     });
 
-  //submit form button when no button is imported
+  //auto insert a submit button in from when no button is imported
   const submitForm = (input: FormData) => (e: any) => {
     e.preventDefault();
     e.target.disabled = true;
-    if (formData) formData(input);
+    if (retrieveFormData) retrieveFormData(input);
   };
   //form button(s)
   let Buttons: FormButtons[] | any[] = buttons ? buttons : [];
@@ -372,11 +380,13 @@ export const FormUi = ({
     });
   }
   //console.log("buttons", buttons);
-  if (Buttons.length > 0)
+  //sort buttons by increasing weight
+  if (Buttons.length > 1)
     Buttons.sort(
       (a, b) => a["weight" as keyof typeof a] - b["weight" as keyof typeof a]
     );
 
+  //containers allow to group and sort fields by weight
   let Containers: object[] | any[] = [];
   Object.keys(containersWithDefault).forEach((id) => {
     if (

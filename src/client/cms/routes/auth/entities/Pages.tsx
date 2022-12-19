@@ -114,9 +114,9 @@ const ViewPages = () => {
                       <td className="table-cell">
                         {entity.created !== entity.updated
                           ? dateFormatter({
-                              date: entity.updated,
-                              format: "timeago",
-                            })
+                            date: entity.updated,
+                            format: "timeago",
+                          })
                           : "-"}
                       </td>
                     </tr>
@@ -152,7 +152,7 @@ const CreatePage = () => {
         //updateForm={true}
         id={"pageCreationForm"}
         callback={(res: any) => callbackAction(res)}
-        //setTitle={true}
+      //setTitle={true}
       />
     </>
   );

@@ -1,6 +1,7 @@
 //import and define custom database Models defined in App
 //define routes
 import Router from "@koa/router";
+import { default as appRoutesIndex } from "./app/routes/index.js";
 
 /* Models */
 export const ModelMapper = {
@@ -10,10 +11,6 @@ export const ModelMapper = {
 const router = new Router({
   prefix: "/app",
 });
-
-// pages entity routes
-router.get('/', async(ctx, next)=>{
-    console.log('we are here')
-});
+router.use(appRoutesIndex.routes())
 
 export default router;

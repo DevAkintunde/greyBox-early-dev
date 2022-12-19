@@ -4,7 +4,7 @@ import { Video } from "../../../../components/Video";
 import FileUploadForm from "../../../../components/auth/form/FileUploadForm";
 import { APP_ADDRESS } from "../../../../utils/app.config";
 import { ServerHandler } from "../../../functions/ServerHandler";
-import { Throbber } from "../../../../components/blocks/Throbber";
+import Loading from "../../../../utils/Loading";
 
 export const VideoUi = ({
   defaultValue,
@@ -121,7 +121,7 @@ export const VideoUi = ({
 
   return (
     <div id="video-ui">
-      <div id="viewer">{view ? view : <Throbber />}</div>
+      <div id="viewer">{view ? view : <Loading animation="throbber" />}</div>
       <div id="video-ui-buttons">
         <input
           type="button"
@@ -271,7 +271,7 @@ const VideoLibrary = ({
   };
 
   return library && !library.video ? (
-    <Throbber />
+    <Loading animation="throbber" />
   ) : library && library.video && library.video.length > 0 ? (
     <>
       <div className="grid grid-cols-4">
@@ -321,7 +321,7 @@ const VideoLibrary = ({
       />
     </>
   ) : (
-    <div>No video found in library</div>
+    <Loading animation="throbber" message="No video found in library" />
   );
 };
 

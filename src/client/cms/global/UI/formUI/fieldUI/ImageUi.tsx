@@ -4,7 +4,7 @@ import { Image } from "../../../../components/Image";
 import FileUploadForm from "../../../../components/auth/form/FileUploadForm";
 import { APP_ADDRESS } from "../../../../utils/app.config";
 import { ServerHandler } from "../../../functions/ServerHandler";
-import { Throbber } from "../../../../components/blocks/Throbber";
+import Loading from "../../../../utils/Loading";
 
 export const ImageUi = ({
   defaultValue,
@@ -121,7 +121,7 @@ export const ImageUi = ({
 
   return (
     <div id="image-ui">
-      <div id="viewer">{view ? view : <Throbber />}</div>
+      <div id="viewer">{view ? view : <Loading animation="throbber" />}</div>
       <div id="image-ui-buttons">
         <input
           type="button"
@@ -208,7 +208,8 @@ const ImagePreview = ({
       ) : null}
     </>
   ) : (
-    <span id={"image-previewer"}>Add an Image</span>
+    <Loading instantMessage={true} message="Add an Image" />
+    /* <span id={"image-previewer"}></span> */
   );
 };
 
@@ -229,7 +230,9 @@ const ImageLibrary = ({
   useEffect(() => {
     let isMounted = true;
     ServerHandler("/auth/media/images").then((res) => {
-      if (isMounted && res.status === 200) setLibrary(res.data);
+      setTimeout(() => {
+        if (isMounted && res.status === 200) setLibrary(res.data);
+      }, 2000);
     });
     return () => {
       isMounted = false;
@@ -270,7 +273,7 @@ const ImageLibrary = ({
   };
 
   return library && !library.image ? (
-    <Throbber />
+    <Loading animation="throbber" />
   ) : library && library.image && library.image.length > 0 ? (
     <>
       <div className="grid grid-cols-4">
@@ -327,7 +330,7 @@ const ImageLibrary = ({
       />
     </>
   ) : (
-    <div>No image found in library</div>
+    <Loading animation="throbber" message="No image found in library" />
   );
 };
 

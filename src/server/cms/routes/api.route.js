@@ -6,8 +6,6 @@ import { default as routes } from "./api/index.js";
 import path from "node:path";
 import serve from "koa-static-server";
 import { NOT_ACCEPTABLE } from "../constants/statusCodes.js";
-//import routes defined the extended App
-import { default as importAppExtendedRoutes } from "../../appRoute.js";
 
 const router = new Router();
 const __dirname = path.dirname("./");
@@ -79,7 +77,6 @@ router
 
     await next();
   })
-  .use(routes.routes())
-  .use(importAppExtendedRoutes.routes());
+  .use(routes.routes());
 
 export default router;

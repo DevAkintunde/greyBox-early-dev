@@ -8,13 +8,13 @@ import {
   useParams,
 } from "react-router-dom";
 import PageTitle from "../../../components/blocks/PageTitle";
-import { Throbber } from "../../../components/blocks/Throbber";
 import { Image } from "../../../components/Image";
 import { ServerHandler } from "../../../global/functions/ServerHandler";
 import FileUploadForm from "../../../components/auth/form/FileUploadForm";
 import { Video } from "../../../components/Video";
 import { FormUi } from "../../../global/UI/formUI/FormUi";
 import { DeleteEntity } from "../../../components/auth/functionComponents/DeleteEntity";
+import Loading from "../../../utils/Loading";
 
 //view all page entities
 
@@ -185,7 +185,7 @@ const ViewTypeMedia = ({ type }: { type: string }) => {
           )}
         </>
       ) : (
-        <Throbber />
+        <Loading animation="throbber" infinitylyLoad={true} />
       )}
     </>
   );
