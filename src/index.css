@@ -1,4 +1,4 @@
-@import "./client/cms/cms.css";
+@import "./client/_cms/cms.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -18,7 +18,7 @@
     @apply max-w-[1280px] mx-auto h-screen bg-color-def text-color-sec text-sm;
   }
   .app-container {
-    @apply w-[90%] sm:w-[80%] lg:w-[70%] mx-auto mt-32 drop-shadow-2xl shadow-md shadow-color-ter;
+    @apply w-full pod:w-[90%] sm:w-[80%] lg:w-[70%] mx-auto mt-24 pod:mt-28 md:mt-32;
   }
   main {
     @apply mx-auto;

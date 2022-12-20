@@ -1,4 +1,4 @@
-import sequelize from "../../../cms/config/db.config.js";
+import sequelize from "../../../_cms/config/db.config.js";
 import { DataTypes, Model, Deferrable } from "sequelize";
 
 /* let ServiceTypes = [

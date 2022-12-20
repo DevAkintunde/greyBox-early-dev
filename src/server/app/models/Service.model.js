@@ -1,10 +1,10 @@
-import sequelize from "../../cms/config/db.config.js";
+import sequelize from "../../_cms/config/db.config.js";
 import { DataTypes, Model, Deferrable } from "sequelize";
-import Admin from "../../cms/models/entities/accounts/Admin.model.js";
-import Paragraph from "../../cms/models/entities/paragraphs/Paragraph.model.js";
-import Image from "../../cms/models/entities/media/Image.model.js";
+import Admin from "../../_cms/models/entities/accounts/Admin.model.js";
+import Paragraph from "../../_cms/models/entities/paragraphs/Paragraph.model.js";
+import Image from "../../_cms/models/entities/media/Image.model.js";
 import ServiceType from "./fields/ServiceType.model.js";
-import Status from "../../cms/models/fields/EntityStatus.model.js";
+import Status from "../../_cms/models/fields/EntityStatus.model.js";
 
 class Service extends Model {}
 

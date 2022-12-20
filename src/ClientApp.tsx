@@ -1,9 +1,9 @@
 import { Route, Routes } from "react-router-dom";
-import MainNav from "./client/cms/regions/nav/MainNav";
-import { Router } from "./client/cms/routes/Router";
-import AppFrame from "./client/cms/global/AppFrame";
+import MainNav from "./client/_cms/regions/nav/MainNav";
+import { Router } from "./client/_cms/routes/Router";
+import AppFrame from "./client/_cms/global/AppFrame";
 import bgImage from "./assets/lens-contour2.png";
-import QuickButtons from "./client/cms/regions/nav/QuickButtons";
+import QuickButtons from "./client/_cms/regions/nav/QuickButtons";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -11,7 +11,7 @@ import "react-toastify/dist/ReactToastify.css";
 //import.meta.env.SSR
 
 const PagePathsWithComponents: object = import.meta.glob(
-  "./client/cms/routes/public/*.tsx",
+  "./client/_cms/routes/public/*.tsx",
   { eager: true }
 );
 
@@ -24,7 +24,7 @@ interface ThisRoute {
 let routes: ThisRoute[] = Object.keys(PagePathsWithComponents).map(
   (path: string) => {
     let nameHolder = path.match(
-      /\.\/client\/cms\/routes\/public\/(.*)\.tsx$/
+      /\.\/client\/_cms\/routes\/public\/(.*)\.tsx$/
     )![1];
     let nameWeight = nameHolder.split("_");
     let thisPath =

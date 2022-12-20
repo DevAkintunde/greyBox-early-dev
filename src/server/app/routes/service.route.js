@@ -1,9 +1,9 @@
 // pages routes
 
-import { urlQueryTranslator } from "../../cms/middlewares/urlQueryTranslator.js";
+import { urlQueryTranslator } from "../../_cms/middlewares/urlQueryTranslator.js";
 import Service from "../models/Service.model.js";
 import Router from "@koa/router";
-import { OK, NOT_FOUND } from "../../cms/constants/statusCodes.js";
+import { OK, NOT_FOUND } from "../../_cms/constants/statusCodes.js";
 
 const router = new Router({
     prefix: '/service'
