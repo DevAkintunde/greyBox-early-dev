@@ -14,6 +14,10 @@ export const UpdateEntityAlias = ({
   const navigate = useNavigate();
   const location = useLocation();
   const [newAlias, setNewAlias]: any = useState();
+  //the destion endpoint on server
+  let methodEndpoint = location.pathname.includes("/admin")
+    ? location.pathname.split("/admin")[1]
+    : location.pathname;
 
   const doSubmit = (e: any) => {
     e.preventDefault();
@@ -22,7 +26,7 @@ export const UpdateEntityAlias = ({
       e.target.classList.add("bounce");
 
     ServerHandler({
-      endpoint: location.pathname,
+      endpoint: methodEndpoint,
       method: "patch",
       body: { alias: newAlias },
     }).then((res) => {
@@ -44,7 +48,7 @@ export const UpdateEntityAlias = ({
         if (destination) {
           navigate(destination);
         } else {
-          navigate("/auth/pages/" + res.data.alias);
+          navigate("/admin/auth/pages/" + res.data.alias);
         }
       }
     });

@@ -11,9 +11,7 @@ import {
   NOT_FOUND,
 } from "../constants/statusCodes.js";
 import { OTPcode } from "../functions/OTPcode.js";
-import { markForDeletion } from "../functions/markForDeletion.js";
-// models
-import Admin from "../models/entities/accounts/Admin.model.js";
+import { getOffsetTimestamp } from "../functions/getOffsetTimestamp.js";
 // modules
 import bcrypt from "bcryptjs";
 import fs from "node:fs";
@@ -111,7 +109,7 @@ export const resetPassword = async (ctx) => {
     });
     if (user) {
       let code = OTPcode();
-      let deletionDate = markForDeletion(1);
+      let deletionDate = getOffsetTimestamp(1);
       const thisOtp = await OTP.create({
         code: code,
         ref: "Admin user",
@@ -125,11 +123,12 @@ export const resetPassword = async (ctx) => {
       ctx.status = OK;
       return (ctx.body = {
         status: OK,
-        statusText: "Password was reset",
+        statusText: "Password reset successful",
       });
     }
     ctx.status = NOT_FOUND;
-    ctx.message = "User account does not exist.";
+    ctx.message =
+      "Oops! The email looks incorrect. Please verify the email and try again.";
     return;
   } catch (err) {
     ctx.status = SERVER_ERROR;
@@ -206,7 +205,7 @@ export const createAccount = async (ctx, next) => {
   const { password } = ctx.request.body;
   const hashedPassword = hash(password.trim());
   // set account for deletion if unverified after 1 days (24hrs).
-  const setForUnverfiedDeletion = markForDeletion(1);
+  const setForUnverfiedDeletion = getOffsetTimestamp(1);
   try {
     const newUser = await sequelize.models[ctx.state.userType].create({
       ...ctx.request.body,
@@ -215,19 +214,19 @@ export const createAccount = async (ctx, next) => {
     });
     // check if user exists in the database now!
     //console.log(newUser instanceof Account); // true
-    console.log("newUser: ", newUser.toJSON());
+    //console.log("newUser: ", newUser.toJSON());
     if (newUser && newUser.email) {
       let code = OTPcode();
-      let otpDeletionDate = markForDeletion(1);
+      let otpDeletionDate = getOffsetTimestamp(1);
       const thisOtp = await OTP.create({
         code: code,
-        ref: ctx.state.userType + " account",
+        ref: ctx.state.userType + " account creation",
         id: newUser.dataValues.email,
         markForDeletionBy: otpDeletionDate,
         log: "New account creation",
       });
       if (thisOtp instanceof OTP) {
-        console.log("thisOtp: ", thisOtp.toJSON());
+        //console.log("thisOtp: ", thisOtp.toJSON());
         // implement Email sending feature here!!
       }
       ctx.state.newUser = newUser;

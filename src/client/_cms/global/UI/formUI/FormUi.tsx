@@ -1,16 +1,10 @@
-import React, {
-  ReactElement,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import React, { ReactElement, useEffect, useState } from "react";
 import validator from "validator";
 import { APP_ADDRESS } from "../../../utils/app.config";
 import { dependentField } from "./dependentFieldFunction";
-import { ImageUi } from "./fieldUI/ImageUi";
 import { ParagraphUI } from "./fieldUI/ParagraphUI";
-import { VideoUi } from "./fieldUI/VideoUi";
+import imagePlaceholder from "../../../../../assets/image_placeholder.svg";
+import { MediaUi } from "./fieldUI/MediaUi";
 
 interface FormButtons {
   value?: string;
@@ -279,17 +273,65 @@ export const FormUi = ({
         const thisFile = e.target && e.target.files && e.target.files[0];
         //console.log("thisFile", thisFile);
         //console.log("thisFile", URL.createObjectURL(thisFile));
+        /* Input file type preview generator */
         let filePreview: Element | null | any = document.querySelector(
           `#${input.id}-preview`
         );
+        let uploadLabel: Element | undefined;
+        filePreview &&
+          filePreview?.parentNode.childNodes.forEach((child: any) => {
+            if (child.tagName === "BUTTON") uploadLabel = child;
+          });
         if (thisFile) {
           if (filePreview) {
             let thisFilePreviewUrl = URL.createObjectURL(thisFile);
-            filePreview["src"] = thisFilePreviewUrl;
+            if (thisFile.type.includes("image/")) {
+              filePreview.innerHTML = `<span><img
+                  src=${thisFilePreviewUrl}
+                  alt="preview"
+                  style="width:320px"
+                />
+                <label  style="max-width:320px">${thisFile.name}</label>
+                </span>`;
+            } else if (thisFile.type.includes("video/")) {
+              filePreview.innerHTML = `<span><video width='320' controls>
+                <source src=${thisFilePreviewUrl} type=${thisFile.type} />
+                Browser does not support Video Tag
+                </video>
+                <label  style="max-width:320px">${thisFile.name}</label>
+                </span>`;
+            }
           }
           importedData.set(input.name, thisFile);
+          if (uploadLabel) uploadLabel.textContent = "Change media";
         } else if (importedData.has(input.name)) {
+          //extract media path saved in div container as 'data-default-field-value'
+          if (filePreview) {
+            let mediaDefault: string | "" = "";
+            if (filePreview.dataset && filePreview.dataset.defaultFieldValue) {
+              let mediaPath = filePreview.dataset.defaultFieldValue;
+              mediaDefault = mediaPath.includes("/images/")
+                ? ` <span>
+                  <img
+                    src=${APP_ADDRESS + "/" + mediaPath}
+                    alt=""
+                    style="width:320px"
+                  />
+                </span>`
+                : mediaPath.includes("/videos/")
+                ? `<span>
+                  <video width='320' controls>
+                    <source src=${APP_ADDRESS + "/" + mediaPath} type="wepM" />
+                    <source src=${APP_ADDRESS + "/" + mediaPath} type="mp4" />
+                    Browser does not support Video Tag
+                  </video>
+                </span>`
+                : "";
+            }
+            filePreview.innerHTML = mediaDefault;
+          }
           importedData.delete(input.name);
+          if (uploadLabel) uploadLabel.textContent = "Add media";
         }
       } else if (input.type === "boolean") {
         if (
@@ -469,13 +511,14 @@ export const FormUi = ({
                 id={"form-item-" + field.id}
                 className={"form-item form-item-" + field.type}
               >
-                <label
-                  htmlFor={field.id + "-" + id}
-                >
-                  <span 
-                  className={
-                    "form-label" + (labelStyling ? " " + inputStyling : "")
-                  }>{field.label}</span>
+                <label htmlFor={field.id + "-" + id}>
+                  <span
+                    className={
+                      "form-label" + (labelStyling ? " " + inputStyling : "")
+                    }
+                  >
+                    {field.label}
+                  </span>
                   {field.type &&
                   (field.type === "password" ||
                     field.type === "email" ||
@@ -529,18 +572,42 @@ export const FormUi = ({
                         "file-container " + field.id + "-file-container"
                       }
                     >
-                      {field.defaultValue ? (
-                        <img
-                          id={field.id + "-preview"}
-                          src={APP_ADDRESS + "/" + field.defaultValue}
-                          alt="preview"
-                          style={{ width: "100px" }}
-                        />
-                      ) : null}
+                      <div
+                        id={field.id + "-preview"}
+                        data-default-field-value={
+                          field.defaultValue ? field.defaultValue : ""
+                        }
+                      >
+                        {field.defaultValue ? (
+                          field.defaultValue.includes("/images/") ? (
+                            <span>
+                              <img
+                                src={APP_ADDRESS + "/" + field.defaultValue}
+                                alt=""
+                                className="max-w-[320px]"
+                              />
+                            </span>
+                          ) : field.defaultValue.includes("/videos/") ? (
+                            <span>
+                              <video className="max-w-[320px]" controls>
+                                <source
+                                  src={APP_ADDRESS + "/" + field.defaultValue}
+                                  type="wepM"
+                                />
+                                <source
+                                  src={APP_ADDRESS + "/" + field.defaultValue}
+                                  type="mp4"
+                                />
+                                Browser does not support Video Tag
+                              </video>
+                            </span>
+                          ) : null
+                        ) : null}
+                      </div>
                       <input
                         id={field.id + "-" + id}
                         name={field.id}
-                        accept="image/png, image/jpeg"
+                        accept="image/png, image/jpeg, image/webP video/mp4, video/webM"
                         //onChange={imageUpload(field.id + "--preview")}
                         /* onChange={(e) => {
                         console.log(URL.createObjectURL(e.target.files[0]));
@@ -553,18 +620,29 @@ export const FormUi = ({
                             ? field.dependentController
                             : undefined,
                         })}
-                        className={
-                          "form-input parent-form-" +
-                          id +
-                          (field.styling ? " " + field.styling : "") +
-                          (inputStyling ? " " + inputStyling : "")
-                        }
+                        className={"form-input parent-form-" + id}
                         type="file"
                         required={field.required ? true : false}
                       />
+                      <button
+                        type="button"
+                        className={
+                          (field.required ? "required" : "") +
+                          (field.styling ? " " + field.styling : "") +
+                          (inputStyling ? " " + inputStyling : "")
+                        }
+                        onClick={() => {
+                          let input: HTMLElement | null =
+                            document.querySelector(`#${field.id + "-" + id}`);
+                          input?.click();
+                        }}
+                      >
+                        {field.defaultValue ? "Change media" : "Add media"}
+                      </button>
                     </span>
                   ) : field.type && field.type === "image" ? (
-                    <ImageUi
+                    <MediaUi
+                      type="image"
                       id={field.id}
                       //name={field.id + "[uuid]"}
                       name={field.id}
@@ -576,7 +654,8 @@ export const FormUi = ({
                       required={field.required ? true : false}
                     />
                   ) : field.type && field.type === "video" ? (
-                    <VideoUi
+                    <MediaUi
+                      type="video"
                       id={field.id}
                       //name={field.id + "[uuid]"}
                       name={field.id}

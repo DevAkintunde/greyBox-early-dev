@@ -10,11 +10,11 @@ import {
 import PageTitle from "../../../regions/PageTitle";
 import { Image } from "../../../components/Image";
 import { ServerHandler } from "../../../global/functions/ServerHandler";
-import FileUploadForm from "../../../components/auth/form/FileUploadForm";
 import { Video } from "../../../components/Video";
 import { FormUi } from "../../../global/UI/formUI/FormUi";
 import { DeleteEntity } from "../../../components/auth/functionComponents/DeleteEntity";
 import Loading from "../../../utils/Loading";
+import FileUploadUi from "../../../global/UI/formUI/FileUploadUi";
 
 //view all page entities
 
@@ -82,6 +82,8 @@ const ViewAllMedia = () => {
       isMounted = false;
     };
   }, []);
+
+  console.log("entities", entities);
   return (
     <>
       <PageTitle title="Media" />
@@ -103,7 +105,14 @@ const ViewAllMedia = () => {
                 })}
               </div>
             </div>
-          ) : null}
+          ) : (
+            <div className="text-center">
+              <span>There are currently no image uploaded.</span>
+              <Link to={"/admin/auth/media/add/image"} className="button-pri">
+                Add new image
+              </Link>
+            </div>
+          )}
           {entities.video && entities.video.length > 0 ? (
             <div>
               <h2>Videos</h2>
@@ -120,9 +129,16 @@ const ViewAllMedia = () => {
                 })}
               </div>
             </div>
-          ) : null}
+          ) : (
+            <div className="text-center">
+              <span>There are currently no video uploaded.</span>
+              <Link to={"/admin/auth/media/add/video"} className="button-pri">
+                Add new video
+              </Link>
+            </div>
+          )}
         </div>
-      ) : null}{" "}
+      ) : null}
     </>
   );
 };
@@ -138,12 +154,15 @@ const ViewTypeMedia = ({ type }: { type: string }) => {
         accept: "application/json",
       },
     }).then((res) => {
-      console.log("res", res);
       if (res.status !== 200) {
         console.log(res);
         //setEntities([res.statusText]);
       } else {
-        if (isMounted) setEntities(res.data[type]);
+        if (isMounted && res.data[type]) {
+          setEntities(res.data[type]);
+        } else {
+          setEntities([]);
+        }
       }
     });
     return () => {
@@ -151,7 +170,7 @@ const ViewTypeMedia = ({ type }: { type: string }) => {
     };
   }, [type]);
 
-  console.log(entities);
+  //console.log(entities);
   return (
     <>
       <PageTitle title={type + "s"} />
@@ -178,9 +197,11 @@ const ViewTypeMedia = ({ type }: { type: string }) => {
               })}
             </div>
           ) : (
-            <div>
-              <div>No media file</div>
-              <Link to="/auth/media/add">Create New</Link>
+            <div className="text-center">
+              <div>{`No ${type} media files`}</div>
+              <Link to={"/admin/auth/media/add/" + type} className="button-pri">
+                Add new
+              </Link>
             </div>
           )}
         </>
@@ -199,10 +220,7 @@ const AddMedia = ({ type }: { type: string }) => {
   return (
     <>
       <PageTitle title={`Add new ${type}`} />
-      <FileUploadForm
-        type={type}
-        callback={(res: any) => callbackAction(res)}
-      />
+      <FileUploadUi type={type} callback={(res: any) => callbackAction(res)} />
     </>
   );
 };
@@ -226,9 +244,15 @@ const ViewMedia = ({ type }: { type: string }) => {
     <>
       <PageTitle title={entity.title} />
       {type === "image" ? (
-        <Image src={entity.path} alt={entity.title} entityUrl={entity.alias} />
+        <Image
+          src={entity.path}
+          alt={entity.title} //entityUrl={entity.alias}
+        />
       ) : (
-        <Video src={entity.path} alt={entity.title} entityUrl={entity.alias} />
+        <Video
+          src={entity.path}
+          alt={entity.title} //entityUrl={entity.alias}
+        />
       )}
     </>
   ) : null;
@@ -243,7 +267,7 @@ const PerMediaUpdate = ({ type }: { type: string }) => {
 
   return (
     <>
-      <FileUploadForm
+      <FileUploadUi
         type={type}
         updateForm={true}
         callback={(res: any) => callbackAction(res)}
@@ -264,7 +288,7 @@ const PerMediaAliasUpdate = ({ type }: { type: string }) => {
       e.target.classList.add("bounce");
 
     ServerHandler({
-      endpoint: location.pathname,
+      endpoint: location.pathname.split("/admin")[1],
       method: "patch",
       headers: {
         "content-type": "multipart/form-data",

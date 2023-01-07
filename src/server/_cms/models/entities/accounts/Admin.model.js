@@ -32,6 +32,7 @@ Admin.init(
     uuid: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
+      unique: true,
     },
     avatar: DataTypes.STRING,
     firstName: {
@@ -64,6 +65,10 @@ Admin.init(
       type: DataTypes.INTEGER,
       defaultValue: 0,
       allowNull: false,
+    },
+    state: {
+      type: DataTypes.BOOLEAN, //active account should be set to true
+      defaultValue: false, //blocked by default
     },
   },
   {

@@ -1,6 +1,6 @@
 import React from "react";
-import { jsStyler } from "../../../functions/jsStyler";
-import { ImageUi } from "../fieldUI/ImageUi";
+import { jsStyler } from "../../../../functions/jsStyler";
+import { MediaUi } from "../MediaUi";
 
 const addNewImage: Function = (
   handleInputData: Function,
@@ -26,21 +26,28 @@ const addNewImage: Function = (
               value="remove"
               onClick={jsStyler()}
             />
-            <div jsstyler-toggle={"delete-paragraph-" + newParagraphID}>
+            <div data-jsstyler-target={"delete-paragraph-" + newParagraphID}>
               <input
                 type="button"
                 value="Confirm Delete"
-                onClick={() => setDeleteParagraphFromBody(newParagraphID)}
+                onClick={() =>
+                  setDeleteParagraphFromBody({
+                    uuid: newParagraphID,
+                    type: "image",
+                  })
+                }
               />
             </div>
           </span>
         </div>
-        <ImageUi
+        <MediaUi
+          type="image"
           id={paragraphName}
-          name={paragraphName + "][uuid]"}
+          name={paragraphName + "[image]"}
           formData={formData}
           handleInputData={handleInputData}
           required={true}
+          titleField={true}
         />
         <div
           id={"form-item-notice-" + newParagraphID}

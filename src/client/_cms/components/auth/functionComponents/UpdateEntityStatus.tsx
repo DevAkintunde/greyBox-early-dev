@@ -16,6 +16,11 @@ export const UpdateEntityStatus = ({
   const location = useLocation();
   const [status, setStatus]: any = useState();
   const [statuses, setStatuses]: [object[], any] = useState([]);
+  //the destion endpoint on server
+  let methodEndpoint = location.pathname.includes("/admin")
+    ? location.pathname.split("/admin")[1]
+    : location.pathname;
+
   /* fetch database statuses options */
   useEffect(() => {
     let isMounted = true;
@@ -29,13 +34,13 @@ export const UpdateEntityStatus = ({
   /* existing entity status */
   useEffect(() => {
     let isMounted = true;
-    ServerHandler(location.pathname.split("/update/status")[0]).then((res) => {
+    ServerHandler(methodEndpoint.split("/update/status")[0]).then((res) => {
       if (res.status === 200 && isMounted) return setStatus(res.data.status);
     });
     return () => {
       isMounted = false;
     };
-  }, [location.pathname]);
+  }, [methodEndpoint]);
 
   const doSubmit = (e: any) => {
     e.preventDefault();
@@ -44,7 +49,7 @@ export const UpdateEntityStatus = ({
       e.target.classList.add("bounce");
 
     ServerHandler({
-      endpoint: location.pathname,
+      endpoint: methodEndpoint,
       method: "patch",
       body: { status: status },
     }).then((res) => {
@@ -66,7 +71,7 @@ export const UpdateEntityStatus = ({
         if (destination) {
           navigate(destination);
         } else {
-          navigate("/auth/pages/" + res.data.alias);
+          navigate("/admin/auth/pages/" + res.data.alias);
         }
       }
     });

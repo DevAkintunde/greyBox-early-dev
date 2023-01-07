@@ -1,16 +1,22 @@
 import React from "react";
 import { jsStyler } from "../../../../functions/jsStyler";
 
-const addNewText: Function = (
-  className: string,
-  handleInputData: Function,
-  setDeleteParagraphFromBody: any
-) => {
+type addProps = {
+  type: string;
+  handleInputData: Function;
+  setDeleteParagraphFromBody: any;
+};
+const addNewText = ({
+  type,
+  handleInputData,
+  setDeleteParagraphFromBody,
+}: addProps) => {
   let newParagraphID = Math.random().toString(36).substring(2);
   let paragraphName = "body[" + newParagraphID + "][text]";
 
   return {
     id: newParagraphID,
+    type: type,
     element: (
       <div
         id={paragraphName}
@@ -18,7 +24,7 @@ const addNewText: Function = (
       >
         <div className={"paragraph-label paragraph-label-" + newParagraphID}>
           <label htmlFor={newParagraphID}>{"Add Text"}</label>
-          <span className="jsstyler toggle">
+          <span id="paragraph-item-remover" className="jsstyler toggle">
             <input
               id={"delete-paragraph-" + newParagraphID}
               type="button"
@@ -29,11 +35,23 @@ const addNewText: Function = (
               <input
                 type="button"
                 value="Confirm Delete"
-                onClick={() =>
+                onClick={() => {
                   setDeleteParagraphFromBody({
                     uuid: newParagraphID,
                     type: "text",
-                  })
+                  });
+                  document
+                    .getElementById("delete-paragraph-" + newParagraphID)
+                    ?.click();
+                }}
+              />
+              <input
+                type="button"
+                value="Cancel"
+                onClick={() =>
+                  document
+                    .getElementById("delete-paragraph-" + newParagraphID)
+                    ?.click()
                 }
               />
             </div>
@@ -47,7 +65,6 @@ const addNewText: Function = (
             name: paragraphName,
             type: "text",
           })}
-          className={className}
           required={true}
         />
         <div

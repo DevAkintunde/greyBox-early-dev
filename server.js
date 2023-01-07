@@ -9,21 +9,20 @@ import c2k from "koa-connect";
 import serve from "koa-static-server";
 import session from "koa-session";
 import logger from "koa-logger";
-import cron from "node-cron";
 import cors from "@koa/cors";
 import passport from "koa-passport";
 import { logger as appLogger } from "./src/server/_cms/utils/logger.js";
-//const { jobScheduler } = require("./cron/job");
-//const { httpLogStream } = require("./utils/logger");
+import { jobScheduler } from "./src/server/_cms/cron/jobScheduler.js";
 
-// scheduler
-//cron.schedule("0 1 * * *", jobScheduler);
+//const { httpLogStream } = require("./utils/logger");
 
 //file imports
 import router from "./src/server/_cms/routes/api.route.js";
 // authentication
 import { passportConfig } from "./src/server/_cms/middlewares/authorization/auth.js";
 passportConfig(passport);
+// cron job scheduler
+jobScheduler();
 
 // The App
 const app = new Koa();

@@ -85,7 +85,7 @@ const Loading = (props: {
                         type="button"
                         id="triggerAsyncRefresh"
                         value="Refresh"
-                        className="uk-button uk-button-secondary"
+                        className=""
                         onClick={props.refreshTrigger}
                       />
                     </div>
@@ -134,7 +134,7 @@ const Loading = (props: {
                   type="button"
                   id="triggerAsyncRefresh"
                   value="Refresh"
-                  className="uk-button uk-button-secondary"
+                  className=""
                   onClick={props.refreshTrigger}
                 />
               </div>
@@ -147,20 +147,12 @@ const Loading = (props: {
     return () => {
       isMounted = false;
     };
-  }, [
-    message,
-    location.key,
-    refresher,
-    props.refreshTrigger,
-    instantMessage,
-    infinitylyLoad,
-    animation,
-  ]);
+  }, [message, location.key, refresher, props.refreshTrigger, instantMessage, infinitylyLoad, animation, props.timeout]);
 
   return (
     <>
       <div
-        className={"mx-auto min-h-min" + (styling ? " " + styling : "")}
+        className={"mx-auto min-h-min text-center" + (styling ? " " + styling : "")}
         style={{ minHeight: "100px" }}
       >
         {content}

@@ -1,0 +1,31 @@
+@import "./utils/css/form-ui.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  .bounce {
+    @apply cursor-wait animate-bounce bg-color-def text-gray-600 !important;
+  }
+  input[type="button"],
+  input[type="submit"] {
+    @apply cursor-pointer disabled:cursor-text disabled:text-gray-600 p-2 border-4 rounded-lg mx-2;
+  }
+
+  .button-pri,
+  .form-ui input[type="submit"].button-pri {
+    @apply cursor-pointer bg-color-pri text-color-sec p-2 inline-block border-4 rounded-lg m-2 text-center;
+  }
+  .button-sec,
+  .form-ui input[type="submit"].button-sec {
+    @apply cursor-pointer bg-color-ter text-color-def p-2 inline-block border-4 rounded-lg m-2 text-center;
+  }
+  /*  textarea {
+    @apply text-black;
+  } */
+
+  iframe {
+    @apply max-w-full;
+  }
+}

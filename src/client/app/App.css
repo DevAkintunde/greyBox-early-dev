@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* @font-face {
+  font-family: mellyFont;
+  src: url(./client/utils/Wellfleet-Regular.ttf);
+} */
+
+@layer base {
+#app {
+    @apply max-w-[1280px] mx-auto h-screen bg-color-pri text-color-sec text-sm;
+  }
+.client-container {
+    @apply m-0 w-full !important;
+}
+}

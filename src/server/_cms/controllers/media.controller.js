@@ -1,5 +1,6 @@
 import sequelize from "../config/db.config.js";
 import {
+  BAD_REQUEST,
   NOT_FOUND,
   NO_CONTENT,
   OK,
@@ -17,6 +18,8 @@ const resolve = (p) => path.join("public", p);
 export const upload = async (ctx, next) => {
   if (ctx.request.files && Object.keys(ctx.request.files).length > 0) {
     try {
+      if (ctx.state.entityType === "Video") ctx.request.body.source = "hosted";
+
       let newMedia = await sequelize.transaction(async (t) => {
         let createdMedia = await Promise.all(
           Object.keys(ctx.request.files).map(async (file) => {
@@ -34,16 +37,37 @@ export const upload = async (ctx, next) => {
       });
       ctx.state.data = newMedia;
     } catch (err) {
+      if (ctx.request.files || ctx.request.body.styles) {
+        let promises = [];
+        const deleteMediaFromServer = (path) => {
+          promises.push(fs.unlinkSync(resolve(path)));
+        };
+        if (ctx.request.body.styles)
+          Object.keys(ctx.request.body.styles).forEach((stylePath) => {
+            if (ctx.request.body.styles[stylePath])
+              deleteMediaFromServer(ctx.request.body.styles[stylePath]);
+          });
+        if (ctx.request.files)
+          Object.keys(ctx.request.files).forEach((file) => {
+            //console.log('file: ', ctx.request.files[file])
+            let filePath = ctx.request.files[file].filepath;
+            //console.log('filePath: ', filePath)
+            if (filePath) deleteMediaFromServer(filePath);
+          });
+        try {
+          Promise.all(promises);
+        } catch (err) {
+          logger.error(
+            "Media Controller, unable to remove uploaded media after failed creation on new media entity: ",
+            err
+          );
+        }
+      }
       logger.error("Media Controller, file upload: ", err);
       ctx.state.error = err;
     }
     await next();
-  } else if (
-    ctx.state.entityType &&
-    ctx.state.entityType === "Video" &&
-    ctx.request.body.source &&
-    ctx.request.body.source !== "hosted"
-  ) {
+  } else if (ctx.state.entityType && ctx.state.entityType === "Video") {
     try {
       let { source } = ctx.request.body;
       let checkSource;
@@ -57,13 +81,22 @@ export const upload = async (ctx, next) => {
         } else if (ctx.request.body.path.toLowerCase().includes("/vimeo")) {
           sourceFromUrl = "vimeo";
         }
-        ctx.request.body.source = sourceFromUrl;
+        if (sourceFromUrl) {
+          ctx.request.body.source = sourceFromUrl;
+        } else {
+          ctx.request.body.source = "";
+        }
       }
-
-      let thisVideo = await sequelize.models["Video"].create(ctx.request.body);
-      ctx.state.data = thisVideo;
+      if (ctx.request.body.source) {
+        let thisVideo = await sequelize.models["Video"].create(
+          ctx.request.body
+        );
+        ctx.state.data = thisVideo;
+      } else {
+        ctx.throw(BAD_REQUEST, "Unable to identity source of the media.");
+      }
     } catch (err) {
-      logger.error("Media Controller, upload: ", err);
+      logger.error("Media Controller, remote video creation error: ", err);
       ctx.state.error = err;
     }
     await next();
@@ -126,12 +159,50 @@ export const updateItem = async (ctx, next) => {
               logger.error(err);
             }
 
+            if (ctx.state.entityType === "Video")
+              ctx.request.body.source = "hosted";
             thisMedia.update({
               ...ctx.request.body,
               path: ctx.request.files.path.filepath,
             });
           }
         } else {
+          if (ctx.state.entityType === "Video") {
+            try {
+              let { source } = ctx.request.body;
+              let checkSource;
+              if (source) {
+                checkSource = await VideoSource.findByPk(source);
+              }
+              if (!checkSource || !checkSource.dataValues) {
+                let sourceFromUrl;
+                if (ctx.request.body.path.toLowerCase().includes("/youtube")) {
+                  sourceFromUrl = "youtube";
+                } else if (
+                  ctx.request.body.path.toLowerCase().includes("/vimeo")
+                ) {
+                  sourceFromUrl = "vimeo";
+                }
+                if (sourceFromUrl) {
+                  ctx.request.body.source = sourceFromUrl;
+                } else {
+                  ctx.request.body.source = "";
+                }
+              }
+              if (!ctx.request.body.source) {
+                ctx.throw(
+                  BAD_REQUEST,
+                  "Unable to identity source of the media."
+                );
+              }
+            } catch (err) {
+              logger.error(
+                "Media Controller, remote video update error: ",
+                err
+              );
+              ctx.state.error = err;
+            }
+          }
           thisMedia.update(ctx.request.body);
         }
         return thisMedia;
@@ -152,8 +223,9 @@ export const updateItem = async (ctx, next) => {
 };
 
 export const deleteItem = async (ctx, next) => {
+  let thisMedia;
   try {
-    let thisMedia = await sequelize.models[ctx.state.entityType].findOne({
+    thisMedia = await sequelize.models[ctx.state.entityType].findOne({
       where: ctx.request.body,
     });
     if (
@@ -178,6 +250,10 @@ export const deleteItem = async (ctx, next) => {
     thisMedia.destroy();
   } catch (err) {
     logger.error("Media Controller, delete: ", err);
+    if (err.code === "ENOENT" && thisMedia) {
+      let processDeletion = thisMedia.destroy();
+      if (processDeletion === 1) await next();
+    }
     ctx.state.error = {
       status: err && err.status ? err.status : SERVER_ERROR,
       statusText:

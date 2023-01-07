@@ -12,6 +12,10 @@ export const DeleteEntity = ({
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  //the destion endpoint on server
+  let methodEndpoint = location.pathname.includes("/admin")
+    ? location.pathname.split("/admin")[1]
+    : location.pathname;
 
   const doDelete = (e: any) => {
     e.preventDefault();
@@ -20,7 +24,7 @@ export const DeleteEntity = ({
       e.target.classList.add("bounce");
 
     ServerHandler({
-      endpoint: location.pathname,
+      endpoint: methodEndpoint,
       method: "delete",
     }).then((res) => {
       if (res.status !== 200) {

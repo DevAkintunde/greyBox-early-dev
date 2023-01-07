@@ -7,8 +7,7 @@ import {
   SERVER_ERROR,
 } from "../../../../constants/statusCodes.js";
 import { urlQueryTranslator } from "../../../../middlewares/urlQueryTranslator.js";
-import { default as image } from "./image.js";
-import { default as video } from "./video.js";
+import { default as mediaRoutes } from "./media.routes.js";
 
 const router = new Router({
   prefix: "/media",
@@ -87,7 +86,6 @@ router.post("/swap-permission", async (ctx) => {
 });
 
 // media entity types
-router.use(image.routes());
-router.use(video.routes());
+router.use(mediaRoutes.routes());
 
 export default router;

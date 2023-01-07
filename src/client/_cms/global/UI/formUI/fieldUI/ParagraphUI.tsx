@@ -3,10 +3,9 @@ import { toast } from "react-toastify";
 import validator from "validator";
 import { jsStyler } from "../../../functions/jsStyler";
 import { ServerHandler } from "../../../functions/ServerHandler";
-import { ImageUi } from "./ImageUi";
-import { addNewImage } from "./paragraphElements/addNewImage";
 import { addNewText } from "./paragraphElements/addNewText";
-import { VideoUi } from "./VideoUi";
+import { MediaUi } from "./MediaUi";
+import { addNewMedia } from "./paragraphElements/addNewMedia";
 
 interface pParagraphUI {
   id: string;
@@ -51,7 +50,7 @@ export const ParagraphUI = ({
       //starting at -ve 1 to compensate for the speed difference between React SetState and variable update
       let defaultIndex = -1;
       defaultValue.forEach((paragraph: any) => {
-        console.log("defaul", paragraph);
+        //console.log("defaul", paragraph);
         if (typeof paragraph.defaultValue === "string") {
           importedData.set(
             "body[" + paragraph.id + "][" + paragraph.type + "][value]",
@@ -169,6 +168,7 @@ export const ParagraphUI = ({
   );
 
   //new paragragh body injection holder
+  //constructed as object: [{id: string, element: React.Component}]
   const [bodyConstruct, setBodyConstruct]: any[] = useState([]);
 
   //set paragraph remover/deleter ID
@@ -249,27 +249,14 @@ export const ParagraphUI = ({
                           </div>
                         </span>
                       </div>
-                      {field.type && field.type === "image" ? (
-                        <ImageUi
-                          uuidIdentifier="image"
+                      {field.type &&
+                      (field.type === "image" || field.type === "video") ? (
+                        <MediaUi
+                          type={field.type}
+                          uuidIdentifier={field.type}
                           titleField={true}
                           id={"body[" + field.id + "][" + field.type + "]"}
-                          name={
-                            "body[" + field.id + "][" + field.type + "][image]"
-                          }
-                          defaultValue={
-                            field.defaultValue ? field.defaultValue : null
-                          }
-                          formData={formData}
-                          handleInputData={handleInputData}
-                          required={true}
-                        />
-                      ) : field.type && field.type === "video" ? (
-                        <VideoUi
-                          id={"body[" + field.id + "][" + field.type + "]"}
-                          name={
-                            "body[" + field.id + "][" + field.type + "][video]"
-                          }
+                          name={`body[${field.id}][${field.type}][${field.type}]`}
                           defaultValue={
                             field.defaultValue ? field.defaultValue : null
                           }
@@ -351,70 +338,81 @@ export const ParagraphUI = ({
 
   useEffect(() => {
     let isMounted = true;
-    //console.log("deleteParagraphFromBody ID", deleteParagraphFromBody);
-    if (
-      deleteParagraphFromBody &&
-      deleteParagraphFromBody.uuid &&
-      deleteParagraphFromBody.type &&
-      isMounted
-    ) {
-      let thisID = deleteParagraphFromBody.uuid;
-      let thisType = deleteParagraphFromBody.type;
+    let thisID =
+      deleteParagraphFromBody && deleteParagraphFromBody.uuid
+        ? deleteParagraphFromBody.uuid
+        : "";
+    let thisType =
+      deleteParagraphFromBody && deleteParagraphFromBody.type
+        ? deleteParagraphFromBody.type
+        : "";
+
+    const processDeletion = async (id: string, type: string) => {
       // define endpoint based on availability of paragraph type.
       // when undefined, take uuid as the paragraphs parent itself
       setDeleteParagraphFromBody();
-      if (validator.isUUID(thisID)) {
-        //delete from DB && remove html element
-        ServerHandler({
-          endpoint:
-            deleteParagraphFromBody.type === "parent"
-              ? `/auth/paragraphs/${thisID}/delete`
-              : `/auth/paragraphs/${thisType}/${thisID}/delete`,
-          method: "delete",
-        }).then((res) => {
-          if (res.status === 200) {
-            toast(
-              `${thisType !== "parent" ? thisType : "Body of content"} deleted`
-            );
-            //remove html element on successfull remover
-            let importedBodyConstruct: any[] = [];
-            if (thisType !== "parent") {
-              paragraphDefaults.forEach((thisParagraph: any) => {
-                if (thisParagraph.id !== thisID)
-                  importedBodyConstruct.push(thisParagraph);
-              });
-              //update formData
-              setRemoveParagraphFromFormData(thisID);
+      if (type && id)
+        if (validator.isUUID(id)) {
+          //delete from DB && remove html element
+          await ServerHandler({
+            endpoint:
+              type === "parent"
+                ? `/auth/paragraphs/${id}/delete`
+                : `/auth/paragraphs/${type}/${id}/delete`,
+            method: "delete",
+          }).then((res) => {
+            if (res.status === 200 && isMounted) {
+              toast(`${type !== "parent" ? type : "Body of content"} deleted`);
+              //remove html element on successfull remover
+              let importedBodyConstruct: any[] = [];
+              if (thisType !== "parent") {
+                paragraphDefaults.forEach((thisParagraph: any) => {
+                  if (thisParagraph.id !== id)
+                    importedBodyConstruct.push(thisParagraph);
+                });
+                //update formData
+                setRemoveParagraphFromFormData(id);
+              } else {
+                setParagraphDefaults([]);
+                //update formData by removing every 'body[' ref id for paragraphs
+                setRemoveParagraphFromFormData("body[");
+              }
+              setParagraphDefaults(importedBodyConstruct);
             } else {
-              setParagraphDefaults([]);
-              //update formData by removing every 'body[' ref id for paragraphs
-              setRemoveParagraphFromFormData("body[");
+              toast(`Unable to remove paragraph ${type}`);
             }
-            setParagraphDefaults(importedBodyConstruct);
+          });
+        } else {
+          //remove html element
+          let importedBodyConstruct: any[] = [];
+          if (type !== "parent") {
+            bodyConstruct.forEach((thisParagraph: any) => {
+              if (thisParagraph.id !== id)
+                importedBodyConstruct.push(thisParagraph);
+            });
           } else {
-            toast(`Unable to remove paragraph ${thisType}`);
+            //update formData by removing every 'body[' ref id for paragraphs
+            setRemoveParagraphFromFormData("body[");
           }
-        });
-      } else {
-        //remove html element
-        let importedBodyConstruct: any[] = [];
-        bodyConstruct.forEach((thisParagraph: any) => {
-          if (thisParagraph.id !== thisID)
-            importedBodyConstruct.push(thisParagraph);
-        });
-        setBodyConstruct(importedBodyConstruct);
-      }
+          if (isMounted) setBodyConstruct(importedBodyConstruct);
+        }
+    };
+    if (thisType !== "parent") {
+      processDeletion(thisID, thisType);
+    } else {
+      //'id' is paragraphs parent ID
+      processDeletion(id, thisType);
     }
     return () => {
       isMounted = false;
     };
-  }, [bodyConstruct, deleteParagraphFromBody, paragraphDefaults]);
+  }, [bodyConstruct, deleteParagraphFromBody, id, paragraphDefaults]);
 
   //console.log("bodyConstruct", bodyConstruct);
-  console.log("paragraphDefaults", paragraphDefaults);
+  //console.log("paragraphDefaults", paragraphDefaults);
 
   return (
-    <>
+    <div id="paragraph-ui">
       <div id={id + "-paragraph"}>
         {paragraphDefaults && paragraphDefaults.length > 0
           ? paragraphDefaults.map((field: any) => {
@@ -448,7 +446,11 @@ export const ParagraphUI = ({
         onClick={() =>
           setBodyConstruct((currentBody: any) => [
             ...currentBody,
-            addNewText(className, handleInputData, setDeleteParagraphFromBody),
+            addNewText({
+              type: "text",
+              handleInputData,
+              setDeleteParagraphFromBody,
+            }),
           ])
         }
         type="button"
@@ -458,18 +460,62 @@ export const ParagraphUI = ({
         onClick={() =>
           setBodyConstruct((currentBody: any) => [
             ...currentBody,
-            addNewImage(handleInputData, setDeleteParagraphFromBody, formData),
+            addNewMedia({
+              type: "image",
+              handleInputData,
+              setDeleteParagraphFromBody,
+              formData,
+            }),
           ])
         }
         type="button"
         value="Add Image"
       />
-      <input type="button" value="Add Video" />
       <input
-        onClick={() => setDeleteParagraphFromBody({ uuid: "", type: "parent" })}
+        onClick={() =>
+          setBodyConstruct((currentBody: any) => [
+            ...currentBody,
+            addNewMedia({
+              type: "video",
+              handleInputData,
+              setDeleteParagraphFromBody,
+              formData,
+            }),
+          ])
+        }
         type="button"
-        value="Delete All"
+        value="Add Video"
       />
-    </>
+      {bodyConstruct && bodyConstruct.length > 0 ? (
+        <span id="paragraph-body-remover" className="jsstyler toggle">
+          <input
+            id={"clear-paragraphs-" + id}
+            type="button"
+            value="Remove Body"
+            onClick={jsStyler()}
+          />
+          <div data-jsstyler-target={"clear-paragraphs-" + id}>
+            <input
+              type="button"
+              value="Yes"
+              onClick={() => {
+                setDeleteParagraphFromBody({
+                  uuid: id,
+                  type: "parent",
+                });
+                document.getElementById("clear-paragraphs-" + id)?.click();
+              }}
+            />
+            <input
+              type="button"
+              value="Cancel"
+              onClick={() =>
+                document.getElementById("clear-paragraphs-" + id)?.click()
+              }
+            />
+          </div>
+        </span>
+      ) : null}
+    </div>
   );
 };

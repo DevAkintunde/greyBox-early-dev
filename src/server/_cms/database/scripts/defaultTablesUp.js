@@ -1,13 +1,12 @@
 import { logger } from "../../utils/logger.js";
 import sequelize from "../../config/db.config.js";
 import { hash } from "../../utils/password.js";
-import { markForDeletion } from "../../functions/markForDeletion.js";
+import { getOffsetTimestamp } from "../../functions/getOffsetTimestamp.js";
 import Status from "../../models/fields/EntityStatus.model.js";
 import Admin from "../../models/entities/accounts/Admin.model.js";
 import OTP from "../../models/utils/OTP.model.js";
 import Page from "../../models/entities/nodes/StaticPage.model.js";
 import VideoSource from "../../models/fields/VideoSource.model.js";
-import ServiceType from "../../models/fields/ServiceType.model.js";
 import Role from "../../models/fields/UserRole.model.js";
 
 async function defaultTablesUp() {
@@ -20,40 +19,6 @@ async function defaultTablesUp() {
     { key: "deleted", value: "Deleted" },
   ];
 
-  let serviceTypes = [
-    {
-      key: "cinematography_lighting",
-      value: "Cinematography & Lighting",
-    },
-    {
-      key: "graphics",
-      value: "Graphics",
-    },
-    {
-      key: "live_stream",
-      value: "Live Stream",
-    },
-    {
-      key: "motion_graphics",
-      value: "Motion Graphics",
-    },
-    {
-      key: "photography",
-      value: "Photography",
-    },
-    {
-      key: "story_development",
-      value: "Story Development",
-    },
-    {
-      key: "videography",
-      value: "Videography",
-    },
-    {
-      key: "web_design",
-      value: "Web Design",
-    },
-  ];
   const videoTypes = [
     { key: "hosted", value: "Upload to Server" },
     { key: "youtube", value: "YouTube Video" },
@@ -74,6 +39,7 @@ async function defaultTablesUp() {
     email: "ebakintunde@gmail.com",
     password: hash("accounts"),
     role: 4,
+    state: true,
   };
   const defaultDev = {
     firstName: "Akintunde",
@@ -81,13 +47,14 @@ async function defaultTablesUp() {
     email: "devakintunde@gmail.com",
     password: hash("accounts"),
     role: 5,
+    state: true,
   };
 
   const dummyOTP = {
     code: "codeVerifier",
     ref: "Account",
     id: "ebakintunde@gmail.com",
-    markForDeletionBy: markForDeletion(24),
+    markForDeletionBy: getOffsetTimestamp("-24"),
     log: "Account verification",
   };
   const dummyPage = {
@@ -106,7 +73,6 @@ async function defaultTablesUp() {
         await Status.bulkCreate(statusOptions, { transaction: t });
         await Role.bulkCreate(roles, { transaction: t });
         await VideoSource.bulkCreate(videoTypes, { transaction: t });
-        await ServiceType.bulkCreate(serviceTypes, { transaction: t });
         await Admin.create(defaultDev, { transaction: t });
         await Admin.create(defaultAdmin, { transaction: t });
         logger.info("Default Tables UP");

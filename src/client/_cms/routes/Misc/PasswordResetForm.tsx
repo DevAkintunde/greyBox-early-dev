@@ -1,23 +1,28 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageTitle from "../../regions/PageTitle";
-import { FormUi } from "../../global/UI/formUI/FormUi";
 import { ServerHandler } from "../../global/functions/ServerHandler";
+import validator from "validator";
 
 export const PasswordResetForm = () => {
   const navigate = useNavigate();
+  const [email, setEmail] = useState("");
 
-  let emailField = [
-    {
-      type: "email",
-      weight: 0,
-      label: "Email",
-      id: "email",
-      description: "Provide your email to reset your forgotten password",
-    },
-  ];
+  useEffect(() => {
+    let isMounted = true;
+    let button: any = document.querySelector("input.submit");
+    if (isMounted && button)
+      if (validator.isEmail(email)) {
+        if (button.disabled) button.disabled = false;
+      } else if (!button.disabled) {
+        button.disabled = true;
+      }
+    return () => {
+      isMounted = false;
+    };
+  }, [email]);
 
-  const doReset = (data: object) => (e: any) => {
+  const doReset = (e: any) => {
     e.preventDefault();
     e.target.disabled = true;
     if (e.target.classList && !e.target.classList.contains("bounce"))
@@ -29,7 +34,7 @@ export const PasswordResetForm = () => {
         accept: "application/json",
         "content-type": "application/json",
       },
-      body: data,
+      body: { email: email },
     }).then((res) => {
       //console.log("res", res);
       if (res.status !== 200) {
@@ -42,11 +47,9 @@ export const PasswordResetForm = () => {
         if (button) {
           if (button.classList && button.classList.contains("bounce"))
             button.classList.remove("bounce");
-          /* if (button["disabled"] && button["disabled"] === true)
-            button["disabled"] = false; */
         }
       } else {
-        navigate("/auth");
+        navigate("/");
       }
     });
   };
@@ -54,31 +57,47 @@ export const PasswordResetForm = () => {
     window.history.back();
   };
 
-  let buttons = [
-    {
-      value: "Back away",
-      styling: "bg-color-ter text-color-def",
-      weight: 0,
-      action: backAway,
-    },
-    {
-      value: "update password",
-      weight: 1,
-      styling: "p-3 mx-auto",
-      submit: true,
-      action: doReset,
-    },
-  ];
-
   return (
     <>
       <PageTitle title="Update password" />
-      <FormUi
-        id="password-reset-form"
-        fields={emailField}
-        className="max-w-screen-sm"
-        buttons={buttons}
-      />
+
+      <form id="password-reset-form" className="form-ui max-w-screen-sm">
+        <div className="form-item form-item-email">
+          <label>
+            <span className="form-label">Email</span>
+            <input
+              id="email-password-reset-form"
+              name="email"
+              className="form-input"
+              type="email"
+              onChange={(e: any) => setEmail(e.target.value)}
+            />
+          </label>
+          <div id="form-item-notice-email" className="form-item-notice"></div>
+        </div>
+        <div className="field-description field-description-after email-description-after field-description-email">
+          Provide your email to reset your forgotten password
+        </div>
+        <div id="form-actions">
+          <div id="form-actions-notice" />
+          <div id="form-button-group" className="form-button-group">
+            <input
+              name="form-button"
+              className="form-button bg-color-ter text-color-def"
+              type="button"
+              value="Back away"
+              onClick={backAway}
+            />
+            <input
+              name="form-button"
+              className="form-button p-3 mx-auto submit"
+              type="submit"
+              value="update password"
+              onClick={doReset}
+            />
+          </div>
+        </div>
+      </form>
     </>
   );
 };

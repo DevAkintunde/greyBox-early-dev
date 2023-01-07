@@ -1,11 +1,12 @@
-@import "./client/_cms/cms.css";
+@import "./client/_cms/Cms.css";
+@import "./client/app/App.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @font-face {
   font-family: mellyFont;
-  src: url(./client/utils/Wellfleet-Regular.ttf);
+  src: url(./client/_cms/utils/Wellfleet-Regular.ttf);
 }
 
 @layer base {
@@ -14,10 +15,7 @@
     @apply bg-color-def;
   }
 
-  #app {
-    @apply max-w-[1280px] mx-auto h-screen bg-color-def text-color-sec text-sm;
-  }
-  .app-container {
+  .client-container {
     @apply w-full pod:w-[90%] sm:w-[80%] lg:w-[70%] mx-auto mt-24 pod:mt-28 md:mt-32;
   }
   main {
@@ -93,27 +91,4 @@
     @apply text-lg text-color-def my-1;
   }
 
-  .bounce {
-    @apply cursor-wait animate-bounce bg-color-def text-gray-600 !important;
-  }
-  input[type="button"],
-  input[type="submit"] {
-    @apply cursor-pointer disabled:text-gray-600 p-2 border-4 rounded-lg mx-2;
-  }
-
-  .button-pri,
-  .form-ui input[type="submit"].button-pri {
-    @apply cursor-pointer bg-color-pri text-color-sec p-2 inline-block border-4 rounded-lg m-2 text-center;
-  }
-  .button-sec,
-  .form-ui input[type="submit"].button-sec {
-    @apply cursor-pointer bg-color-ter text-color-def p-2 inline-block border-4 rounded-lg m-2 text-center;
-  }
-  /*  textarea {
-    @apply text-black;
-  } */
-
-  iframe {
-    @apply max-w-full;
-  }
 }

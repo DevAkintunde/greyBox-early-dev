@@ -3,13 +3,13 @@ import { logger } from "../../utils/logger.js";
 import Admin from "../../models/entities/accounts/Admin.model.js";
 // nodes
 import Page from "../../models/entities/nodes/StaticPage.model.js";
-import Service from "../../models/entities/nodes/Service.model.js";
+import Blog from "../../models/entities/nodes/Blog.model.js";
 // fields
 import EntityStatus from "../../models/fields/EntityStatus.model.js";
-import ServiceType from "../../models/fields/ServiceType.model.js";
 import VideoSource from "../../models/fields/VideoSource.model.js";
 // utils
 import OTP from "../../models/utils/OTP.model.js";
+import UserAccessTimestamps from "../../models/utils/UserAccessTimestamps.model.js";
 // paragraphs
 import Paragraph from "../../models/entities/paragraphs/Paragraph.model.js";
 import PImage from "../../models/entities/paragraphs/PImage.model.js";
@@ -28,10 +28,10 @@ const modelsSync = async () => {
 
     await EntityStatus.sync({ force: true });
     await UserRole.sync({ force: true });
-    await ServiceType.sync({ force: true });
     await VideoSource.sync({ force: true });
     await OTP.sync({ force: true });
     await Admin.sync({ force: true });
+    await UserAccessTimestamps.sync({ force: true });
 
     await Paragraph.sync({ force: true });
 
@@ -44,7 +44,7 @@ const modelsSync = async () => {
     await PVideo.sync({ force: true });
 
     await Page.sync({ force: true });
-    await Service.sync({ force: true });
+    await Blog.sync({ force: true });
 
     logger.info("All tables synced as needed!");
     console.log("All tables synced as needed!");

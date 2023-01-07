@@ -2,7 +2,6 @@ import sequelize from "../../_cms/config/db.config.js";
 import { DataTypes, Model, Deferrable } from "sequelize";
 import Admin from "../../_cms/models/entities/accounts/Admin.model.js";
 import Paragraph from "../../_cms/models/entities/paragraphs/Paragraph.model.js";
-import Image from "../../_cms/models/entities/media/Image.model.js";
 import ServiceType from "./fields/ServiceType.model.js";
 import Status from "../../_cms/models/fields/EntityStatus.model.js";
 
@@ -29,15 +28,12 @@ Service.init(
       defaultValue: true,
       field: "auto_alias",
     },
-    /* featuredImageUrl: {
-      type: DataTypes.STRING,
-      field: "featured_image_url",
-    }, */
     summary: {
       type: DataTypes.TEXT,
     },
     type: {
       type: DataTypes.STRING,
+      allowNull: false,
       references: {
         model: ServiceType,
         key: "key",
@@ -60,6 +56,15 @@ Service.init(
     revisionNote: {
       type: DataTypes.TEXT,
       field: "revision_note",
+    },
+    featuredImage: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      field: "featured_image",
+    },
+    featuredImageStyles: {
+      type: DataTypes.JSON,
+      field: "featured_image_styles",
     },
   },
   {
@@ -92,7 +97,7 @@ Admin.hasMany(Service, {
     allowNull: false,
   },
   onDelete: "RESTRICT",
-  onUpdate: "RESTRICT",
+  onUpdate: "CASCADE",
 });
 Service.belongsTo(Admin, {
   targetKey: "email",
@@ -108,8 +113,8 @@ Admin.hasMany(Service, {
     type: DataTypes.STRING,
     name: "last_revisor",
   },
-  onDelete: "RESTRICT",
-  onUpdate: "RESTRICT",
+  onDelete: "SET NULL",
+  onUpdate: "CASCADE",
 });
 Service.belongsTo(Admin, {
   targetKey: "email",
@@ -133,26 +138,6 @@ Service.belongsTo(Paragraph, {
   foreignKey: {
     type: DataTypes.UUID,
     name: "body",
-    allowNull: true,
-  },
-  onDelete: "CASCADE",
-  onUpdate: "CASCADE",
-});
-
-Image.hasMany(Service, {
-  sourceKey: "uuid",
-  foreignKey: {
-    type: DataTypes.UUID,
-    name: "featuredImage",
-    allowNull: true,
-  },
-  onDelete: "RESTRICT",
-  onUpdate: "RESTRICT",
-});
-Service.belongsTo(Image, {
-  foreignKey: {
-    type: DataTypes.UUID,
-    name: "featuredImage",
     allowNull: true,
   },
 });

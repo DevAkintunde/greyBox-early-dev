@@ -149,7 +149,7 @@ Image.hasMany(Page, {
     allowNull: true,
   },
   onDelete: "RESTRICT",
-  onUpdate: "RESTRICT",
+  onUpdate: "SET NULL",
 });
 Page.belongsTo(Image, {
   foreignKey: {

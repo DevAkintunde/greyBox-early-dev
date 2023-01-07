@@ -6,6 +6,7 @@ import {
   SERVER_ERROR,
 } from "../../constants/statusCodes.js";
 import sequelize from "../../config/db.config.js";
+import { logger } from "../../utils/logger.js";
 
 //Use this to check the status/existence of an account on the server.
 
@@ -17,11 +18,7 @@ const checkAccount = (existStatus) => async (ctx, next) => {
     try {
       let thisUser;
       if (ctx.state.userType) {
-        thisUser = await sequelize.models[ctx.state.userType].findOne({
-          where: {
-            email: email,
-          },
-        });
+        thisUser = await sequelize.models[ctx.state.userType].findByPk(email);
       } else {
         ctx.status = BAD_REQUEST;
         ctx.message = "Unsure of account type to create";
@@ -42,6 +39,7 @@ const checkAccount = (existStatus) => async (ctx, next) => {
       } */
       await next();
     } catch (err) {
+      logger.error('Account checking error: ', err)
       ctx.status = SERVER_ERROR;
       ctx.message = "Server error";
     }

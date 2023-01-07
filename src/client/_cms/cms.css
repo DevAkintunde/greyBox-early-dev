@@ -1,8 +1,0 @@
-@import "./utils/css/form-ui.css";
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-@layer base {
-}

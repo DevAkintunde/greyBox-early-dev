@@ -35,6 +35,7 @@ const ServerHandler = async (data: string | Fetcher | Fetcher[]) => {
   //     headers: {
   //       "Content-Type": "application/json",
   //       Accept: "application/json",
+  //       "x-requestapp": "react-webapp",
   //        Authorization: "Bearer jjjsijjisjis",
   //     },
   //     body: {},
@@ -68,6 +69,7 @@ const ServerHandler = async (data: string | Fetcher | Fetcher[]) => {
     let headers: any = {
       accept: "application/vnd.api+json",
       "content-type": "application/vnd.api+json",
+      "x-requestapp": "react-webapp",
       ...importedHeaders,
     };
     if (
@@ -161,6 +163,7 @@ const ServerHandler = async (data: string | Fetcher | Fetcher[]) => {
       let headers = {
         accept: "application/vnd.api+json",
         "content-type": "application/vnd.api+json",
+        "x-requestapp": "react-webapp",
         ...importedHeaders,
       };
       let body = thisCall.body ? JSON.stringify(thisCall.body) : null;
@@ -246,6 +249,7 @@ const ServerHandler = async (data: string | Fetcher | Fetcher[]) => {
       headers: {
         accept: "application/vnd.api+json",
         "content-type": "application/vnd.api+json",
+        "x-requestapp": "react-webapp",
       },
     })
       .then((res: any) => {
@@ -276,6 +280,7 @@ const ServerHandler = async (data: string | Fetcher | Fetcher[]) => {
       headers: {
         accept: "application/vnd.api+json",
         "content-type": "application/vnd.api+json",
+        "x-requestapp": "react-webapp",
       },
     })
       .then((res) => {

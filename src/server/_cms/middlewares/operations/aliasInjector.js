@@ -1,10 +1,17 @@
 import sequelize from "../../config/db.config.js";
 import { ModelMapper } from "../../constants/ModelMapper.js";
 import { BAD_REQUEST, NOT_ACCEPTABLE } from "../../constants/statusCodes.js";
+import { logger } from "../../utils/logger.js";
+//models
+//import Blog from "../../models/entities/nodes/Blog.model.js";
 
 const aliasInjector = async (ctx, next) => {
   if (ctx.request.body && Object.keys(ctx.request.body).length > 0) {
-    let entityType = ctx.state.entityType;
+    let entityType = ctx.state.entityType
+      ? ctx.state.entityType
+      : ctx.state.nodeType
+      ? ctx.state.nodeType
+      : "";
     if (
       !entityType &&
       (ctx.path.includes("/update/") || ctx.path.endsWith("/update"))
@@ -12,6 +19,7 @@ const aliasInjector = async (ctx, next) => {
       let modelExtractFromPath = ctx.path.split("/")[4];
       if (ModelMapper[modelExtractFromPath]) entityType = modelExtractFromPath;
     }
+
     if (entityType) {
       let thisAlias =
         ctx.request.body.autoAlias && ctx.request.body.autoAlias === "true"
@@ -49,22 +57,28 @@ const aliasInjector = async (ctx, next) => {
         }
       }
 
-      if (checkEntityId) {
-        try {
-          let thisEntity = await sequelize.models[entityType].findOne({
+      try {
+        let thisEntity;
+        if (sequelize.models[entityType])
+          thisEntity = await sequelize.models[entityType].findOne({
             where: { alias: thisAlias },
           });
-          if (
-            thisEntity &&
+
+        //console.log("thisEntity", thisEntity);
+        if (
+          (thisEntity &&
+            checkEntityId &&
             thisEntity.toJSON().uuid &&
-            thisEntity.toJSON().uuid !== checkEntityId
-          ) {
-            thisAlias = thisAlias + Math.random().toString(36).substring(5);
-          }
-        } catch (err) {
-          ctx.throw(BAD_REQUEST, "Entity type not identifiable");
+            thisEntity.toJSON().uuid !== checkEntityId) ||
+          (!checkEntityId && thisEntity)
+        ) {
+          thisAlias = thisAlias + Math.random().toString(36).substring(5);
         }
+      } catch (err) {
+        logger.error("alias injector error: ", err);
+        ctx.throw(BAD_REQUEST, "Entity type not identifiable");
       }
+
       if (
         (ctx.state.entityUpdate ||
           ctx.path.includes("/update/") ||

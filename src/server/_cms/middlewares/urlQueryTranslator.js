@@ -1,7 +1,7 @@
 // query caller/processors
 import compose from "koa-compose";
 // Always remember to map modelToPath each time urlQueryTranslator is added to a new path pattern
-import {ModelMapper} from "../constants/ModelMapper.js";
+import { ModelMapper } from "../constants/ModelMapper.js";
 import { filterProcessor } from "./queryProcessor/filterProcessor.js";
 import { includeTranslator } from "./queryProcessor/includeTranslator.js";
 import { paginationProcessor } from "./queryProcessor/paginationProcessor.js";
@@ -12,14 +12,19 @@ import { BAD_REQUEST } from "../constants/statusCodes.js";
 // Applicable to GET methods.
 const urlQueryTranslator = compose([
   async (ctx, next) => {
-    let entityPath = ctx.originalUrl;
-    if (ctx.isUnauthenticated() && !entityPath.includes("state=published")) {
-      if (entityPath.includes("?")) {
-        ctx.originalUrl = entityPath + "&filter[state=published]";
+    if (
+      ctx.isUnauthenticated() &&
+      !ctx.originalUrl.includes("state=published")
+    ) {
+      if (ctx.originalUrl.includes("?")) {
+        ctx.originalUrl = ctx.originalUrl + "&filter[state=published]";
       } else {
-        ctx.originalUrl = entityPath + "?filter[state=published]";
+        ctx.originalUrl = ctx.originalUrl + "?filter[state=published]";
       }
     }
+    //check if path is not _cms and is external app integration
+    //and divert ModelMapper to the 'app' key instead
+    if (ctx.path.includes("/app/")) ModelMapper = ModelMapper.app;
     await next();
   },
   async (ctx, next) => {

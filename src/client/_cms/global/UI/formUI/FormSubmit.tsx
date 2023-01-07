@@ -1,7 +1,7 @@
 import { ServerHandler } from "../../functions/ServerHandler";
 
 interface SubmitData {
-  e: {
+  e?: {
     target: { classList: any; disabled: boolean };
     //preventDefault: Function;
   };
@@ -24,10 +24,12 @@ export const FormSubmit = async ({
   callback,
 }: SubmitData) => {
   //e.preventDefault();
-  e.target.disabled = true;
-  if (e.target.classList && !e.target.classList.contains("bounce"))
-    e.target.classList.add("bounce");
-
+  if (e) {
+    e.target.disabled = true;
+    if (e.target.classList && !e.target.classList.contains("bounce"))
+      e.target.classList.add("bounce");
+  }
+  
   return ServerHandler({
     endpoint: endpoint,
     method: method ? method : "POST",
@@ -38,7 +40,7 @@ export const FormSubmit = async ({
         },
     body: data,
   }).then((res) => {
-    console.log("res", res);
+    //console.log("res", res);
     if (res.status !== 200) {
       let submitNotice = document.getElementById("form-actions-notice");
       if (submitNotice)

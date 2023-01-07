@@ -1,10 +1,12 @@
 import { UNAUTHORIZED, OK } from "../../../constants/statusCodes.js";
 import { bearerTokenJwtAuth } from "../../../middlewares/authorization/bearerTokenJwtAuth.js";
-import { default as pages } from "./pages.js";
-import { default as account } from "./account.js";
+import { default as user } from "./user.account.routes.js";
+import { default as accounts } from "./accounts.routes.js";
 import { default as authMedia } from "./media/index.js";
 import { default as misc } from "./misc/index.js";
 import { default as bin } from "./bin.route.js";
+//unspecific entity routes which will carter for node entities like pages and blog articles
+import { default as nodesRoutes } from "./nodes.routes.js";
 
 import Router from "@koa/router";
 const router = new Router({
@@ -45,16 +47,19 @@ router.get("/paths", (ctx) => {
   return (ctx.body = availableRoutes);
 });
 
-// pages
-router.use(pages.routes());
-// all accounts routes condensed in one router @ /account
-router.use(account.routes());
+// currently signed in user account
+router.use(user.routes());
 //auth media routes
 router.use(authMedia.routes());
 //miscellaneous routes
 router.use(misc.routes());
+// all accounts routes condensed in one router @ /account
+router.use(accounts.routes());
 //recycle bin routes
 router.use(bin.routes());
+
+// All nodes entity's routes
+router.use(nodesRoutes.routes());
 
 // Entity creation endpoints for dev purposes
 /* import { default as entityCreate } from "./createEndpoints";

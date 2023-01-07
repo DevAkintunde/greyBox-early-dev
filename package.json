@@ -6,6 +6,7 @@
   "scripts": {
     "fe": "vite",
     "dev": "node server",
+    "preview": "vite preview",
     "build": "npm run build:client && npm run build:server",
     "build:client": "vite build --outDir dist/client",
     "build:server": "vite build --ssr src/entry-server.tsx --outDir dist/server",
@@ -14,6 +15,10 @@
     "debug": "node --inspect server",
     "db:sync": "node src/server/_cms/database/scripts/tablesDBsync.js",
     "db:tup": "node src/server/_cms/database/scripts/defaultTablesUp",
+    "db:dump": "node src/server/_cms/database/scripts/dumpPublicTables",
+    "db:app:sync": "node src/server/app/database/scripts/tablesDBsync.js",
+    "db:app:tup": "node src/server/app/database/scripts/defaultTablesUp",
+    "db:app:dump": "node src/server/app/database/scripts/dumpPublicTables",
     "db:init": "npm run db:sync && npm run db:tup",
     "email:debug": "NODE_DEBUG=email-templates node email.js"
   },

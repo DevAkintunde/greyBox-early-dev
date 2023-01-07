@@ -87,7 +87,7 @@ const queryDbCaller = async (ctx, next) => {
         });
         ctx.state.data = data;
       } catch (err) {
-        logger.error(err);
+        logger.error('uqlQueryTranslator: ',err);
         ctx.status = BAD_REQUEST;
         ctx.message = "Unable to find entities";
         return;
