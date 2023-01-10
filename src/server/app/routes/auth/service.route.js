@@ -31,7 +31,7 @@ router.get(
     }
     await next();
   },
-  urlQueryTranslator,
+  //urlQueryTranslator,
   (ctx) => {
     if (ctx.state.data) {
       ctx.status = OK;
